@@ -11,6 +11,8 @@ import {
 import _ from 'underscore';
 import { config, showLabelConfig } from '../../config';
 import { useShowArch } from "../../context/ShowArchContext";
+import { BUILD_LABELS, UTEST_LABELS, getCellDelta } from './ibDelta';
+import DeltaMarker from './DeltaMarker';
 import {
   FaCheckCircle,
   FaExclamationTriangle,
@@ -326,14 +328,6 @@ function renderTooltip(cellContent, tooltipContent, tooltipId = 'tooltip-status'
   );
 }
 
-function renderCell(cellInfo, key) {
-  return (
-    <td key={key} className="align-middle p-1" style={{ textAlign: 'center', verticalAlign: 'middle' }}>
-      {cellInfo}
-    </td>
-  );
-}
-
 function renderSphere({ status = "secondary", value, icon, link, tooltipContent, details, type, tooltipId } = {}) {
   const style = statusStyles[status] || statusStyles.secondary;
   const displayValue = value !== undefined ? value : '';
@@ -448,7 +442,7 @@ const copyText = (text) => {
   }
 };
 
-const ComparisonTable = ({ data = [], releaseQue }) => {
+const ComparisonTable = ({ data = [], releaseQue, previousIbLookup = null }) => {
   const [copiedText, setCopiedText] = useState(null);
   const { getActiveArchsForQue = () => [], getColorsSchemeForQue = () => ({}) } = useShowArch();
 
@@ -479,6 +473,40 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
     () => getAllActiveArchitecturesFromIBGroupByFlavor(data, activeArchs),
     [data, activeArchs]
   );
+
+  // Inside the component so it can read data and previousIbLookup. Every body cell renders
+  // through here, and its key is always `${resultType}-${pos}-${arch}[-suffix]`. Arch strings use
+  // underscores, never hyphens, so splitting on "-" recovers each part.
+  const renderCell = (cellInfo, key) => {
+    const [resultType, posStr, archStr] = key.split('-');
+    const currentIb = data[Number(posStr)];
+    const previous = previousIbLookup?.get(currentIb)?.get(archStr);
+    const delta = previous
+      ? getCellDelta(
+          resultType,
+          _.findWhere(currentIb[resultType] || [], { arch: archStr }),
+          _.findWhere(previous.ib[resultType] || [], { arch: archStr }),
+          previous.ib.release_name,
+          previous.isPreviousIb
+        )
+      : null;
+
+    return (
+      <td key={key} className="align-middle p-1" style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+        {cellInfo}
+        {delta && (
+          <DeltaMarker
+            delta={delta}
+            resultType={resultType}
+            arch={archStr}
+            currentIb={currentIb}
+            previousIb={previous.ib}
+            tooltipId={`${key}-delta-tooltip`}
+          />
+        )}
+      </td>
+    );
+  };
 
   const renderRowCells = ({ resultType, ifWarning, ifError, ifFailed, ifPassed, ifUnknown }) => {
     return data.map((ib, pos) => {
@@ -1099,10 +1127,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
                         case "error":
                         case "failed":
                         case "warning":
-                          return showGeneralResults([
-                            { groupFields: [(key) => key.includes("Error")], color: "danger" },
-                            { groupFields: ["compWarning"], color: "warning" }
-                          ], getBuildOrUnitUrl)(results, ib.release_name, cellKey);
+                          return showGeneralResults(BUILD_LABELS, getBuildOrUnitUrl)(results, ib.release_name, cellKey);
 
                         default:
                           return renderCell(<span className="text-muted">—</span>, `${cellKey}-default`);
@@ -1133,9 +1158,9 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
                       }),
                       tooltipId: `${cellKey}-tooltip-passed`
                     }), `${cellKey}-passed`),
-                    ifError: showGeneralResults([{ groupFields: ["num_errors"], color: "danger" }], getBuildOrUnitUrl, '?utests'),
-                    ifFailed: showGeneralResults([{ groupFields: ["num_fails"], color: "danger" }], getBuildOrUnitUrl, '?utests'),
-                    ifWarning: showGeneralResults([{ groupFields: ["num_warnings"], color: "warning" }], getBuildOrUnitUrl, '?utests')
+                    ifError: showGeneralResults(UTEST_LABELS.error, getBuildOrUnitUrl, '?utests'),
+                    ifFailed: showGeneralResults(UTEST_LABELS.failed, getBuildOrUnitUrl, '?utests'),
+                    ifWarning: showGeneralResults(UTEST_LABELS.warning, getBuildOrUnitUrl, '?utests')
                   })}
                 </tr>
               )}
@@ -1230,11 +1255,19 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
           </Table>
         </div>
       </div>
+      {data.some((ib) => previousIbLookup?.get(ib)) && (
+        <p className="text-muted mt-2 mb-0 px-1" style={{ fontSize: '0.75rem' }}>
+          Changes compare each result with the last build of the same flavor and architecture.
+          New = was passing, now failing. Fixed = was failing, now passing. ↑/↓ = count went up/down.
+          = means the same count, not necessarily the same tests. Blank means nothing to compare, or passing in both IBs.
+        </p>
+      )}
     </div>
   );
 };
 
 ComparisonTable.propTypes = {
+  previousIbLookup: PropTypes.instanceOf(Map),
   data: PropTypes.array.isRequired,
   releaseQue: PropTypes.string.isRequired
 };
