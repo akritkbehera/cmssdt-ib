@@ -4,6 +4,7 @@ import BuildSummary from "../common/BuildSummary";
 import { summarizeMatrix } from "../../Utils/matrixSummary";
 import ArchitectureHeader from "../common/ArchitectureHeader";
 import StatusDot from "../common/StatusDot";
+import ResultDetails from "../common/ResultDetails";
 import { configurationBuildState, familyBuildState, architectureDefaults, matchesResultFilter } from "../../Utils/buildStatus";
 import { tableTheme as THEME } from "../../styles/theme";
 import React, { useMemo, useState, useEffect, useRef } from 'react';
@@ -19,6 +20,8 @@ import {
 import _ from 'underscore';
 import { config, showLabelConfig } from '../../config';
 import { useShowArch } from "../../context/ShowArchContext";
+import { BUILD_LABELS, UTEST_LABELS, getCellDelta } from './ibDelta';
+import DeltaMarker from './DeltaMarker';
 import {
   FaCheckCircle,
   FaExclamationTriangle,
@@ -215,15 +218,7 @@ const StatusTooltip = ({ status, value, details, type, running = false }) => {
 };
 
 function renderTooltip(cellContent, tooltipContent, tooltipId = 'tooltip-status') {
-  return (
-    <OverlayTrigger
-      placement="top"
-      overlay={<Tooltip id={tooltipId} className="custom-tooltip p-0">{tooltipContent}</Tooltip>}
-      delay={tooltipDelayInMs}
-    >
-      <span className="d-inline-block">{cellContent}</span>
-    </OverlayTrigger>
-  );
+  return <ResultDetails overlay={tooltipContent} tooltipId={tooltipId}>{cellContent}</ResultDetails>;
 }
 
 function baseRenderCell(cellInfo, key) {
@@ -327,7 +322,11 @@ const copyText = (text) => {
   }
 };
 
-const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => {
+const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, previousIbLookup = null }) => {
+  const [configuration, setConfiguration] = useState('');
+  const [compareOnPhone, setCompareOnPhone] = useState(false);
+  const [inView, setInView] = useState(true);
+  const sectionRef = useRef(null);
   const [copiedText, setCopiedText] = useState(null);
   const [resultFilter, setResultFilter] = useState('all');
   const [hasOverflow, setHasOverflow] = useState(false);
@@ -361,6 +360,25 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
     [data, activeArchs]
   );
 
+  const configurations = archsByIb.flatMap((item, position) => (item.archs || []).map(arch => ({
+    key: JSON.stringify([item.name, arch]), position, arch, flavor: item.flavor
+  })));
+  const selected = configurations.find(item => item.key === configuration) || configurations[0];
+  useEffect(() => {
+    const element = sectionRef.current?.closest('.ib-release-panel') || sectionRef.current;
+    if (!element || typeof IntersectionObserver === 'undefined') return;
+    let visible = true;
+    const update = () => {
+      const active = visible && !document.hidden;
+      setInView(active);
+      element.style.setProperty('--ib-motion-state', active ? 'running' : 'paused');
+    };
+    const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; update(); });
+    observer.observe(element);
+    document.addEventListener('visibilitychange', update);
+    return () => { observer.disconnect(); document.removeEventListener('visibilitychange', update); element.style.removeProperty('--ib-motion-state'); };
+  }, []);
+
   const headerDefaults = useMemo(
     () => architectureDefaults(archsByIb.flatMap(item => item.archs || [])),
     [archsByIb]
@@ -378,6 +396,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
     return () => observer.disconnect();
   }, [archsByIb]);
 
+  const mobileCells = [];
   function renderCell(cellInfo, key) {
     const [stage, position] = key.split('-');
     const ib = data[Number(position)];
@@ -385,7 +404,10 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
     const candidates = ib?.[stage]?.filter(item => item.arch === arch) || [];
     const current = candidates.length === 1 ? candidates[0] : null;
     const context = comparisons.get(ib);
-    const delta = stages.includes(stage) ? compareCell(ib, context, stage, arch) : null;
+    const previous = previousIbLookup?.get(ib)?.get(arch);
+    const nativeDelta = previous ? getCellDelta(stage, current,
+      _.findWhere(previous.ib[stage] || [], { arch }), previous.ib.release_name, previous.isPreviousIb) : null;
+    const delta = !previousIbLookup && stages.includes(stage) ? compareCell(ib, context, stage, arch) : null;
     const running = current?.done === false;
     let hasMarker = false;
     let resultStatus = 'secondary';
@@ -407,13 +429,17 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
     let content = decorate(cellInfo);
     if (running && !hasMarker) content = renderStatusMarker({ status: 'secondary', value: ' ', running: true, type: stage });
     const boundary = arch === archsByIb[Number(position)]?.archs[0];
-    return <td key={key} className={`align-middle ib-result-cell ${boundary ? 'ib-group-start' : ''}`} data-muted={!matchesResultFilter(resultStatus, resultFilter)}>
+    const cell = <td key={key} className={`align-middle ib-result-cell ${boundary ? 'ib-group-start' : ''}`} data-muted={!matchesResultFilter(resultStatus, resultFilter)}>
       {content}
+      {nativeDelta && !running && <DeltaMarker delta={nativeDelta} resultType={stage} arch={arch}
+        currentIb={ib} previousIb={previous.ib} tooltipId={`${key}-delta-tooltip`} />}
       {delta && !running && <div className="ib-cell-comparison" title={delta.detail}>
         {delta.label && <span className={`ib-result-delta ${delta.novel ? 'ib-novel-failure' : `ib-delta-${delta.tone || 'secondary'}`}`} aria-label={delta.detail}>{delta.label}</span>}
         {delta.metrics?.map(metric => <span key={metric.key} className={`ib-result-delta ib-delta-${metric.tone}`} title={`${metric.key}: previous ${metric.previous}, current ${metric.current}; ${delta.detail}`} aria-label={`${metric.key}: ${delta.detail}`}>{metric.label}</span>)}
       </div>}
     </td>;
+    mobileCells.push({ key, stage, position: Number(position), arch, cell });
+    return cell;
   }
 
   const renderRowCells = ({ resultType, ifWarning, ifError, ifFailed, ifPassed, ifUnknown }) => {
@@ -966,10 +992,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
                         case "error":
                         case "failed":
                         case "warning":
-                          return showGeneralResults([
-                            { groupFields: [(key) => key.includes("Error")], color: "danger" },
-                            { groupFields: ["compWarning"], color: "warning" }
-                          ], getBuildOrUnitUrl)(results, ib.release_name, cellKey);
+                          return showGeneralResults(BUILD_LABELS, getBuildOrUnitUrl)(results, ib.release_name, cellKey);
 
                         default:
                           return renderCell(<span className="text-muted">—</span>, `${cellKey}-default`);
@@ -1000,9 +1023,9 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
                       }),
                       tooltipId: `${cellKey}-tooltip-passed`
                     }), `${cellKey}-passed`),
-                    ifError: showGeneralResults([{ groupFields: ["num_errors"], color: "danger" }], getBuildOrUnitUrl, '?utests'),
-                    ifFailed: showGeneralResults([{ groupFields: ["num_fails"], color: "danger" }], getBuildOrUnitUrl, '?utests'),
-                    ifWarning: showGeneralResults([{ groupFields: ["num_warnings"], color: "warning" }], getBuildOrUnitUrl, '?utests')
+                    ifError: showGeneralResults(UTEST_LABELS.error, getBuildOrUnitUrl, '?utests'),
+                    ifFailed: showGeneralResults(UTEST_LABELS.failed, getBuildOrUnitUrl, '?utests'),
+                    ifWarning: showGeneralResults(UTEST_LABELS.warning, getBuildOrUnitUrl, '?utests')
                   })}
                 </tr>
               )}
@@ -1097,11 +1120,18 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
           </Table>
         </div>
       </div>
+      {data.some((ib) => previousIbLookup?.get(ib)) && (
+        <p className="text-muted mt-2 mb-0 px-1" style={{ fontSize: '0.75rem' }}>
+          Changes compare each result with the last build of the same flavor and architecture.
+          New = was passing, now failing. Fixed = was failing, now passing. ↑/↓ = count went up/down.
+          = means the same count, not necessarily the same tests. Blank means nothing to compare, or passing in both IBs.
+        </p>
+      )}
     </div>
   );
   const counts = summarizeMatrix(matrix);
   return (
-    <section className="ib-matrix-section" data-result-filter={resultFilter} aria-label="Build test matrix">
+    <section ref={sectionRef} className="ib-matrix-section" data-in-view={inView} data-result-filter={resultFilter} aria-label="Build test matrix">
       <div className="ib-matrix-toolbar">
         <BuildSummary counts={counts} filter={resultFilter} onFilter={setResultFilter} />
         <ButtonGroup className="ib-result-filter" aria-label="Test results filter">
@@ -1110,17 +1140,42 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
         </ButtonGroup>
       </div>
       {resultFilter !== 'all' && <p className="ib-filter-status" role="status">{resultFilter === 'issues' ? 'Failures and warnings' : resultFilter === 'danger' ? 'Failures' : resultFilter === 'warning' ? 'Warnings' : 'Passed results'} highlighted. Other results remain visible.</p>}
-      {matrix}
+      <div className="ib-phone-controls">
+        <label>Configuration
+          <select value={selected?.key || ''} onChange={event => setConfiguration(event.target.value)}>
+            {!configurations.length && <option value="">No configurations selected</option>}
+            {configurations.map(item => <option key={item.key} value={item.key}>{formatFlavorLabel(item.flavor)} · {item.arch}</option>)}
+          </select>
+        </label>
+        <button type="button" className="btn btn-light" aria-pressed={compareOnPhone}
+          onClick={() => setCompareOnPhone(value => !value)}>{compareOnPhone ? 'Single configuration' : 'Compare configurations'}</button>
+      </div>
+      <div className={`ib-phone-results ${compareOnPhone ? 'is-hidden' : ''}`}>
+        {selected ? <>
+          <p className="ib-phone-config-name">{formatFlavorLabel(selected.flavor)} · {selected.arch}</p>
+          <p className="ib-phone-results-hint">Tap a result for details and logs. Summary counts cover all selected configurations.</p>
+          <dl>
+            {mobileCells.filter(item => item.position === selected.position && item.arch === selected.arch).map(item => (
+              <div key={item.key} className="ib-phone-stage" data-muted={item.cell.props['data-muted']}>
+                <dt>{rowLabelConfig[item.stage]?.text || item.stage}</dt>
+                <dd>{item.cell.props.children}</dd>
+              </div>
+            ))}
+          </dl>
+        </> : <p>Select architectures to see results.</p>}
+      </div>
+      <div className={`ib-comparison-matrix ${compareOnPhone ? 'is-phone-visible' : ''}`}>{matrix}</div>
       <details className="ib-matrix-help">
         <summary>How to read results and comparisons</summary>
       <p className="ib-matrix-legend">✓ passed · ✕ failed · ! warning · – unavailable. Build numbers count errors/warnings; Unit, RelVal and AddOn numbers count test results. Q/A is the reported duplicate-check outcome; ✕ is a failure, not “not run”. Linked cells open details. Counts remain separate from their state marks; a large count does not by itself mean a new regression.</p>
-        <p className="ib-matrix-footnote">Stage counts describe reported outcomes for selected configurations, including partial results. A rotating rim, radar sweep and breathing inner glow mean running; final comparisons are withheld until completion. Only the latest IB in an exact queue/variant sequence has comparisons. Missing or ambiguous configurations never count as zero. Newly failing means a pass-to-fail transition, not a unique failure identity. Each metric delta compares the same named count; +passes is favorable, +failures is adverse. Unchanged counts have no delta. Baselines are drawn from the complete response available to this page, before filters.</p>
+        <p className="ib-matrix-footnote">Stage counts describe reported outcomes for selected configurations, including partial results. A rotating rim and radar sweep that lights the dimmed state mark mean running; final comparisons are withheld until completion. Only the latest IB in an exact queue/variant sequence has comparisons. Missing or ambiguous configurations never count as zero. Newly failing means a pass-to-fail transition, not a unique failure identity. Each metric delta compares the same named count; +passes is favorable, +failures is adverse. {previousIbLookup ? 'An equals marker means the same count, not necessarily the same tests.' : 'Unchanged counts have no delta.'} Baselines are drawn from the complete response available to this page, before filters.</p>
       </details>
     </section>
   );
 };
 
 ComparisonTable.propTypes = {
+  previousIbLookup: PropTypes.instanceOf(Map),
   data: PropTypes.array.isRequired,
   releaseQue: PropTypes.string.isRequired
 };

@@ -120,6 +120,7 @@ class IBGroupFrame extends PureComponent {
                             data={IBGroup}
                             comparisons={this.props.comparisons}
                             releaseQue={releaseQue}
+                            previousIbLookup={this.props.previousIbLookup}
                         />
                     );
                 }
@@ -268,7 +269,7 @@ class IBGroupFrame extends PureComponent {
                         </>
                     )}
                 </Card.Header>
-                <ComparisonContext builds={IBGroup} comparisons={this.props.comparisons || new Map()} />
+                {!this.props.previousIbLookup && <ComparisonContext builds={IBGroup} comparisons={this.props.comparisons || new Map()} />}
 
                 {!isCollapsed && (
                     <Card.Body className="ib-release-panel-body">
