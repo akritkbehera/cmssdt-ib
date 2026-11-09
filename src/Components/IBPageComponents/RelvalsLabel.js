@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from "react";
+import StatusDot from "../common/StatusDot";
+import { testGroupState } from "../../Utils/buildStatus";
 import PropTypes from "prop-types";
 import { Dropdown, Form } from "react-bootstrap";
 import { config } from "../../config";
@@ -97,6 +99,7 @@ const RelvalsLabel = ({ tests = {}, type_name }) => {
 
   if (!tests || Object.keys(tests).length === 0) return null;
 
+  const summaryState = testGroupState(tests, 'num_failed');
   const anyFailure = Object.values(tests).some(
     (t) => t.details && t.details.num_failed > 0
   );
@@ -213,12 +216,13 @@ const toggleStyle = {
     <Dropdown className="d-inline-block me-1" autoClose="outside">
       <Dropdown.Toggle
         variant="light"
+        className="ib-section-pill"
         size="sm"
         id={`${type_name}-relvals-toggle`}
         style={toggleStyle}
-        title={anyFailure ? "Has failures" : "All tests passed"}
+        title={`${summaryState.status === 'danger' ? 'Failures' : summaryState.status === 'warning' ? 'Warnings' : summaryState.status === 'success' ? 'Passed' : 'Unknown'}${summaryState.running ? ' · running' : ''}`}
       >
-        {getIcon(type_name, anyFailure ? "#842029" : "#2c6e2c")}
+        <StatusDot {...summaryState} size={22} />
         <span>{currentType.title}</span>
         {/* {anyFailure ? (
           <FaExclamationTriangle className="ms-1" />

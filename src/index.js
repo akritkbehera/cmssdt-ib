@@ -1,4 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './styles/tokens.css';
 import './index.css';
 
 import React from 'react';
@@ -11,6 +12,7 @@ import { unregister } from './registerServiceWorker';
 import { ShowArchProvider } from './context/ShowArchContext';
 import { CommandProvider } from './context/CommandContext';
 import { RelValProvider } from './Stores/RelValStore';
+import './dashboard.css';
 
 const container = document.getElementById('root');
 const root = createRoot(container);

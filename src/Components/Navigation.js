@@ -1,4 +1,5 @@
-import React, { useMemo, useState, forwardRef } from "react";
+import { theme as THEME, navigationTheme as NAV_THEME } from "../styles/theme";
+import React, { useMemo, useState, useLayoutEffect, useRef, forwardRef } from "react";
 import { RiShareForwardLine } from "react-icons/ri";
 import {
   Navbar,
@@ -51,33 +52,9 @@ import { getComReleaseFromQue } from "../Utils/processing";
 
 const { urls } = config;
 
-const THEME = {
-  primary: "#2563eb",
-  primaryLight: "#3b82f6",
-  border: "#e2e8f0",
-  hover: "#f1f5f9",
-  pageBg: "#f5f7fb",
-  text: {
-    primary: "#0f172a",
-    secondary: "#475569",
-    muted: "#64748b"
-  }
-};
 
-const NAV_THEME = {
-  navbarBg: "rgba(15, 23, 42, 0.92)",
-  navbarBorder: "rgba(148,163,184,0.25)",
-  navbarText: "#f8fafc",
-  navbarTextMuted: "rgba(248,250,252,0.78)",
-  pillHoverBg: "rgba(59,130,246,0.18)",
-  dropdownBg: "#0b1220",
-  dropdownBorder: "rgba(148,163,184,0.22)",
-  dropdownItemHover: "rgba(255,255,255,0.06)",
-  filtersBtnBg: THEME.primary,
-  filtersBtnText: "#ffffff",
-  iconBtnBorder: "rgba(148,163,184,0.45)",
-  brandChipGradient: `linear-gradient(135deg, ${THEME.primary} 0%, ${THEME.primaryLight} 100%)`
-};
+
+
 
 const PillDropdownToggle = forwardRef(({ children, onClick, active }, ref) => (
   <a
@@ -136,7 +113,7 @@ const guideSphereStyles = {
     borderRadius: "50%",
     padding: "0 8px",
     color: "#fff",
-    fontSize: "0.82rem",
+    fontSize: "var(--ui-type-label)",
     fontWeight: 700,
     textShadow: "0 1px 2px rgba(0,0,0,0.25)",
     border: "1px solid rgba(255,255,255,0.18)",
@@ -169,7 +146,7 @@ const GUIDE_CHANGE_MARKERS = [
 
 const GuideSphere = ({ variant = "success", children }) => (
   <span
-   style={{ 
+   style={{
       ...guideSphereStyles.base,
       ...guideSphereStyles[variant] }}>
     {children}
@@ -300,140 +277,37 @@ const Navigation = ({ toLinks, flaworControl, archControl, showAllPullRequests =
     };
   }, [toLinks, location.pathname]);
 
-  const spacerHeight = showFilters ? 145 : 70;
+  const chromeRef = useRef(null);
+  const [chromeHeight, setChromeHeight] = useState(0);
+  useLayoutEffect(() => {
+    const chrome = chromeRef.current;
+    const measure = () => setChromeHeight(chrome.getBoundingClientRect().height);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(chrome);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <>
-      <style>{`
-        #navigation .nav-link.active.navpill,
-        #navigation .navpill.active {
-          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-          color: #ffffff !important;
-          border-radius: 12px;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-          transform: translateY(-1px);
-        }
 
-        body { background: ${THEME.pageBg}; }
 
-        #navigation.navbar {
-          color: ${NAV_THEME.navbarText};
-        }
-
-        #navigation .navbar-brand,
-        #navigation .navbar-nav .nav-link,
-        #navigation .dropdown-toggle,
-        #navigation .nav-link,
-        #navigation .navbar-toggler {
-          color: ${NAV_THEME.navbarText} !important;
-        }
-
-        #navigation .text-muted,
-        #navigation .small,
-        #navigation .nav-link .text-muted {
-          color: ${NAV_THEME.navbarTextMuted} !important;
-        }
-
-        .navpill {
-          border-radius: 12px;
-          padding: 0.5rem 0.9rem !important;
-          margin: 0 2px;
-          color: ${NAV_THEME.navbarText} !important;
-          text-decoration: none !important;
-          line-height: 1.1;
-          transition: all 0.2s ease;
-        }
-
-        .navpill:hover, .navpill:focus {
-          background: ${NAV_THEME.pillHoverBg};
-          color: ${NAV_THEME.navbarText} !important;
-        }
-
-        .navpill:focus-visible {
-          outline: 2px solid rgba(59,130,246,0.55);
-          outline-offset: 2px;
-        }
-
-        .navpill-caret {
-          opacity: 0.85;
-          font-size: 0.9em;
-          color: ${NAV_THEME.navbarTextMuted};
-        }
-
-        .icon-btn {
-          border-radius: 999px !important;
-          display: inline-flex !important;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .btn-pill { border-radius: 999px !important; }
-
-        .dropdown-menu-pro {
-          background: ${NAV_THEME.dropdownBg} !important;
-          border: 1px solid ${NAV_THEME.dropdownBorder} !important;
-          color: ${NAV_THEME.navbarText} !important;
-        }
-
-        .dropdown-menu-pro .dropdown-item-pro,
-        .dropdown-menu-pro .dropdown-item {
-          color: ${NAV_THEME.navbarText} !important;
-          border-radius: 10px;
-          margin: 2px 8px;
-          padding: 0.55rem 0.75rem;
-        }
-
-        .dropdown-menu-pro .dropdown-item-pro:hover,
-        .dropdown-menu-pro .dropdown-item-pro:focus,
-        .dropdown-menu-pro .dropdown-item:hover,
-        .dropdown-menu-pro .dropdown-item:focus {
-          background: ${NAV_THEME.dropdownItemHover} !important;
-          color: ${NAV_THEME.navbarText} !important;
-        }
-
-        .dropdown-menu-pro .dropdown-item.active,
-        .dropdown-menu-pro .dropdown-item:active {
-          background: rgba(59,130,246,0.35) !important;
-          color: ${NAV_THEME.navbarText} !important;
-        }
-
-        .guide-clickable-icon {
-          cursor: pointer;
-          transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
-        }
-
-        .guide-clickable-icon:active {
-          transform: scale(0.9);
-          box-shadow: 0 0 0 8px rgba(37, 99, 235, 0.14), 0 6px 14px rgba(15, 23, 42, 0.12) !important;
-        }
-
-        .guide-clickable-icon:hover {
-          background: #f8fafc !important;
-        }
-      `}</style>
-
+      <div ref={chromeRef} className="ib-navigation-chrome">
       <Navbar
         expand="lg"
-        fixed="top"
         id="navigation"
         expanded={expanded}
         onToggle={handleNavbarToggle}
         className="py-2 nav-shell"
-        style={{
-          backgroundColor: NAV_THEME.navbarBg,
-          backdropFilter: "blur(10px)",
-          borderBottom: `1px solid ${NAV_THEME.navbarBorder}`,
-          zIndex: 1030
-        }}
       >
-        <Container fluid className="px-3 px-md-4">
+        <Container fluid className="ib-nav-container">
           <Navbar.Brand className="d-flex align-items-center">
             <div
               style={{
                 padding: "4px 4px",
                 borderRadius: "8px",
                 marginRight: "8px",
-                marginLeft: "10px",
+                marginLeft: 0,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center"
@@ -443,24 +317,24 @@ const Navigation = ({ toLinks, flaworControl, archControl, showAllPullRequests =
                 src="CMS_logo-round.png"
                 alt="CMS Offline & Computing"
                 style={{
-                  height: "36px",
+                  height: "var(--ui-brand-mark-size)",
                   width: "auto",
-                  marginRight: "10px",
+                  marginRight: 0,
                   objectFit: "contain",
-                  transform: "scale(1.4)"
+                  transform: "none"
                 }}
               />
             </div>
 
             <span
               className="fw-bold"
-              style={{ fontSize: "1.15rem", letterSpacing: 0.2, color: "#fff" }}
+              style={{ fontSize: "var(--ui-type-title)", letterSpacing: 0.2, color: "#fff" }}
             >
               CMSSW IB Page
             </span>
           </Navbar.Brand>
 
-          <Navbar.Toggle aria-controls="basic-navbar-nav" className="border-0">
+          <Navbar.Toggle aria-controls="basic-navbar-nav" aria-expanded={expanded} className="border-0">
             <BsList size={24} />
           </Navbar.Toggle>
 
@@ -608,20 +482,8 @@ const Navigation = ({ toLinks, flaworControl, archControl, showAllPullRequests =
         </Container>
       </Navbar>
 
-      <div
-        style={{
-          position: "fixed",
-          top: 70,
-          left: 0,
-          right: 0,
-          zIndex: 1020,
-          pointerEvents: "none",
-          transition: "all 0.25s ease",
-          transform: showFilters ? "translateY(0)" : "translateY(-110%)",
-          opacity: showFilters ? 1 : 0
-        }}
-      >
-        <Container fluid className="px-3 px-md-4">
+      <div hidden={!showFilters} className="ib-filter-panel">
+        <Container fluid className="ib-nav-container">
           <div
             className="bg-white rounded-3 shadow-sm mx-auto"
             style={{
@@ -678,7 +540,8 @@ const Navigation = ({ toLinks, flaworControl, archControl, showAllPullRequests =
         </Container>
       </div>
 
-      <div style={{ height: spacerHeight, transition: "height 0.25s ease" }} />
+      </div>
+      <div aria-hidden="true" style={{ height: chromeHeight }} />
 
       <Modal show={showHelpModal} onHide={handleClose} centered size="lg" className="help-modal">
         <Modal.Header closeButton className="bg-light border-0">
@@ -750,7 +613,7 @@ const Navigation = ({ toLinks, flaworControl, archControl, showAllPullRequests =
           </div>
 
           <div className="mb-4">
-            <div className="fw-semibold mb-3" style={{ color: THEME.text.primary, fontSize: "1rem" }}>
+            <div className="fw-semibold mb-3" style={{ color: THEME.text.primary, fontSize: "var(--ui-type-title)" }}>
               Page Controls
             </div>
 
@@ -933,7 +796,7 @@ const Navigation = ({ toLinks, flaworControl, archControl, showAllPullRequests =
           </div>
 
           <div className="mb-4">
-            <div className="fw-semibold mb-3" style={{ color: THEME.text.primary, fontSize: "1rem" }}>
+            <div className="fw-semibold mb-3" style={{ color: THEME.text.primary, fontSize: "var(--ui-type-title)" }}>
               Status Indicators
             </div>
 
@@ -1075,7 +938,7 @@ const Navigation = ({ toLinks, flaworControl, archControl, showAllPullRequests =
           </div>
 
           <div>
-            <div className="fw-semibold mb-3" style={{ color: THEME.text.primary, fontSize: "1rem" }}>
+            <div className="fw-semibold mb-3" style={{ color: THEME.text.primary, fontSize: "var(--ui-type-title)" }}>
               Row Icons
             </div>
 

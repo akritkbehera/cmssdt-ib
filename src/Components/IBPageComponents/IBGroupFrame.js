@@ -1,3 +1,5 @@
+import ComparisonContext from "../common/ComparisonContext";
+import IconButton from "../common/IconButton";
 import React, { PureComponent } from 'react';
 import Commits from "./Commits";
 import StatusLabels from "./StatusLabels";
@@ -43,7 +45,7 @@ class IBGroupFrame extends PureComponent {
         e.stopPropagation();
 
         copyText(text);
-        
+
         this.setState({ copiedText: text });
 
         setTimeout(() => {
@@ -116,6 +118,7 @@ class IBGroupFrame extends PureComponent {
                     comparisonTable = (
                         <ComparisonTable
                             data={IBGroup}
+                            comparisons={this.props.comparisons}
                             releaseQue={releaseQue}
                             previousIbLookup={this.props.previousIbLookup}
                         />
@@ -150,64 +153,13 @@ class IBGroupFrame extends PureComponent {
             />
         );
 
-        const cardStyle = isNextIB
-            ? {
-                  border: '1px solid #93c5fd',
-                  boxShadow: '0 6px 18px rgba(37, 99, 235, 0.12)',
-                  background: 'linear-gradient(180deg, #f8fbff 0%, #ffffff 100%)'
-              }
-            : {};
-
-        const headerStyle = {
-            background: 'linear-gradient(90deg, #dbeafe 0%, #eff6ff 100%)',
-            borderBottom: '1px solid #bfdbfe',
-            color: '#1d4ed8',
-            display: 'flex',
-            justifyContent: isNextIB ? 'center' : 'space-between',
-            alignItems: 'center',
-            gap: '10px',
-            flexWrap: 'wrap',
-            cursor: 'pointer',
-            userSelect: 'none',
-            padding: '0.55rem 0.9rem'
-        };
-
-        const prButtonStyle = {
-            border: '1px solid #bfdbfe',
-            background: showPullRequests ? '#2563eb' : '#ffffff',
-            color: showPullRequests ? '#ffffff' : '#1d4ed8',
-            borderRadius: '999px',
-            width: '28px',
-            height: '28px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            padding: 0,
-            flexShrink: 0
-        };
-
-        const copyButtonStyle = {
-            border: '1px solid #bfdbfe',
-            background: '#ffffff',
-            color: '#1d4ed8',
-            borderRadius: '999px',
-            width: '26px',
-            height: '26px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            padding: 0,
-            flexShrink: 0
-        };
         return (
-            <Card className="mb-3" style={cardStyle}>
+            <Card className={`ib-release-panel ${isNextIB ? "ib-release-panel--upcoming" : ""}`}>
                 <Card.Header
-                    style={headerStyle}
+                    className="ib-release-panel-header"
                     onClick={onToggleCollapse}
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
+                        if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
                             e.preventDefault();
                             onToggleCollapse();
                         }
@@ -215,6 +167,8 @@ class IBGroupFrame extends PureComponent {
                     role="button"
                     tabIndex={0}
                     title={isCollapsed ? `Show ${panelHeader}` : `Hide ${panelHeader}`}
+                    aria-expanded={!isCollapsed}
+                    aria-label={isCollapsed ? `Expand ${panelHeader}` : `Collapse ${panelHeader}`}
                 >
                     {isNextIB ? (
                             <div
@@ -227,22 +181,22 @@ class IBGroupFrame extends PureComponent {
                                     width: '100%'
                                 }}
                             >
-                                <button
+                                <IconButton
                                     type="button"
                                     onClick={this.togglePullRequests}
                                     title={showPullRequests ? "Hide Pull Requests" : "Show Pull Requests"}
                                     aria-label={showPullRequests ? "Hide Pull Requests" : "Show Pull Requests"}
                                     aria-pressed={showPullRequests}
-                                    style={prButtonStyle}
+                                    active={showPullRequests}
                                 >
                                     <GoGitPullRequest size={16} />
-                                </button>
+                                </IconButton>
 
                                 <strong>{panelHeader}</strong>
-                
+
                                 <span
                                     style={{
-                                        fontSize: '0.75rem',
+                                        fontSize: "var(--ui-type-caption)",
                                         fontWeight: 700,
                                         padding: '3px 10px',
                                         borderRadius: '999px',
@@ -270,31 +224,34 @@ class IBGroupFrame extends PureComponent {
                                     minWidth: 0
                                 }}
                             >
-                                <button
+                                <IconButton
                                     type="button"
                                     onClick={this.togglePullRequests}
                                     title={showPullRequests ? "Hide Pull Requests" : "Show Pull Requests"}
                                     aria-label={showPullRequests ? "Hide Pull Requests" : "Show Pull Requests"}
                                     aria-pressed={showPullRequests}
-                                    style={prButtonStyle}
+                                    active={showPullRequests}
                                 >
                                     <GoGitPullRequest size={16} />
-                                </button>
+                                </IconButton>
 
-                                <strong>{panelHeader}</strong>
-                                 <button
+                                <div className="ib-build-identity">
+                                  <strong>{panelHeader}</strong>
+                                  {panelHeader.match(/\d{4}-\d{2}-\d{2}-\d{4}/) && <span className="ib-build-timestamp" title="Timestamp from build tag; timezone is not provided by the dataset">{panelHeader.match(/\d{4}-\d{2}-\d{2}-\d{4}/)[0].replace(/-(\d{2})(\d{2})$/, ' · $1:$2')} · tag time (zone unspecified)</span>}
+                                </div>
+                                 <IconButton
                                     type="button"
                                     onClick={(e) => this.copyToClipboard(e, panelHeader)}
                                     title={`Copy ${panelHeader}`}
                                     aria-label={`Copy ${panelHeader}`}
-                                    style={copyButtonStyle}
+
                                 >
                                     {this.state.copiedText === panelHeader ? (
-                                        <span style={{ fontSize: '12px' }}>✓</span>
+                                        <span style={{ fontSize: "var(--ui-type-caption)" }}>✓</span>
                                     ) : (
                                         <FaCopy size={12} />
                                     )}
-                                </button>
+                                </IconButton>
                             </div>
 
                             <span
@@ -303,18 +260,19 @@ class IBGroupFrame extends PureComponent {
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     color: '#1d4ed8',
-                                    fontSize: '0.95rem',
+                                    fontSize: "var(--ui-type-heading)",
                                     marginLeft: 'auto'
                                 }}
                             >
-                                {isCollapsed ? <FaEyeSlash /> : <FaEye />}
+                                {isCollapsed ? <FaEyeSlash /> : <FaEye />}<span className="ib-collapse-label">{isCollapsed ? 'Expand' : 'Collapse'}</span>
                             </span>
                         </>
                     )}
                 </Card.Header>
+                {!this.props.previousIbLookup && <ComparisonContext builds={IBGroup} comparisons={this.props.comparisons || new Map()} />}
 
                 {!isCollapsed && (
-                    <Card.Body style={{ padding: "0.25rem 0.5rem 0.5rem 0.5rem", overflowX: "auto" }}>
+                    <Card.Body className="ib-release-panel-body">
                         {statusLabels}
                         {comparisonTable}
 

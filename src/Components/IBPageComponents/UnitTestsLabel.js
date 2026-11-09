@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from 'react';
+import StatusDot from "../common/StatusDot";
+import { testGroupState } from "../../Utils/buildStatus";
 import { SiNvidia, SiAmd } from "react-icons/si";
 import PropTypes from 'prop-types';
 import { Dropdown, Form } from 'react-bootstrap';
@@ -82,6 +84,7 @@ const UnitTestsLabel = ({ tests = {}, type_name }) => {
 
   if (!tests || Object.keys(tests).length === 0) return null;
 
+  const summaryState = testGroupState(tests, 'num_fails');
   const anyFailure = Object.values(tests).some(
     (t) => Number(t.details?.num_fails) > 0
   );
@@ -204,12 +207,13 @@ const UnitTestsLabel = ({ tests = {}, type_name }) => {
     <Dropdown className="d-inline-block me-1" autoClose="outside">
       <Dropdown.Toggle
       variant="light"
+        className="ib-section-pill"
       size="sm"
         id={`${type_name}-unit-tests-toggle`}
         style={toggleStyle}
-        title={anyFailure ? 'Has failures' : 'All tests passed'}
+        title={`${summaryState.status === 'danger' ? 'Failures' : summaryState.status === 'warning' ? 'Warnings' : summaryState.status === 'success' ? 'Passed' : 'Unknown'}${summaryState.running ? ' · running' : ''}`}
       >
-        {current.icon}
+        <StatusDot {...summaryState} size={22} />
         <span>{current.title}</span>
         {/* {anyFailure ? (
           <FaExclamationTriangle className="ms-1" />
