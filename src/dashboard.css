@@ -203,6 +203,21 @@ body { font-family: var(--ui-font-sans); -webkit-font-smoothing: antialiased; }
 .ib-architecture-toolchain { display: flex; flex-direction: column; align-items: center; gap: var(--ui-space-1); font-family: var(--ui-font-mono); font-size: var(--ui-type-caption); font-weight: 400; color: var(--ui-text-secondary); white-space: nowrap; }
 .ib-architecture-platform { display: inline-flex; flex-direction: column; align-items: center; gap: var(--ui-space-1); padding: var(--ui-space-1); border: 1px solid var(--ui-border-strong); border-radius: var(--ui-radius-control); background: var(--ui-surface-muted); }
 .ib-architecture-value { display: inline-block; padding-inline: var(--ui-space-1); }
+.ib-config-passed { --ib-config-tone: #2b9f60; --ib-config-bg: #eff9f4; }
+.ib-config-failed { --ib-config-tone: #df3943; --ib-config-bg: #fff0f3; }
+.ib-config-warnings { --ib-config-tone: #c47b00; --ib-config-bg: #fff7e2; }
+.ib-config-running { --ib-config-tone: #2f70ed; --ib-config-bg: #eef3ff; }
+.ib-config-unknown { --ib-config-tone: #718096; --ib-config-bg: #f4f6f9; }
+.ib-matrix-section .table thead th.ib-family-header { background: #ecf1f8 !important; height: 42px; }
+.ib-family-header .flavor-card { background: transparent !important; gap: 7px; font-size: 10px !important; letter-spacing: .06em; }
+.ib-family-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ib-config-tone); flex: none; }
+.ib-config-unknown .ib-family-dot { background: transparent; border: 1px solid var(--ib-config-tone); }
+.ib-matrix-section .table thead th.ib-config-header { background: var(--ib-config-bg) !important; border-top: 3px solid var(--ib-config-tone) !important; vertical-align: top; height: 140px; }
+.ib-config-header .ib-architecture-header { align-items: center; gap: 7px; padding: 8px 3px; }
+.ib-config-header .ib-architecture-platform { background: var(--ui-surface-muted); font-size: 12px; }
+.ib-config-status { display: inline-flex; align-items: center; gap: 5px; color: var(--ib-config-tone); font: 600 10px var(--ui-font-sans); white-space: nowrap; }
+.ib-config-status-mark { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; color: white; background: var(--ib-config-tone); font-size: 13px; }
+.ib-config-unknown .ib-config-status-mark { color: var(--ib-config-tone); background: transparent; border: 1px solid var(--ib-config-tone); }
 .ib-table-responsive th a { text-decoration: none; }
 .ib-table-responsive th a:hover { text-decoration: underline; }
 .ib-workspace[data-density="compact"] {

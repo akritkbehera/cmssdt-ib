@@ -97,6 +97,23 @@ const removeKeysFromDetails = (details, keysToRemove = []) => {
 
 const formatFlavorLabel = (value) => getDisplayName(value).replace(/_X$/, '');
 
+// Header status describes the build stage for this exact configuration.
+function buildHeaderStatus(ib, arch) {
+  const matches = (ib?.builds || []).filter(result => result.arch === arch);
+  if (matches.length !== 1) return 'unknown';
+  const result = matches[0];
+  if (result.done === false) return 'running';
+  if ([false, 'error', 'failed'].includes(result.passed)) return 'failed';
+  if (result.passed === 'warning') return 'warnings';
+  if ([true, 'passed'].includes(result.passed)) return 'passed';
+  return 'unknown';
+}
+
+function familyBuildStatus(ib, archs) {
+  const states = archs.map(arch => buildHeaderStatus(ib, arch));
+  return ['failed', 'running', 'warnings', 'unknown', 'passed'].find(state => states.includes(state)) || 'unknown';
+}
+
 function makeSafeId(value) {
   return String(value || 'unknown').replace(/[^a-zA-Z0-9_-]/g, '-');
 }
@@ -796,7 +813,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
                   return (
                     <th
                       key={`flavor-${pos}-${item.flavor}`}
-                      className="ib-group-start"
+                      className={`ib-group-start ib-family-header ib-config-${familyBuildStatus(data[pos], item.archs)}`}
                       colSpan={item.archs.length}
                       style={{
                         textAlign: 'center',
@@ -814,11 +831,13 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
                             title={`Open ${releaseNameToCopy}`}
                           >
                             <div className="flavor-card" style={flavorCardStyle}>
+                              <span className="ib-family-dot" aria-hidden="true" />
                               {flavorLabel}
                             </div>
                           </a>
                         ) : (
                           <div className="flavor-card" style={flavorCardStyle} title={flavorLabel}>
+                            <span className="ib-family-dot" aria-hidden="true" />
                             {flavorLabel}
                           </div>
                         )}
@@ -867,7 +886,8 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
                       )
                     : null;
 
-                  const archStack = <ArchitectureHeader architecture={arch} icon={buildTypePrefixIcon} />;
+                  const headerStatus = buildHeaderStatus(data[pos], arch);
+                  const archStack = <ArchitectureHeader architecture={arch} icon={buildTypePrefixIcon} status={headerStatus} />;
 
                   const cellContent = link ? (
                     <OverlayTrigger
@@ -890,7 +910,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
                   return (
                     <th
                       key={`arch-${pos}-${arch}`}
-                      className={archIndex === 0 ? "ib-group-start" : undefined}
+                      className={`ib-config-header ib-config-${headerStatus} ${archIndex === 0 ? "ib-group-start" : ""}`}
                       style={{
                         padding: '3px 2px',
                         backgroundColor: THEME.light,
