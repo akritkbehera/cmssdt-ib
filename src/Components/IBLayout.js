@@ -1,3 +1,4 @@
+import DashboardDensity from "./common/DashboardDensity";
 import React, { Component } from 'react';
 import _ from 'underscore';
 import ToggleButtonGroupControlled from "./TogglesShowIBFlawors";
@@ -47,8 +48,7 @@ class IBLayout extends Component {
             error: null,
             isUnauthorized: false,
             isNetworkError: false,
-            //showAllPullRequests: true
-            showAllPullRequests: localStorage.getItem(PR_PREF_KEY) === null ?  true : localStorage.getItem(PR_PREF_KEY) === "true"            
+            showAllPullRequests: localStorage.getItem(PR_PREF_KEY) === "true"
         };
     }
     toggleAllPullRequests = () => {
@@ -297,8 +297,10 @@ class IBLayout extends Component {
                     archControl={<TogglesShowArchs releaseQue={releaseQue} />}
                 />
 
+                <DashboardDensity release={releaseQue}>
                 <IBGroupsWithArch
                     data={filteredData}
+                    comparisonData={this.state.dataList}
                     releaseQue={releaseQue}
                     showAllPullRequests={showAllPullRequests}
                     loading={loading}
@@ -307,6 +309,7 @@ class IBLayout extends Component {
                     isNetworkError={isNetworkError}
                     loadingText={`Loading ${releaseQue || 'release'} builds...`}
                 />
+                </DashboardDensity>
             </div>
         );
     }

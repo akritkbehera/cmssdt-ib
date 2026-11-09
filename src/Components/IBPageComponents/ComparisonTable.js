@@ -1,6 +1,13 @@
-import React, { useMemo, useState } from 'react';
+import { shadeStageOutliers } from "../../Utils/matrixHeat";
+import { stages } from "../../Utils/resultDelta";
+import { compareCell } from "../../Utils/ibComparison";
+import BuildSummary from "../common/BuildSummary";
+import { summarizeMatrix } from "../../Utils/matrixSummary";
+import ArchitectureHeader from "../common/ArchitectureHeader";
+import { tableTheme as THEME } from "../../styles/theme";
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { OverlayTrigger, Table, Tooltip } from "react-bootstrap";
+import { Button, ButtonGroup, OverlayTrigger, Table, Tooltip } from "react-bootstrap";
 import {
   checkLabelType,
   getAllActiveArchitecturesFromIBGroupByFlavor,
@@ -33,140 +40,44 @@ import {
 
 const { tooltipDelayInMs, urls } = config;
 
-const THEME = {
-  primary: '#64748b',
-  primaryLight: '#94a3b8',
-  primaryDark: '#475569',
-  secondary: '#64748b',
-  success: '#5EB85E',
-  successLight: '#79C779',
-  successDark: '#3E9A3E',
-  warning: '#f59e0b',
-  warningLight: '#fbbf24',
-  warningDark: '#d97706',
-  danger: '#ef4444',
-  dangerLight: '#f87171',
-  dangerDark: '#dc2626',
-  info: '#3b82f6',
-  infoLight: '#60a5fa',
-  infoDark: '#2563eb',
-  dark: '#1e293b',
-  light: '#f8fafc',
-  border: '#e2e8f0',
-  borderDark: '#cbd5e1',
-  hover: '#f1f5f9',
-  text: {
-    primary: '#0f172a',
-    secondary: '#475569',
-    muted: '#64748b',
-    light: '#f8fafc'
-  }
-};
 
-const sphereStyles = {
-  sphere: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: '30px',
-    height: '30px',
-    borderRadius: '50%',
-    padding: '0 7px',
-    color: 'white',
-    fontSize: '0.78rem',
-    fontWeight: 700,
-    textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-    transition: 'all 0.2s ease',
-    cursor: 'pointer',
-    border: '1px solid rgba(255,255,255,0.2)',
-    position: 'relative',
-  },
-  sphereSuccess: {
-    background: `radial-gradient(circle at 30% 25%, ${THEME.successLight} 0%, ${THEME.success} 50%, ${THEME.successDark} 90%)`,
-    boxShadow: '0 4px 10px -2px rgba(16, 185, 129, 0.4), inset 0 -3px 0 rgba(0,0,0,0.2)',
-  },
-  sphereDanger: {
-    background: `radial-gradient(circle at 30% 25%, ${THEME.dangerLight} 0%, ${THEME.danger} 50%, ${THEME.dangerDark} 90%)`,
-    boxShadow: '0 4px 10px -2px rgba(239, 68, 68, 0.4), inset 0 -3px 0 rgba(0,0,0,0.2)',
-  },
-  sphereWarning: {
-    background: `radial-gradient(circle at 30% 25%, ${THEME.warningLight} 0%, ${THEME.warning} 50%, ${THEME.warningDark} 90%)`,
-    boxShadow: '0 4px 10px -2px rgba(245, 158, 11, 0.4), inset 0 -3px 0 rgba(0,0,0,0.2)',
-  },
-  sphereSecondary: {
-    background: `radial-gradient(circle at 30% 25%, #9ca3af 0%, ${THEME.secondary} 50%, #4b5563 90%)`,
-    boxShadow: '0 4px 10px -2px rgba(100, 116, 139, 0.4), inset 0 -3px 0 rgba(0,0,0,0.2)',
-  },
-  sphereInfo: {
-    background: `radial-gradient(circle at 30% 25%, ${THEME.infoLight} 0%, ${THEME.info} 50%, ${THEME.infoDark} 90%)`,
-    boxShadow: '0 4px 10px -2px rgba(59, 130, 246, 0.4), inset 0 -3px 0 rgba(0,0,0,0.2)',
-  },
-  sphereHover: {
-    transform: 'translateY(-2px) scale(1.06)',
-  },
-  sphereGlow: {
-    position: 'absolute',
-    top: '0',
-    left: '0',
-    right: '0',
-    bottom: '0',
-    borderRadius: '50%',
-    background: 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 60%)',
-    pointerEvents: 'none',
-  },
-  sphereReflection: {
-    position: 'absolute',
-    top: '10%',
-    left: '10%',
-    width: '30%',
-    height: '30%',
-    borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 80%)',
-    pointerEvents: 'none',
-  }
-};
 
 const FLAVOR_CARDS = Array.from({ length: 6 }).map(() => ({
-  bg: 'linear-gradient(135deg, #64748b 0%, #475569 100%)',
-  text: '#ffffff',
+  bg: 'var(--ui-surface-muted)',
+  text: 'var(--ui-text-secondary)',
   border: '#334155',
-  shadow: '0 2px 4px -2px rgba(0,0,0,0.1)'
+  shadow: 'none'
 }));
 
 const statusStyles = {
   success: {
-    sphereStyle: sphereStyles.sphereSuccess,
     sphereIcon: <FaCheck size={12} />,
     description: 'All tests passed successfully',
   },
   danger: {
-    sphereStyle: sphereStyles.sphereDanger,
     sphereIcon: <FaTimes size={12} />,
     description: 'Build or tests failed',
   },
   warning: {
-    sphereStyle: sphereStyles.sphereWarning,
     sphereIcon: <FaExclamationTriangle size={12} />,
     description: 'Warnings detected',
   },
   secondary: {
-    sphereStyle: sphereStyles.sphereSecondary,
     sphereIcon: <FaQuestionCircle size={12} />,
     description: 'Status unknown',
   },
   info: {
-    sphereStyle: sphereStyles.sphereInfo,
     sphereIcon: <FaPlay size={12} />,
     description: 'Tests in progress',
   }
 };
 
 const rowLabelConfig = {
-  builds: { text: 'Builds', icon: <FaCubes size={12} /> },
-  utests: { text: 'Unit', icon: <FaVial size={12} /> },
+  builds: { text: 'Build', icon: <FaCubes size={12} /> },
+  utests: { text: 'Unit tests', icon: <FaVial size={12} /> },
   relvals: { text: 'RelVal', icon: <FaLayerGroup size={12} /> },
   addons: { text: 'AddOn', icon: <FaPlus size={12} /> },
-  dupDict: { text: 'Q/A', icon: <FaClipboardList size={12} /> }
+  dupDict: { text: 'Q/A duplicates', icon: <FaClipboardList size={12} /> }
 };
 
 const checkIfItIsAPatch = (current_tag, architecture, tagName) => {
@@ -263,7 +174,7 @@ const StatusTooltip = ({ status, value, details, type }) => {
   return (
     <div className="text-start p-3" style={{ minWidth: '250px' }}>
       <div className="d-flex align-items-center border-bottom pb-2 mb-2">
-        <div style={{ ...sphereStyles.sphere, ...style.sphereStyle, width: '24px', height: '24px' }}>
+        <div className={`ib-status-marker ib-status-${status} ${status === "success" ? "is-pass" : status === "danger" ? "is-fail" : ""} ${running ? "is-running" : ""}`}>
           {style.sphereIcon}
         </div>
         <span className="fw-semibold ms-2">{type || 'Status'} Information</span>
@@ -275,15 +186,7 @@ const StatusTooltip = ({ status, value, details, type }) => {
           <span className="text-muted small fw-semibold">Current Status:</span>
         </div>
         <div className="d-flex align-items-center mt-1">
-          <div
-            style={{
-              ...sphereStyles.sphere,
-              ...style.sphereStyle,
-              width: '28px',
-              height: '28px',
-              marginRight: '8px'
-            }}
-          >
+          <div className={`ib-status-marker ib-status-${status} ${status === "success" ? "is-pass" : status === "danger" ? "is-fail" : ""} ${running ? "is-running" : ""}`}>
             {style.sphereIcon}
           </div>
           <span className="small">{style.description}</span>
@@ -326,7 +229,7 @@ function renderTooltip(cellContent, tooltipContent, tooltipId = 'tooltip-status'
   );
 }
 
-function renderCell(cellInfo, key) {
+function baseRenderCell(cellInfo, key) {
   return (
     <td key={key} className="align-middle p-1" style={{ textAlign: 'center', verticalAlign: 'middle' }}>
       {cellInfo}
@@ -334,7 +237,7 @@ function renderCell(cellInfo, key) {
   );
 }
 
-function renderSphere({ status = "secondary", value, icon, link, tooltipContent, details, type, tooltipId } = {}) {
+function renderStatusMarker({ status = "secondary", value, icon, link, tooltipContent, details, type, tooltipId, running = false } = {}) {
   const style = statusStyles[status] || statusStyles.secondary;
   const displayValue = value !== undefined ? value : '';
 
@@ -348,30 +251,12 @@ function renderSphere({ status = "secondary", value, icon, link, tooltipContent,
     ? null
     : (icon === null ? null : (icon || style.sphereIcon));
 
+  const metric = type?.toLowerCase().includes('build') ? (status === 'warning' ? 'compiler warnings' : 'build errors') : type === 'Q/A' ? 'duplicate-check outcome' : 'test results';
   const sphereContent = (
-    <div
-      className={`enhanced-sphere ${status === 'success' ? 'sphere-success' : ''}`}
-      style={{
-        ...sphereStyles.sphere,
-        ...style.sphereStyle,
-        minWidth: String(displayValue).length > 2 ? '36px' : '30px',
-        width: 'auto',
-        borderRadius: '50%',
-      }}
-      onMouseEnter={(e) => {
-        Object.assign(e.currentTarget.style, sphereStyles.sphereHover);
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0) scale(1)';
-      }}
-    >
-      <div style={sphereStyles.sphereGlow} />
-      <div style={sphereStyles.sphereReflection} />
-      <div style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center' }}>
-        {resolvedIcon}
-        <span className={resolvedIcon ? 'ms-1' : ''}>{displayValue}</span>
-      </div>
-    </div>
+    <span className={`ib-status-marker ib-status-${status} ${status === "success" ? "is-pass" : status === "danger" ? "is-fail" : ""} ${running ? "is-running" : ""}`}
+      role="img" data-result-status={status} data-running={running || undefined} data-result-count={hasNumericValue ? Number.parseFloat(displayValue) : undefined} title={`${displayValue} ${metric}`} aria-label={`${running ? "Running — partial result. " : ""}${type || 'Test'}: ${statusStyles[status]?.description || 'Unknown'}${hasNumericValue ? ` (${displayValue} ${metric})` : ''}`}>
+      <span className="ib-status-circle dot" aria-hidden="true"><span className="ib-status-fill" /><span className="ib-status-sweep" /><span className="ib-status-glyph">{status === 'success' || status === 'danger' ? <svg viewBox="0 0 16 16"><path d={status === 'success' ? 'M3.5 8.4l3 3 6-6.4' : 'M4.5 4.5l7 7M11.5 4.5l-7 7'} /></svg> : style.sphereIcon}</span></span>{hasNumericValue && <span className="ib-status-count">{displayValue}</span>}
+    </span>
   );
 
   const enhancedTooltip = tooltipContent || (
@@ -448,9 +333,12 @@ const copyText = (text) => {
   }
 };
 
-const ComparisonTable = ({ data = [], releaseQue }) => {
+const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => {
   const [copiedText, setCopiedText] = useState(null);
-  const { getActiveArchsForQue = () => [], getColorsSchemeForQue = () => ({}) } = useShowArch();
+  const [failuresOnly, setFailuresOnly] = useState(false);
+  const [hasOverflow, setHasOverflow] = useState(false);
+  const tableContainer = useRef(null);
+  const { getActiveArchsForQue = () => [] } = useShowArch();
 
   const handleCopy = (e, text) => {
     e.preventDefault();
@@ -465,7 +353,6 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
   };
 
   const activeArchs = getActiveArchsForQue(releaseQue);
-  const archColorScheme = getColorsSchemeForQue(releaseQue);
 
   const { que, date } = useMemo(() => {
     if (data[0]) {
@@ -480,6 +367,52 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
     [data, activeArchs]
   );
 
+  useEffect(() => {
+    const container = tableContainer.current;
+    if (!container) return undefined;
+    const measure = () => setHasOverflow(container.scrollWidth > container.clientWidth + 1);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(container);
+    const table = container.querySelector('table');
+    if (table) observer.observe(table);
+    return () => observer.disconnect();
+  }, [archsByIb]);
+
+  function renderCell(cellInfo, key) {
+    const [stage, position] = key.split('-');
+    const ib = data[Number(position)];
+    const arch = (ib?.tests_archs || []).filter(value => key === `${stage}-${position}-${value}` || key.startsWith(`${stage}-${position}-${value}-`)).sort((a, b) => b.length - a.length)[0];
+    const candidates = ib?.[stage]?.filter(item => item.arch === arch) || [];
+    const current = candidates.length === 1 ? candidates[0] : null;
+    const context = comparisons.get(ib);
+    const delta = stages.includes(stage) ? compareCell(ib, context, stage, arch) : null;
+    const running = current?.done === false;
+    let hasMarker = false;
+    const decorate = node => {
+      if (Array.isArray(node)) return node.map(decorate);
+      if (!React.isValidElement(node)) return node;
+      if (node.props['data-result-status']) {
+        hasMarker = true;
+        const status = node.props['data-result-status'];
+        const label = status === 'success' ? 'Running — passing so far' : status === 'danger' ? 'Running — failures detected' : 'Running — partial result';
+        return React.cloneElement(node, { className: `${node.props.className} ${running ? 'is-running' : ''}`, 'data-running': running || undefined, 'aria-label': `${running ? label : current?.done === true ? "Completed" : "Reported"}. ${node.props['aria-label']}` });
+      }
+      const extra = running && node.props.overlay ? { overlay: React.cloneElement(node.props.overlay, {}, <><strong>Running — partial results, not final.</strong>{node.props.overlay.props.children}</>) } : {};
+      return React.cloneElement(node, extra, decorate(node.props.children));
+    };
+    let content = decorate(cellInfo);
+    if (running && !hasMarker) content = renderStatusMarker({ status: 'secondary', value: ' ', running: true, type: stage });
+    const boundary = arch === archsByIb[Number(position)]?.archs[0];
+    return <td key={key} className={`align-middle ib-result-cell ${boundary ? 'ib-group-start' : ''}`}>
+      {content}
+      {delta && !running && <div className="ib-cell-comparison" title={delta.detail}>
+        {delta.label && <span className={`ib-result-delta ${delta.novel ? 'ib-novel-failure' : `ib-delta-${delta.tone || 'secondary'}`}`} aria-label={delta.detail}>{delta.label}</span>}
+        {delta.metrics?.map(metric => <span key={metric.key} className={`ib-result-delta ib-delta-${metric.tone}`} title={`${metric.key}: previous ${metric.previous}, current ${metric.current}; ${delta.detail}`} aria-label={`${metric.key}: ${delta.detail}`}>{metric.label}</span>)}
+      </div>}
+    </td>;
+  }
+
   const renderRowCells = ({ resultType, ifWarning, ifError, ifFailed, ifPassed, ifUnknown }) => {
     return data.map((ib, pos) => {
       const el = archsByIb[pos];
@@ -492,7 +425,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
 
         if (_.isEmpty(results)) {
           return renderCell(
-            renderSphere({
+            renderStatusMarker({
               status: 'secondary',
               icon: <FaQuestionCircle />,
               value: '?',
@@ -510,7 +443,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
             return ifPassed
               ? ifPassed(results, ib.release_name, cellKey)
               : renderCell(
-                  renderSphere({
+                  renderStatusMarker({
                     status: 'success',
                     icon: <FaCheck />,
                     value: results.details?.num_passed || '✓',
@@ -526,7 +459,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
             return ifError
               ? ifError(results, ib.release_name, cellKey)
               : renderCell(
-                  renderSphere({
+                  renderStatusMarker({
                     status: 'danger',
                     icon: <FaTimes />,
                     value: results.details?.num_errors || '✗',
@@ -541,7 +474,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
             return ifFailed
               ? ifFailed(results, ib.release_name, cellKey)
               : renderCell(
-                  renderSphere({
+                  renderStatusMarker({
                     status: 'danger',
                     icon: <FaTimes />,
                     value: results.details?.num_fails || '!',
@@ -556,7 +489,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
             return ifWarning
               ? ifWarning(results, ib.release_name, cellKey)
               : renderCell(
-                  renderSphere({
+                  renderStatusMarker({
                     status: 'warning',
                     icon: null,
                     value: results.details?.num_warnings || '⚠',
@@ -571,7 +504,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
             return ifUnknown
               ? ifUnknown(arch, ib, cellKey)
               : renderCell(
-                  renderSphere({
+                  renderStatusMarker({
                     status: 'secondary',
                     icon: <FaQuestionCircle />,
                     value: ' ',
@@ -583,7 +516,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
                 );
 
           default:
-            return renderCell(<span className="text-muted">—</span>, `${cellKey}-default`);
+            return renderCell(renderStatusMarker({ status: 'secondary', value: '—', type: resultType, details: { status: results.passed || 'Not available' } }), `${cellKey}-default`);
         }
       });
     });
@@ -618,7 +551,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
     }
 
     if (labelConfig.value === 0) return renderCell(<span className="text-muted">—</span>, `${cellKey}-zero`);
-    if (done === false) labelConfig.value = `${labelConfig.value}*`;
+
 
     const status = labelConfig.colorType === 'danger'
       ? 'danger'
@@ -628,14 +561,13 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
           ? 'success'
           : 'secondary';
 
-    let resultType = 'Build';
-    if (getUrl === getOtherTestUrl) resultType = 'Other Tests';
+    const resultType = ({ builds: 'Build', utests: 'Unit tests', addons: 'AddOn', dupDict: 'Q/A duplicates' })[cellKey.split('-')[0]] || 'Test';
 
     const tooltipDetails = tooltipOptions.hideFile
       ? removeKeysFromDetails(details, ['file'])
       : details;
 
-    const cell = renderSphere({
+    const cell = renderStatusMarker({
       status,
       icon: statusIcons[status],
       value: labelConfig.value,
@@ -656,7 +588,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
     };
 
     if (labelConfig.value === 0) return renderCell(<span className="text-muted">—</span>, `${cellKey}-zero`);
-    if (done === false) labelConfig.value += '*';
+
 
     let selectedStatus = '';
     switch (labelConfig.colorType) {
@@ -681,7 +613,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
           ? 'success'
           : 'secondary';
 
-    const cell = renderSphere({
+    const cell = renderStatusMarker({
       status,
       icon: statusIcons[status],
       value: labelConfig.value,
@@ -704,53 +636,18 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
     }, 0) > 0;
   };
 
-  return (
+  const matrix = (
     <div className="container-fluid px-0">
       <div className="ib-table-frame">
+        {hasOverflow && <p className="ib-table-scroll-hint">Scroll horizontally to see all architectures <span aria-hidden="true">→</span></p>}
         <div
+          ref={tableContainer}
           className="table-responsive ib-table-responsive"
-          style={{
-            borderRadius: '8px',
-            border: `1px solid ${THEME.borderDark}`,
-            overflowX: 'auto',
-            overflowY: 'hidden',
-            WebkitOverflowScrolling: 'touch'
-          }}
+          tabIndex={hasOverflow ? 0 : undefined}
+          aria-label={hasOverflow ? "Build results table; scroll horizontally for more architectures" : undefined}
         >
           <style>
             {`
-              .table {
-                border-collapse: collapse !important;
-                width: 100% !important;
-                table-layout: auto !important;
-              }
-
-              .table > :not(caption) > * > * {
-                padding: 0.30rem 0.18rem !important;
-                border: 1px solid ${THEME.borderDark} !important;
-              }
-
-              .table thead th {
-                border: 1px solid ${THEME.borderDark} !important;
-                vertical-align: middle;
-              }
-
-              .table tbody tr:hover {
-                background-color: ${THEME.hover};
-              }
-
-              .name-column {
-                position: sticky;
-                left: 0;
-                background-color: ${THEME.light};
-                z-index: 10;
-                border-right: 2px solid ${THEME.borderDark} !important;
-                font-weight: 700;
-                width: 78px;
-                min-width: 78px;
-                text-align: center;
-              }
-
               .type-label-mobile,
               .type-header-mobile {
                 display: none;
@@ -761,15 +658,6 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-              }
-
-              .table thead tr:first-child th {
-                background: ${THEME.light};
-                border-bottom: 2px solid ${THEME.primary} !important;
-              }
-
-              .table thead tr:last-child th {
-                background: ${THEME.light};
               }
 
               .custom-tooltip .tooltip-inner {
@@ -838,11 +726,6 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
               }
 
               @media (max-width: 768px) {
-                .name-column {
-                  width: 42px !important;
-                  min-width: 42px !important;
-                  padding: 0.2rem 0.1rem !important;
-                }
 
                 .type-label-desktop,
                 .type-header-desktop {
@@ -870,23 +753,23 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
 
           <Table
             striped={false}
-            bordered
             hover
             className="mb-0 align-middle"
-            style={{ fontSize: '0.78rem' }}
+
           >
             <thead>
               <tr>
                 <th className="name-column" rowSpan={2} style={{ verticalAlign: 'middle' }}>
                   <div className="d-flex align-items-center justify-content-center h-100">
-                    <span className="type-header-desktop fw-bold text-uppercase" style={{ fontSize: '0.8rem' }}>
-                      Type
+                    <span className="type-header-desktop fw-bold text-uppercase" style={{ fontSize: "var(--ui-type-label)" }}>
+                      Stage
                     </span>
-                    <span className="type-header-mobile fw-bold text-uppercase" style={{ fontSize: '0.7rem' }} />
+                    <span className="type-header-mobile fw-bold text-uppercase" style={{ fontSize: "var(--ui-type-caption)" }} />
                   </div>
                 </th>
 
                 {archsByIb.map((item, pos) => {
+                  if (!item.archs?.length) return null;
                   if (!item.archs?.length) return null;
 
                   const flavorLabel = formatFlavorLabel(item.flavor);
@@ -899,12 +782,12 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
                   const flavorCardStyle = {
                     background: FLAVOR_CARDS[0].bg,
                     color: FLAVOR_CARDS[0].text,
-                    padding: '4px 8px',
-                    borderRadius: '4px',
+                    padding: 'var(--ui-space-1) var(--ui-space-2)',
+                    borderRadius: 'var(--ui-radius-sm)',
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '0.82rem',
+                    fontSize: "var(--ui-type-label)",
                     fontWeight: 800,
                     margin: '0 auto',
                     cursor: flavorLink ? 'pointer' : 'default'
@@ -913,6 +796,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
                   return (
                     <th
                       key={`flavor-${pos}-${item.flavor}`}
+                      className="ib-group-start"
                       colSpan={item.archs.length}
                       style={{
                         textAlign: 'center',
@@ -957,7 +841,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
               </tr>
 
               <tr>
-                {archsByIb.map((item, pos) => (item.archs || []).map((arch) => {
+                {archsByIb.map((item, pos) => (item.archs || []).map((arch, archIndex) => {
                   let link = null;
                   let isPatch = false;
                   let baseTag = '';
@@ -973,39 +857,17 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
                     }
                   }
 
-                  const archParts = arch.split("_");
+
 
                   const buildTypePrefixIcon = cmsdistTag && cmsdistTag !== "Not Found"
                     ? (
                         isPatch
-                          ? <FaTools size={15} style={{ color: '#facc15', marginRight: '6px' }} />
-                          : <FaWrench size={15} style={{ marginRight: '6px' }} />
+                          ? <span title="Patch build: reuses CMSDist tag"><FaTools size={15} /> Patch</span>
+                          : <span title="Full build: dedicated CMSDist tag"><FaWrench size={15} /> Full</span>
                       )
                     : null;
 
-                  const archStack = (
-                    <div className="arch-stack">
-                      {archParts.map((str, idx) => {
-                        const backgroundColor = archColorScheme[str] || THEME.secondary;
-                        const isFirstRow = idx === 0;
-
-                        return (
-                          <div key={`${arch}-${str}-${idx}`} className="arch-stack-item" style={{ backgroundColor }}>
-                            <strong
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                              }}
-                            >
-                              {isFirstRow && buildTypePrefixIcon}
-                              {str}
-                            </strong>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
+                  const archStack = <ArchitectureHeader architecture={arch} icon={buildTypePrefixIcon} />;
 
                   const cellContent = link ? (
                     <OverlayTrigger
@@ -1028,6 +890,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
                   return (
                     <th
                       key={`arch-${pos}-${arch}`}
+                      className={archIndex === 0 ? "ib-group-start" : undefined}
                       style={{
                         padding: '3px 2px',
                         backgroundColor: THEME.light,
@@ -1058,7 +921,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
 
                       if (_.isEmpty(results)) {
                         return renderCell(
-                          renderSphere({
+                          renderStatusMarker({
                             status: 'secondary',
                             icon: <FaQuestionCircle />,
                             value: '?',
@@ -1079,7 +942,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
                         case true:
                         case "passed":
                           return renderCell(
-                            renderSphere({
+                            renderStatusMarker({
                               status: 'success',
                               icon: <FaCheck />,
                               value: ' ',
@@ -1119,7 +982,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
                   </td>
                   {renderRowCells({
                     resultType: 'utests',
-                    ifPassed: (details, ibName, cellKey) => renderCell(renderSphere({
+                    ifPassed: (details, ibName, cellKey) => renderCell(renderStatusMarker({
                       status: 'success',
                       icon: <FaCheck />,
                       value: details.details?.num_passed || ' ',
@@ -1172,7 +1035,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
                   </td>
                   {renderRowCells({
                     resultType: 'addons',
-                    ifPassed: (details, ibName, cellKey) => renderCell(renderSphere({
+                    ifPassed: (details, ibName, cellKey) => renderCell(renderStatusMarker({
                       status: 'success',
                       icon: <FaCheck />,
                       value: ' ',
@@ -1181,7 +1044,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
                       link: getOtherTestUrl({ file: details.file, arch: details.arch, ibName }),
                       tooltipId: `${cellKey}-tooltip-passed`
                     }), `${cellKey}-passed`),
-                    ifError: (details, ibName, cellKey) => renderCell(renderSphere({
+                    ifError: (details, ibName, cellKey) => renderCell(renderStatusMarker({
                       status: 'danger',
                       icon: <FaTimes />,
                       value: ' ',
@@ -1203,7 +1066,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
                   </td>
                   {renderRowCells({
                     resultType: 'dupDict',
-                    ifPassed: (details, ibName, cellKey) => renderCell(renderSphere({
+                    ifPassed: (details, ibName, cellKey) => renderCell(renderStatusMarker({
                       status: 'success',
                       icon: <FaCheck />,
                       value: ' ',
@@ -1212,7 +1075,7 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
                       link: urls.q_a(details.arch, ibName),
                       tooltipId: `${cellKey}-tooltip-passed`
                     }), `${cellKey}-passed`),
-                    ifError: (details, ibName, cellKey) => renderCell(renderSphere({
+                    ifError: (details, ibName, cellKey) => renderCell(renderStatusMarker({
                       status: 'danger',
                       icon: <FaTimes />,
                       value: ' ',
@@ -1231,6 +1094,23 @@ const ComparisonTable = ({ data = [], releaseQue }) => {
         </div>
       </div>
     </div>
+  );
+  const counts = summarizeMatrix(matrix);
+  return (
+    <section className="ib-matrix-section" data-failures-only={failuresOnly} aria-label="Build test matrix">
+      <BuildSummary counts={counts} />
+      <ButtonGroup className="ib-result-filter" aria-label="Test results filter">
+        <Button variant="light" active={!failuresOnly} aria-pressed={!failuresOnly} onClick={() => setFailuresOnly(false)}>All results ({Object.values(counts).reduce((sum, count) => sum + count, 0)})</Button>
+        <Button variant="light" active={failuresOnly} aria-pressed={failuresOnly} onClick={() => setFailuresOnly(true)}>Failures only ({counts.danger})</Button>
+      </ButtonGroup>
+      {failuresOnly && counts.danger === 0 && <p className="ib-matrix-empty" role="status">No failed results in the selected architectures. Warnings remain available under All results.</p>}
+      {shadeStageOutliers(matrix)}
+      <details className="ib-matrix-help">
+        <summary>How to read results and comparisons</summary>
+      <p className="ib-matrix-legend">✓ passed · ✕ failed · ⚠ warning · ? unavailable. Build numbers count errors/warnings; Unit, RelVal and AddOn numbers count test results. Q/A is the reported duplicate-check outcome; ✕ is a failure, not “not run”. Linked cells open details. Darker failure pills indicate larger counts within the same stage, not necessarily regressions.</p>
+        <p className="ib-matrix-footnote">Stage counts describe reported outcomes for selected configurations, including partial results. A pulsing inner fill means running; final comparisons are withheld until completion. Only the latest IB in an exact queue/variant sequence has comparisons. Missing or ambiguous configurations never count as zero. Newly failing means a pass-to-fail transition, not a unique failure identity. Each metric delta compares the same named count; +passes is favorable, +failures is adverse. Unchanged counts have no delta. Baselines are drawn from the complete response available to this page, before filters.</p>
+      </details>
+    </section>
   );
 };
 

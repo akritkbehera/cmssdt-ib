@@ -2,6 +2,10 @@ import {checkLabelType, getCurrentIbTag} from "./Utils/processing";
 import _ from 'underscore';
 
 const cmssdt_server = import.meta.env.VITE_CMSSDT_SERVER || "";
+const ib_data_base = (import.meta.env.VITE_IB_DATA_BASE_URL || "").replace(/\/+$/, "");
+const cms_public_data_base = (
+    import.meta.env.VITE_CMS_PUBLIC_DATA_BASE_URL || "/SDT/public/cms-sw.github.io/data"
+).replace(/\/+$/, "");
 export const STATUS_ENUM = {
     found: "found",
     passed: "passed",
@@ -77,10 +81,11 @@ const urls = {
         {name: 'CMSDIST', url: 'https://github.com/cms-sw/cmsdist/issues'},
         {name: 'CMSSW IB page ', url: 'https://github.com/cms-sw/cmssdt-ib/issues'}
     ],
-    q_a: (arch, release_name) => '/SDT/cgi-bin/newQA.py?arch=' + arch + '&release=' + release_name,
-    dataDir: "/SDT/html/data/",
-    releaseStructure: "/SDT/html/data/structure.json",
-    latestIBSummary: "/SDT/html/data/LatestIBsSummary.json",
+    q_a: (arch, release_name) => `${cmssdt_server}/SDT/cgi-bin/newQA.py?arch=${arch}&release=${release_name}`,
+    dataDir: ib_data_base ? `${ib_data_base}/` : "/SDT/html/data/",
+    publicDataDir: cms_public_data_base,
+    releaseStructure: `${ib_data_base || "/SDT/html/data"}/structure.json`,
+    latestIBSummary: `${ib_data_base || "/SDT/html/data"}/LatestIBsSummary.json`,
     buildOrUnitTestUrl: `${cmssdt_server}/SDT/cgi-bin/showBuildLogs.py/`,
     scramDetailUrl: "http://cms-sw.github.io/scramDetail.html#",
     relvalLogDetailUrl: "https://cms-sw.github.io/relvalLogDetail.html#",
@@ -432,7 +437,7 @@ export const config = {
             name: "Material budget",
             key: "material_budget_v2",
             getUrl: function (ib, result) {
-                return "/SDT/jenkins-artifacts/material-budget/" + getCurrentIbTag(ib) + '/' + result.arch;
+                return `${cmssdt_server}/SDT/jenkins-artifacts/material-budget/` + getCurrentIbTag(ib) + '/' + result.arch;
             }
         },
         {
@@ -441,7 +446,7 @@ export const config = {
             glyphicon: "glyphicon-ok",
             glyphiconWarning: "glyphicon-remove",
             getUrl: function (ib, result) {
-                return "/SDT/jenkins-artifacts/material-budget/" + getCurrentIbTag(ib) + '/' + result.arch + "/comparison";
+                return `${cmssdt_server}/SDT/jenkins-artifacts/material-budget/` + getCurrentIbTag(ib) + '/' + result.arch + "/comparison";
             },
             ifFound: function(ib, result) {
                 const results = result.results;

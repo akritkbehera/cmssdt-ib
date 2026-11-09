@@ -132,10 +132,12 @@ class StatusLabels extends Component {
       tooltip
     });
 
+    const severity = labelColor === 'red' ? 'danger' : labelColor === 'orange' ? 'warning' : variant;
+    const statusIcon = severity === 'danger' ? ICON_MAP.error : severity === 'warning' ? ICON_MAP.warning : icon;
     const content = (
       <>
-        {icon && <span className="me-1" style={{ color: colors.text }}>{icon}</span>}
-        <span style={{ color: colors.text }}>{name}</span>
+        {statusIcon && <span className="me-1" style={{ color: colors.text }}>{statusIcon}</span>}
+        <span style={{ color: colors.text }}>{name}</span>{url && <span aria-hidden="true">↗</span>}
       </>
     );
 
@@ -151,11 +153,12 @@ class StatusLabels extends Component {
         <a
           key={`label-${name}-${url || "no-url"}`}
           href={url}
-          className="me-1"
+          className="me-1 ib-tool-link"
+          data-severity={severity}
           style={{ ...style, ...hoverStyle }}
           target="_blank"
           rel="noopener noreferrer"
-          title={tooltip}
+          title={tooltip || `Open ${name} details (new tab)`}
         >
           {content}
         </a>
@@ -163,7 +166,7 @@ class StatusLabels extends Component {
     }
 
     return (
-      <span key={`label-${name}-${tooltip || "no-tooltip"}`} className="me-1" style={style} title={tooltip}>
+      <span key={`label-${name}-${tooltip || "no-tooltip"}`} data-severity={severity} className="me-1" style={style} title={tooltip}>
         {content}
       </span>
     );
@@ -309,10 +312,12 @@ class StatusLabels extends Component {
       const colors = COLOR_SCHEME[variant] || COLOR_SCHEME.secondary;
 
       let mainIcon = null;
-      if (hasInProgress) {
-        mainIcon = ICON_MAP.refresh;
-      } else if (hasDanger) {
+      if (hasDanger) {
         mainIcon = ICON_MAP.error;
+      } else if (hasWarning) {
+        mainIcon = ICON_MAP.warning;
+      } else if (hasInProgress) {
+        mainIcon = ICON_MAP.refresh;
       } else if (allSuccessLikeOrPending && hasAtLeastOneSuccessLike) {
         mainIcon = ICON_MAP.success;
       } else if (hasWarning) {
@@ -320,7 +325,7 @@ class StatusLabels extends Component {
       }
 
     return (
-      <Dropdown key={`group-${title}`} className="d-inline-block me-1" autoClose="outside">
+      <Dropdown key={`group-${title}`} className="d-inline-block me-1" data-severity={variant} autoClose="outside">
         <Dropdown.Toggle
           variant="light"
           size="sm"
@@ -545,7 +550,9 @@ class StatusLabels extends Component {
       menuData.push(StatusLabels.formatLabel(item));
     });
 
-    const validMenuData = menuData.filter((item) => item != null);
+    const severityOrder = { danger: 0, warning: 1, info: 2, success: 3, secondary: 4 };
+    const validMenuData = menuData.filter((item) => item != null).sort((a, b) =>
+      (severityOrder[a.props?.['data-severity']] ?? 5) - (severityOrder[b.props?.['data-severity']] ?? 5));
 
     return (
      <div className="d-flex flex-wrap align-items-center" style={{  marginLeft: "15px" }}>

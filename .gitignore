@@ -29,3 +29,5 @@ SDT/
 
 # for reference only
 src/relvals.js
+
+/dist/
