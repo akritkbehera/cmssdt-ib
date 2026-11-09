@@ -200,7 +200,9 @@ body { font-family: var(--ui-font-sans); -webkit-font-smoothing: antialiased; }
 .ib-workspace-toolbar .btn { min-height: var(--ui-control-target); font-size: var(--ui-type-label); }
 .ib-architecture-header { display: flex; flex-direction: column; gap: var(--ui-space-1); padding: var(--ui-space-1); text-align: center; }
 .ib-architecture-platform { font-size: var(--ui-type-label); color: var(--ui-text); font-weight: 600; white-space: nowrap; }
-.ib-architecture-toolchain { font-family: var(--ui-font-mono); font-size: var(--ui-type-caption); font-weight: 400; color: var(--ui-text-secondary); white-space: nowrap; }
+.ib-architecture-toolchain { display: flex; flex-direction: column; align-items: center; gap: var(--ui-space-1); font-family: var(--ui-font-mono); font-size: var(--ui-type-caption); font-weight: 400; color: var(--ui-text-secondary); white-space: nowrap; }
+.ib-architecture-platform { display: inline-flex; flex-direction: column; align-items: center; gap: var(--ui-space-1); padding: var(--ui-space-1); border: 1px solid var(--ui-border-strong); border-radius: var(--ui-radius-control); background: var(--ui-surface-muted); }
+.ib-architecture-value { display: inline-block; padding-inline: var(--ui-space-1); }
 .ib-table-responsive th a { text-decoration: none; }
 .ib-table-responsive th a:hover { text-decoration: underline; }
 .ib-workspace[data-density="compact"] {
@@ -245,8 +247,7 @@ body { font-family: var(--ui-font-sans); -webkit-font-smoothing: antialiased; }
 .ib-matrix-section .table tbody tr:hover > td { background: var(--ui-surface-muted); }
 .ib-matrix-footnote, .ib-matrix-empty { margin: 0; padding: var(--ui-space-3); color: var(--ui-text-secondary); font-size: var(--ui-type-caption); }
 /* Retain column positions for comparisons; hide non-failure links from focus too. */
-.ib-matrix-section[data-failures-only="true"] tbody tr:not(:has([data-result-status="danger"])) { display: none; }
-.ib-matrix-section[data-failures-only="true"] tbody td:not(.name-column):not(:has([data-result-status="danger"])) > * { visibility: hidden; }
+.ib-matrix-section[data-failures-only="true"] tbody td:not(.name-column):not(:has([data-result-status="danger"])) > * { opacity: .3; }
 .ib-matrix-section .type-label-desktop { display: inline-flex !important; }
 .ib-matrix-section .type-label-mobile { display: none !important; }
 .ib-matrix-section td a { display: inline-flex; align-items: center; justify-content: center; min-width: var(--ui-control-target); min-height: var(--ui-control-target); border-radius: var(--ui-radius-control); }
@@ -266,8 +267,8 @@ body { font-family: var(--ui-font-sans); -webkit-font-smoothing: antialiased; }
 .ib-delta-danger { color: var(--ui-danger-text); }
 .ib-delta-success { color: var(--ui-success-dark); }
 .ib-delta-secondary { color: var(--ui-text-secondary); }
-.ib-matrix-section[data-failures-only="true"] .ib-result-delta { visibility: hidden; }
-.ib-matrix-section[data-failures-only="true"] td:has([data-result-status="danger"]) .ib-result-delta { visibility: visible; }
+.ib-matrix-section[data-failures-only="true"] .ib-result-delta { opacity: .3; }
+.ib-matrix-section[data-failures-only="true"] td:has([data-result-status="danger"]) .ib-result-delta { opacity: 1; }
 .ib-matrix-section .table thead th.ib-flavor-boundary { border-left: 1px solid var(--ui-border-strong); }
 .ib-architecture-toolchain { font-size: var(--ui-type-label); color: var(--ui-text-secondary); }
 .ib-collapse-label { font-size: var(--ui-type-caption); color: var(--ui-text-secondary); margin-left: var(--ui-space-1); }
@@ -291,7 +292,7 @@ body { font-family: var(--ui-font-sans); -webkit-font-smoothing: antialiased; }
 .ib-matrix-help summary { cursor: pointer; width: fit-content; padding-block: var(--ui-space-1); }
 .ib-matrix-help summary:focus-visible { outline: var(--ui-focus-ring); }
 .ib-matrix-help p { padding-inline: 0; margin-block: var(--ui-space-2); }
-.ib-matrix-section[data-failures-only="true"] td:not(:has([data-result-status="danger"])) .ib-cell-comparison { visibility: hidden; }
+.ib-matrix-section[data-failures-only="true"] td:not(:has([data-result-status="danger"])) .ib-cell-comparison { opacity: .3; }
 .ib-cell-comparison { display: flex; justify-content: center; gap: var(--ui-space-1); flex-wrap: wrap; }
 .ib-cell-comparison .ib-result-delta { display: inline-block; }
 .ib-matrix-section .type-header-desktop { display: inline-flex !important; }
