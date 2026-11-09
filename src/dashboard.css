@@ -608,3 +608,18 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-family-header .flavor-card { max-width: 100%; overflow: hidden; }
 .ib-result-cell .ib-cell-comparison { overflow-wrap: anywhere; }
 .ib-result-cell .ib-novel-failure { white-space: normal; }
+
+/* Result and change share a row, with a reserved lane keeping icons aligned. */
+.ib-inline-result { --ib-result-lane: 56px; display: grid; grid-template-columns: var(--ib-result-lane) minmax(0, 1fr); align-items: center; column-gap: 4px; min-width: 0; }
+.ib-inline-result > .ib-status-details { grid-column: 1; display: flex !important; align-items: center; justify-content: center; min-height: 36px; margin: 0; }
+.ib-inline-result > .ib-comparison-details { grid-column: 2; display: flex !important; align-items: center; justify-content: center; min-width: 0; margin: 0; padding: 0; }
+.ib-inline-result .ib-cell-comparison { gap: 1px 3px; justify-content: center; line-height: 1.25; }
+.ib-inline-result .ib-result-delta { font-size: 11px; line-height: 1.25; white-space: nowrap; }
+.ib-inline-result .ib-novel-failure { padding-inline: 2px; }
+.ib-workspace[data-density="compact"] .ib-inline-result { --ib-result-lane: 50px; column-gap: 2px; }
+.ib-phone-stage dd > .ib-inline-result { width: 112px; margin-left: auto; }
+@media (hover: none), (pointer: coarse) {
+  .ib-matrix-section { --ib-column-width: 116px; }
+  .ib-workspace[data-density="compact"] .ib-matrix-section { --ib-column-width: 108px; }
+  .ib-inline-result > .ib-result-details-trigger { min-width: 44px; min-height: 44px; }
+}
