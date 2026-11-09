@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
 import { fileURLToPath } from 'node:url';
 
-let server, ComparisonTable, Context, inspectResult;
+let server, ComparisonTable, Context, inspectResult, ArchitectureHeader;
 before(async () => {
   server = await createServer({
     root: fileURLToPath(new URL('..', import.meta.url)),
@@ -19,6 +19,7 @@ before(async () => {
   ComparisonTable = (await server.ssrLoadModule('/src/Components/IBPageComponents/ComparisonTable.js')).default;
   Context = (await server.ssrLoadModule('/src/context/ShowArchContext.js')).TestContext;
   inspectResult = (await server.ssrLoadModule('/src/Components/common/ResultDetails.js')).inspectResult;
+  ArchitectureHeader = (await server.ssrLoadModule('/src/Components/common/ArchitectureHeader.js')).default;
 });
 after(async () => { await server?.close(); });
 const archs = ['el9_amd64_gcc14', 'el9_aarch64_gcc14'];
@@ -68,4 +69,19 @@ test('header-controlled filter emphasizes issues without restoring the removed s
   assert.equal(emphasized.length, 1);
   assert.match(emphasized[0], /ib-status-danger/);
   assert.ok(cells.some(cell => cell.includes('data-muted="true"') && cell.includes('ib-status-success')));
+});
+
+test('compact configuration highlights follow configured production colors, not visible-column frequency', () => {
+  const productionColor = '#5cb85c';
+  const colors = { el9: productionColor, amd64: productionColor, gcc14: productionColor };
+  const header = architecture => renderToStaticMarkup(React.createElement(ArchitectureHeader, { architecture, colors, productionColor, status: 'warnings' }));
+  const standard = header('el9_amd64_gcc14');
+  assert.equal((standard.match(/ib-config-value is-default/g) || []).length, 3);
+  assert.match(standard, /Default configuration/);
+  assert.match(standard, /Build status: Warnings/);
+  assert.doesNotMatch(standard, /ib-config-status|ib-architecture-toolchain/);
+  const alternate = header('el9_aarch64_gcc15');
+  assert.equal((alternate.match(/ib-config-value is-default/g) || []).length, 1);
+  assert.doesNotMatch(alternate, /Default configuration/);
+  assert.doesNotMatch(renderToStaticMarkup(React.createElement(ArchitectureHeader, { architecture: 'el9_amd64_gcc14' })), /ib-config-value is-default/);
 });

@@ -5,7 +5,7 @@ import ArchitectureHeader from "../common/ArchitectureHeader";
 import StatusDot from "../common/StatusDot";
 import ResultDetails from "../common/ResultDetails";
 import ResultChangePreview from "../common/ResultChangePreview";
-import { configurationBuildState, familyBuildState, architectureDefaults, matchesResultFilter } from "../../Utils/buildStatus";
+import { configurationBuildState, familyBuildState, matchesResultFilter } from "../../Utils/buildStatus";
 import { tableTheme as THEME } from "../../styles/theme";
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
@@ -328,7 +328,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
   const [copiedText, setCopiedText] = useState(null);
   const [hasOverflow, setHasOverflow] = useState(false);
   const tableContainer = useRef(null);
-  const { getActiveArchsForQue = () => [] } = useShowArch();
+  const { getActiveArchsForQue = () => [], getColorsSchemeForQue = () => ({}) } = useShowArch();
 
   const handleCopy = (e, text) => {
     e.preventDefault();
@@ -343,6 +343,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
   };
 
   const activeArchs = getActiveArchsForQue(releaseQue);
+  const configurationColors = getColorsSchemeForQue(releaseQue);
 
   const { que, date } = useMemo(() => {
     if (data[0]) {
@@ -375,11 +376,6 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     document.addEventListener('visibilitychange', update);
     return () => { observer.disconnect(); document.removeEventListener('visibilitychange', update); element.style.removeProperty('--ib-motion-state'); };
   }, []);
-
-  const headerDefaults = useMemo(
-    () => architectureDefaults(archsByIb.flatMap(item => item.archs || [])),
-    [archsByIb]
-  );
 
   useEffect(() => {
     const container = tableContainer.current;
@@ -893,7 +889,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
                     : null;
 
                   const headerState = configurationBuildState(data[pos], arch);
-                  const archStack = <ArchitectureHeader architecture={arch} icon={buildTypePrefixIcon} status={headerState.status} running={headerState.running} defaults={headerDefaults} />;
+                  const archStack = <ArchitectureHeader architecture={arch} icon={buildTypePrefixIcon} status={headerState.status} running={headerState.running} colors={configurationColors} productionColor={config.colorCoding.prodColor} />;
 
                   const cellContent = link ? (
                     <OverlayTrigger
