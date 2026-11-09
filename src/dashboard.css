@@ -78,7 +78,7 @@
   min-height: var(--ui-control-target);
 }
 .ib-release-panel-body {
-  padding: var(--ui-space-3) var(--ui-space-2) var(--ui-space-4);
+  padding: var(--ui-space-2) 0;
 }
 .ib-table-frame { padding: var(--ui-space-2) var(--ui-space-3) 0; }
 .ib-table-responsive {
@@ -258,7 +258,7 @@ body { font-family: var(--ui-font-sans); -webkit-font-smoothing: antialiased; }
 .ib-matrix-section[data-failures-only="true"] tbody td:not(.name-column):not(:has([data-result-status="danger"])) > * { opacity: .3; }
 .ib-matrix-section .type-label-desktop { display: inline-flex !important; }
 .ib-matrix-section .type-label-mobile { display: none !important; }
-.ib-matrix-section td a { display: inline-flex; align-items: center; justify-content: center; min-width: var(--ui-control-target); min-height: var(--ui-control-target); border-radius: var(--ui-radius-control); }
+.ib-matrix-section td a { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; min-height: 36px; border-radius: var(--ui-radius-control); }
 .ib-matrix-section td a:hover { background: var(--ui-hover); }
 /* Compact mode trades whitespace for scanning density without overlapping targets. */
 .ib-workspace[data-density="compact"] .ib-matrix-section td a { min-height: 28px; min-width: 28px; }
@@ -369,9 +369,9 @@ body { font-family: var(--ui-font-sans); -webkit-font-smoothing: antialiased; }
 .ib-status-count { font: 600 14px/1.5 var(--ui-font-sans); font-variant-numeric: tabular-nums; text-align: left; color: inherit; white-space: nowrap; }
 .ib-matrix-section .ib-table-frame { padding: 0; }
 .ib-matrix-section .ib-table-responsive { margin: 0; }
-.ib-matrix-section .table { border-collapse: separate; border-spacing: 0; }
-.ib-matrix-section .table tbody td { height: 58px; padding: 6px 8px; }
-.ib-matrix-section .table .name-column { color: var(--ui-text); font: 600 14px/1.45 var(--ui-font-sans); text-align: left; padding-left: 16px; }
+.ib-matrix-section .table { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; margin-bottom: 0; }
+.ib-matrix-section .table tbody td { height: 44px; padding: 2px 6px; }
+.ib-matrix-section .table .name-column { color: var(--ui-text); font: 600 14px/1.45 var(--ui-font-sans); text-align: left; padding-left: 12px; }
 /* Stage links share the label alignment, overriding centered result links. */
 .ib-matrix-section .name-column > a.ib-row-label-link { justify-content: flex-start; width: 100%; font-weight: 600; }
 .ib-matrix-section .ib-stage-corner { display: flex !important; flex-direction: column; align-items: flex-start; gap: 8px; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
@@ -379,13 +379,13 @@ body { font-family: var(--ui-font-sans); -webkit-font-smoothing: antialiased; }
 .ib-matrix-section td[data-muted="true"] > * { opacity: .6; transition: opacity .15s; }
 .ib-matrix-section td[data-muted="true"]:is(:hover,:focus-within) > * { opacity: 1; }
 .ib-matrix-section td a:focus-visible { outline: var(--ui-focus-ring); outline-offset: 2px; }
-.ib-matrix-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 14px 16px;
+.ib-matrix-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 8px 12px;
   background: var(--ui-surface-muted); border-block: 1px solid var(--ui-border); }
-.ib-build-summary { padding: 0; gap: 10px; }
+.ib-build-summary { padding: 0; gap: 6px; }
 .ib-build-summary > strong { color: var(--ui-text-secondary); font: 500 var(--ui-type-label)/1.5 var(--ui-font-sans); }
-.ib-summary-counts { gap: 8px; }
-.ib-summary-badge { display: inline-flex; align-items: center; gap: 6px; border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
-  border-radius: 999px; padding: 4px 10px 4px 5px; font-size: var(--ui-type-caption); line-height: 18px; white-space: nowrap; }
+.ib-summary-counts { gap: 4px; }
+.ib-summary-badge { display: inline-flex; align-items: center; gap: 4px; border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  border-radius: 999px; padding: 3px 8px 3px 4px; font-size: var(--ui-type-caption); line-height: 18px; white-space: nowrap; }
 button.ib-summary-badge:hover { border-color: currentColor; }
 button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; outline-offset: 2px; }
 .ib-summary-number { font: 600 12px/1.5 var(--ui-font-mono); font-variant-numeric: tabular-nums; }
@@ -395,7 +395,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-result-filter .btn span { font: 500 10px/18px var(--ui-font-mono); padding: 0 5px; border-radius: 4px; background: color-mix(in srgb, currentColor 8%, transparent); }
 .ib-result-filter .btn.active { background: var(--ui-info-tint); border-color: transparent; color: var(--ui-primary-dark); }
 .ib-filter-status { font-size: var(--ui-type-caption); color: var(--ui-text-secondary); margin: 0; padding: 8px 16px; }
-.ib-matrix-help { margin: 0; border-top: 1px solid var(--ui-border); padding: 12px 16px; }
+.ib-matrix-help { margin: 0; border-top: 1px solid var(--ui-border); padding: 6px 12px; }
 .ib-matrix-help summary { color: var(--ui-text-secondary); font-size: 12px; }
 .ib-matrix-help p { font-size: 12px; line-height: 1.65; padding: 0; }
 .ib-comparison-context { padding: 8px 16px; }
@@ -408,24 +408,24 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-config-warnings { --ib-config-tone: #efb323; --ib-config-bg: rgb(239 179 35 / 7%); }
 .ib-config-running { --ib-config-tone: #3478ed; --ib-config-bg: rgb(52 120 237 / 6%); }
 .ib-config-queued, .ib-config-unknown { --ib-config-tone: #8794a8; --ib-config-bg: rgb(135 148 168 / 5%); }
-.ib-matrix-section .table thead th.ib-family-header { height: 44px; background: #f1f4f8 !important; border-bottom: 1px solid #d3dce9; }
+.ib-matrix-section .table thead th.ib-family-header { height: 32px; background: #f1f4f8 !important; border-bottom: 1px solid #d3dce9; }
 .ib-family-header .flavor-card { color: #243147 !important; background: transparent !important; padding: 4px 6px !important; font: 700 13px/1.4 var(--ui-font-sans) !important; gap: 7px; letter-spacing: .035em; white-space: nowrap; }
 .ib-family-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ib-config-tone); }
 .ib-family-header.is-running .ib-family-dot { box-shadow: 0 0 0 3px color-mix(in srgb, var(--ib-config-tone) 25%, transparent); }
 .ib-config-queued .ib-family-dot, .ib-config-unknown .ib-family-dot { border: 1.5px solid var(--ib-config-tone); background: transparent; }
 .flavor-copy-button:focus-visible, .flavor-card-wrapper:focus-within .flavor-copy-button { opacity: 1; }
-.ib-matrix-section .table thead th.ib-config-header { background: var(--ib-config-bg) !important; border-top: 3px solid var(--ib-config-tone) !important; height: 150px; min-width: 104px !important; }
-.ib-matrix-section .table thead th.ib-config-header .ib-architecture-header { align-items: center; padding: 10px 4px; gap: 9px; }
+.ib-matrix-section .table thead th.ib-config-header { background: var(--ib-config-bg) !important; border-top: 3px solid var(--ib-config-tone) !important; height: 112px; min-width: 0 !important; }
+.ib-matrix-section .table thead th.ib-config-header .ib-architecture-header { align-items: center; padding: 2px 4px; gap: 2px; }
 .ib-config-header .ib-architecture-platform { display: inline-flex; flex-direction: row; align-items: center; justify-content: center; gap: 5px;
   min-height: 26px; padding: 1px 7px; border: 1.5px solid #d6dfed; border-radius: 5px; background: #f0f3f8;
   color: var(--ui-text); font: 600 13px/20px var(--ui-font-sans); }
 .ib-build-kind { margin: 0; font-size: 11px; color: var(--ui-muted); }
 .ib-build-kind > span { display: inline-flex; }
-.ib-config-header .ib-architecture-toolchain { gap: 7px; font: 600 14px/22px var(--ui-font-sans); color: #344054; }
-.ib-config-header .ib-architecture-value { min-height: 24px; padding: 0 5px; border: 1.5px solid transparent; border-radius: 5px; }
+.ib-config-header .ib-architecture-toolchain { gap: 0; font: 600 14px/20px var(--ui-font-sans); color: #344054; }
+.ib-config-header .ib-architecture-value { min-height: 22px; padding: 0 5px; border: 1.5px solid transparent; border-radius: 5px; }
 .ib-config-header .is-alternate { background: var(--ui-surface); border-color: var(--ui-text); color: var(--ui-text); font-weight: 600; }
 .ib-config-running .ib-config-status { color: #1d4ed8; }
-.ib-config-status { margin-top: 2px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font: 600 13px/22px var(--ui-font-sans); }
+.ib-config-status { margin-top: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; font: 600 13px/22px var(--ui-font-sans); }
 .ib-config-passed .ib-config-status { color: var(--ui-success-dark); }
 .ib-config-failed .ib-config-status { color: var(--ui-danger-text); }
 .ib-config-warnings .ib-config-status { color: #805400; }
@@ -435,9 +435,9 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-table-responsive th a:hover .ib-architecture-platform { box-shadow: 0 0 0 2px rgb(49 95 232 / 12%); }
 
 /* Keep all section controls neutral; the shared dot alone carries state. */
-.ib-section-controls { gap: 8px; margin: 0; padding: 4px 16px 16px; }
+.ib-section-controls { gap: 4px; margin: 0; padding: 0 12px 8px; }
 .ib-section-pill, .ib-section-pill.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  min-height: 34px; padding: 4px 11px 4px 5px !important; border-radius: 999px !important;
+  min-height: 30px; padding: 3px 9px 3px 4px !important; border-radius: 999px !important;
   border: 1px solid var(--ui-border) !important; background: var(--ui-surface) !important;
   color: var(--ui-text) !important; font: 500 13px/1.3 var(--ui-font-sans) !important;
   box-shadow: none !important; text-decoration: none; white-space: nowrap; }
@@ -517,4 +517,15 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   .ib-matrix-section .ib-summary-badge, .ib-section-pill, .ib-section-pill.btn { min-height: 44px; }
   .ib-matrix-section .flavor-copy-button { opacity: 1; min-width: 44px; min-height: 44px; }
   .ib-workspace[data-density="compact"] .ib-matrix-section td a { min-height: 44px; min-width: 44px; }
+}
+
+/* Use space between groups rather than around every individual result. */
+@media (min-width: 768px) {
+  .ib-workspace { --ui-table-label-width: 92px; --ui-page-inset: 16px; --ui-panel-gap: 8px; }
+}
+@media (hover: none), (pointer: coarse) {
+  .ib-matrix-section td a { min-height: 44px; min-width: 44px; }
+}
+@media (max-width: 767.98px) {
+  .ib-matrix-section td a { min-height: 44px; min-width: 44px; }
 }
