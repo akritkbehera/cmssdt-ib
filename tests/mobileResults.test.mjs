@@ -12,6 +12,7 @@ before(async () => {
     server: { middlewareMode: true },
     // Supply architecture preferences without starting the application's network loader.
     plugins: [{ name: 'test-architecture-context', enforce: 'pre', transform(code, id) {
+      if (id.endsWith('/Utils/ajax.js')) return 'export const getMultipleFiles = () => Promise.resolve([]);';
       if (id.endsWith('/context/ShowArchContext.js')) return `import React from 'react'; export const TestContext=React.createContext(); export const useShowArch=()=>React.useContext(TestContext);`;
     } }]
   });

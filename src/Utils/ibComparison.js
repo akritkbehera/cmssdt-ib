@@ -65,7 +65,7 @@ export function cellKey(ib, result, stage) {
   return stable([ib.release_queue, ib.variant ?? ib.build_variant ?? ib.release_queue, parentIdentity, stage, identity]);
 }
 
-export function compareCell(ib, context, stage, arch) {
+export function comparableCellResults(ib, context, stage, arch) {
   if (!context?.latest) return null;
   const unavailable = () => null;
   if (!context.previous) return unavailable(context.reason || 'No previous comparable IB');
@@ -73,7 +73,13 @@ export function compareCell(ib, context, stage, arch) {
   if (current.length !== 1) return unavailable('Current cell is missing or ambiguous');
   const matches = (context.previous[stage] || []).filter(result => cellKey(ib, current[0], stage) === cellKey(context.previous, result, stage));
   if (matches.length !== 1) return unavailable(matches.length ? 'Duplicate baseline keys: comparison suppressed' : 'No exact matching baseline configuration/stage');
-  const delta = resultDelta(current[0], matches[0], stage);
+  return resultDelta(current[0], matches[0], stage) ? { current: current[0], previous: matches[0] } : null;
+}
+
+export function compareCell(ib, context, stage, arch) {
+  const pair = comparableCellResults(ib, context, stage, arch);
+  if (!pair) return null;
+  const delta = resultDelta(pair.current, pair.previous, stage);
   return delta && (delta.label || delta.metrics?.length) ? { ...delta, detail: `${delta.detail}. Previous IB: ${context.previous.release_name}` }
     : null;
 }

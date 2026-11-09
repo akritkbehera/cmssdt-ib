@@ -529,3 +529,14 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 @media (max-width: 767.98px) {
   .ib-matrix-section td a { min-height: 44px; min-width: 44px; }
 }
+
+.ib-change-preview { padding: 10px 12px; min-width: 240px; max-width: 360px; text-align: left; color: var(--ui-text); font-size: 12px; line-height: 1.45; }
+.ib-preview-baseline { color: var(--ui-text-secondary); font-size: 11px; overflow-wrap: anywhere; margin: 4px 0 8px; }
+.ib-change-preview section { margin-top: 8px; }
+.ib-change-preview ul { padding-left: 16px; margin: 3px 0; overflow-wrap: anywhere; }
+.ib-preview-success { color: var(--ui-success-dark); }
+.ib-preview-danger { color: var(--ui-danger-text); }
+.ib-preview-warning { color: var(--ui-warning-text); }
+.ib-preview-metrics { padding: 8px 12px; margin: 0; text-align: left; font-size: 12px; }
+.ib-change-preview small { display: block; color: var(--ui-text-secondary); margin-top: 8px; }
+.ib-result-cell .ib-result-details-trigger:has(.ib-cell-comparison) { display: flex; margin-inline: auto; }

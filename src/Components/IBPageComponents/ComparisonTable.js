@@ -1,10 +1,11 @@
 import { stages } from "../../Utils/resultDelta";
-import { compareCell } from "../../Utils/ibComparison";
+import { compareCell, comparableCellResults } from "../../Utils/ibComparison";
 import BuildSummary from "../common/BuildSummary";
 import { summarizeMatrix } from "../../Utils/matrixSummary";
 import ArchitectureHeader from "../common/ArchitectureHeader";
 import StatusDot from "../common/StatusDot";
 import ResultDetails from "../common/ResultDetails";
+import ResultChangePreview from "../common/ResultChangePreview";
 import { configurationBuildState, familyBuildState, architectureDefaults, matchesResultFilter } from "../../Utils/buildStatus";
 import { tableTheme as THEME } from "../../styles/theme";
 import React, { useMemo, useState, useEffect, useRef } from 'react';
@@ -404,12 +405,15 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
     const context = comparisons.get(ib);
     const delta = stages.includes(stage) ? compareCell(ib, context, stage, arch) : null;
     const running = current?.done === false;
+    const pair = ['relvals', 'utests'].includes(stage) ? comparableCellResults(ib, context, stage, arch) : null;
+    const preview = pair ? <ResultChangePreview stage={stage} arch={arch} ib={ib} previousIb={context.previous}
+      current={pair.current} previous={pair.previous} /> : null;
     let hasMarker = false;
     let resultStatus = 'secondary';
     const decorate = node => {
       if (Array.isArray(node)) return React.Children.map(node, decorate);
       if (!React.isValidElement(node)) return node;
-      if (node.type === StatusTooltip) return React.cloneElement(node, { running });
+      if (node.type === StatusTooltip) return <>{React.cloneElement(node, { running })}{preview}</>;
       if (node.type === StatusDot) return React.cloneElement(node, { running, solid: !running });
       if (node.props['data-result-status']) {
         hasMarker = true;
@@ -426,10 +430,11 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
     const boundary = arch === archsByIb[Number(position)]?.archs[0];
     const cell = <td key={key} className={`align-middle ib-result-cell ${boundary ? 'ib-group-start' : ''}`} data-muted={!matchesResultFilter(resultStatus, resultFilter)}>
       {content}
-      {delta && !running && <div className="ib-cell-comparison" title={delta.detail}>
+      {delta && !running && <ResultDetails tooltipId={`${key}-changes`} overlay={<><p className="ib-preview-metrics">{delta.detail}</p>{preview}</>}>
+      <div className="ib-cell-comparison" tabIndex={0} aria-label={delta.detail}>
         {delta.label && <span className={`ib-result-delta ${delta.novel ? 'ib-novel-failure' : `ib-delta-${delta.tone || 'secondary'}`}`} aria-label={delta.detail}>{delta.label}</span>}
         {delta.metrics?.map(metric => <span key={metric.key} className={`ib-result-delta ib-delta-${metric.tone}`} title={`${metric.key}: previous ${metric.previous}, current ${metric.current}; ${delta.detail}`} aria-label={`${metric.key}: ${delta.detail}`}>{metric.label}</span>)}
-      </div>}
+      </div></ResultDetails>}
     </td>;
     mobileCells.push({ key, stage, position: Number(position), arch, cell });
     return cell;
