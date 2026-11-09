@@ -1,3 +1,5 @@
+import { buildComparisonIndex } from "../../Utils/ibComparison";
+import IconButton from "../common/IconButton";
 import React, { Component } from 'react';
 import IBGroupFrame from './IBGroupFrame';
 import { groupAndTransformIBDataList } from '../../Utils/processing';
@@ -365,7 +367,7 @@ class IBGroups extends Component {
                             alignItems: 'center',
                             justifyContent: 'center',
                             margin: '0 auto 16px auto',
-                            fontSize: '22px'
+                            fontSize: "var(--ui-type-title)"
                         }}
                     >
                         {icon}
@@ -379,7 +381,7 @@ class IBGroups extends Component {
                         className="mb-0"
                         style={{
                             color: colors.messageColor,
-                            fontSize: '0.97rem',
+                            fontSize: "var(--ui-type-heading)",
                             lineHeight: 1.5
                         }}
                     >
@@ -407,7 +409,7 @@ class IBGroups extends Component {
                 >
                     <Spinner animation="border" role="status" style={{ width: '2.6rem', height: '2.6rem' }} />
                     <div style={{ color: '#475569', fontWeight: 600 }}>{loadingText}</div>
-                    <div style={{ color: '#94a3b8', fontSize: '0.9rem' }}>
+                    <div style={{ color: '#94a3b8', fontSize: "var(--ui-type-body)" }}>
                         Please wait while release data is being loaded
                     </div>
                 </div>
@@ -437,25 +439,25 @@ class IBGroups extends Component {
                     gap: '10px'
                 }}
             >
-                <button
+                <IconButton
                     onClick={this.toggleAllReleasePanels}
                     title={allCollapsed ? 'Show all releases' : 'Hide all releases'}
-                    style={miniToolButtonStyle}
+
                 >
                     {allCollapsed ? <FaEye size={12} /> : <FaEyeSlash size={12} />}
-                </button>
+                </IconButton>
 
-                <button onClick={this.scrollToTop} title="Go to top" style={miniToolButtonStyle}>
+                <IconButton onClick={this.scrollToTop} title="Go to top" >
                     <FaArrowUp size={12} />
-                </button>
+                </IconButton>
 
-                <button onClick={this.scrollToBottom} title="Go to bottom" style={miniToolButtonStyle}>
+                <IconButton onClick={this.scrollToBottom} title="Go to bottom" >
                     <FaArrowDown size={12} />
-                </button>
+                </IconButton>
 
-                <button onClick={this.toggleNavigator} title="Show releases" style={pinControlButtonStyle}>
+                <IconButton onClick={this.toggleNavigator} title="Show releases" >
                     <FaThumbtack size={12} />
-                </button>
+                </IconButton>
             </div>
         );
     }
@@ -471,7 +473,7 @@ class IBGroups extends Component {
 
                 <div style={navigatorOverlayStyle}>
                     <div style={navigatorHeaderStyle}>
-                        <strong style={{ fontSize: '0.9rem', color: '#334155' }}>
+                        <strong style={{ fontSize: "var(--ui-type-body)", color: '#334155' }}>
                             Jump to release
                         </strong>
 
@@ -493,7 +495,7 @@ class IBGroups extends Component {
                             onChange={(e) => {
                                 this.prSearchInput = e.target.value;
                             }}
-                            
+
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     this.findPrInGroups();
@@ -554,6 +556,7 @@ class IBGroups extends Component {
         } = this.props;
 
         const filteredData = this.getFilteredData();
+        const comparisons = buildComparisonIndex((this.props.comparisonData || this.props.data || []).flatMap(item => item.comparisons || []));
 
         const hasFilters =
             activeArchs.os?.length > 0 ||
@@ -629,6 +632,7 @@ class IBGroups extends Component {
                         >
                            <IBGroupFrame
                                 IBGroup={IBGroup}
+                                comparisons={comparisons}
                                 releaseQue={releaseQue}
                                 expandAllCommits={
                                     showAllPullRequests || this.state.matchedPrGroupKey === groupKey
@@ -652,34 +656,6 @@ class IBGroups extends Component {
     }
 }
 
-const miniToolButtonStyle = {
-    width: '38px',
-    height: '38px',
-    borderRadius: '50%',
-    border: '1px solid #cbd5e1',
-    background: '#ffffff',
-    color: '#334155',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer'
-};
-
-const pinControlButtonStyle = {
-    width: '38px',
-    height: '48px',
-    borderRadius: '12px',
-    border: '1px solid #cbd5e1',
-    background: 'rgba(255,255,255,0.98)',
-    color: '#334155',
-    boxShadow: '0 6px 16px rgba(0,0,0,0.12)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer'
-};
-
 const navigatorBackdropStyle = {
     position: 'fixed',
     inset: 0,
@@ -694,10 +670,10 @@ const navigatorOverlayStyle = {
     width: '280px',
     maxHeight: '70vh',
     overflow: 'hidden',
-    background: 'rgba(255,255,255,0.99)',
-    border: '1px solid #e2e8f0',
+    background: 'var(--ui-surface)',
+    border: '1px solid var(--ui-border)',
     borderRadius: '14px',
-    boxShadow: '0 14px 34px rgba(0,0,0,0.18)',
+    boxShadow: 'var(--ui-shadow-menu)',
     display: 'flex',
     flexDirection: 'column',
     zIndex: 1100
@@ -734,7 +710,7 @@ const navigatorSearchInputStyle = {
     border: '1px solid #cbd5e1',
     borderRadius: '8px',
     padding: '0 10px',
-    fontSize: '0.82rem',
+    fontSize: "var(--ui-type-label)",
     marginBottom: '8px',
     outline: 'none'
 };
@@ -747,14 +723,14 @@ const navigatorSearchButtonStyle = {
     background: '#2563eb',
     color: '#ffffff',
     fontWeight: 700,
-    fontSize: '0.82rem',
+    fontSize: "var(--ui-type-label)",
     cursor: 'pointer'
 };
 
 const navigatorSearchErrorStyle = {
     marginTop: '8px',
     color: '#dc2626',
-    fontSize: '0.78rem',
+    fontSize: "var(--ui-type-label)",
     fontWeight: 600
 };
 
@@ -769,12 +745,12 @@ const navigatorItemStyle = {
     textAlign: 'left',
     padding: '10px 12px',
     marginBottom: '8px',
-    border: '1px solid #e2e8f0',
+    border: '1px solid var(--ui-border)',
     borderRadius: '10px',
     background: '#ffffff',
     color: '#334155',
     cursor: 'pointer',
-    fontSize: '0.84rem',
+    fontSize: "var(--ui-type-label)",
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis'
