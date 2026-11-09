@@ -44,6 +44,9 @@ test('phone view shows only the selected configuration with the same stage resul
   assert.doesNotMatch(phone, /aarch64|Build or tests failed/);
   assert.match(html, /Compare configurations/);
   assert.equal((html.match(/<option /g) || []).length, 2);
+  assert.equal((html.match(/class="ib-configuration-column"/g) || []).length, 2);
+  assert.match(html, /class="ib-stage-column"/);
+  assert.match(html, /colSpan="2"/i);
   assert.match(html, /ib-config-failed/); // Full comparison still includes the other configuration.
 });
 test('empty architecture preferences produce a useful empty phone state', () => {

@@ -586,3 +586,25 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-config-label .ib-config-separator { color: var(--ui-text-secondary); }
 .ib-config-label .ib-build-kind { display: inline-flex; margin-right: 2px; }
 .ib-workspace[data-density="compact"] .ib-matrix-section .ib-config-label { gap: 2px; }
+
+/* Explicit columns keep family spans, configurations and results on the same grid. */
+.ib-matrix-section { --ib-column-width: 104px; --ib-stage-width: 88px; }
+.ib-workspace[data-density="compact"] .ib-matrix-section { --ib-column-width: 92px; --ib-stage-width: 80px; }
+.ib-matrix-section .table {
+  table-layout: fixed;
+  width: calc(var(--ib-stage-width) + var(--ib-column-count, 0) * var(--ib-column-width));
+  min-width: 0;
+}
+.ib-matrix-section .table .ib-stage-column { width: var(--ib-stage-width); }
+.ib-matrix-section .table .ib-configuration-column { width: var(--ib-column-width); }
+.ib-matrix-section .table .name-column { width: var(--ib-stage-width); min-width: 0; padding-inline: 8px; }
+.ib-matrix-section .table thead th.ib-config-header .ib-config-label {
+  display: flex; flex-wrap: wrap; gap: 0 2px; padding-inline: 0; white-space: normal;
+}
+.ib-config-field { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
+.ib-matrix-section .table thead th.ib-family-header { overflow: hidden; }
+.ib-family-header .flavor-card-wrapper { max-width: 100%; }
+.ib-family-header .flavor-card-wrapper > a { min-width: 0; max-width: 100%; overflow: hidden; }
+.ib-family-header .flavor-card { max-width: 100%; overflow: hidden; }
+.ib-result-cell .ib-cell-comparison { overflow-wrap: anywhere; }
+.ib-result-cell .ib-novel-failure { white-space: normal; }

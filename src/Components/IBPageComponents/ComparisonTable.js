@@ -776,13 +776,17 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
             striped={false}
             hover
             className="mb-0 align-middle"
-
+            style={{ '--ib-column-count': configurations.length }}
           >
+            <colgroup>
+              <col className="ib-stage-column" />
+              {configurations.map(item => <col key={item.key} className="ib-configuration-column" />)}
+            </colgroup>
             <thead>
               <tr>
                 <th className="name-column" rowSpan={2} style={{ verticalAlign: 'middle' }}>
                   <div className="d-flex align-items-center justify-content-center h-100">
-                    <span className="type-header-desktop ib-stage-corner"><span>Stage</span><small>Configuration →</small></span>
+                    <span className="type-header-desktop ib-stage-corner"><span>Stage</span><small>Config →</small></span>
                     <span className="type-header-mobile fw-bold text-uppercase" style={{ fontSize: "var(--ui-type-caption)" }} />
                   </div>
                 </th>

@@ -10,11 +10,11 @@ export default function ArchitectureHeader({ architecture, icon, status = 'unkno
   return (
     <div className="ib-architecture-header ib-config-label" aria-label={description} title={description}>
       {icon && <span className="ib-build-kind" aria-hidden="true">{icon}</span>}
-      {values.map((value, index) => <React.Fragment key={`${value}-${index}`}>
+      {values.map((value, index) => <span className="ib-config-field" key={`${value}-${index}`}>
         {index > 0 && <span className="ib-config-separator" aria-hidden="true">·</span>}
         <span className={`ib-config-value ${isDefault(value) ? 'is-default' : ''}`}
           style={colors[value] ? { '--ib-field-color': colors[value] } : undefined}>{value}</span>
-      </React.Fragment>)}
+      </span>)}
     </div>
   );
 }
