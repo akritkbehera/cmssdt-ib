@@ -1,17 +1,21 @@
 import React from 'react';
+import StatusDot from './StatusDot';
 
-export default function BuildSummary({ counts }) {
+export default function BuildSummary({ counts, filter = 'all', onFilter }) {
   const pending = counts.info + counts.secondary;
   const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
-  const label = counts.danger ? 'Stage failures' : counts.warning ? 'Stage warnings' : pending ? 'Results pending' : total ? 'All reported stages passed' : 'No reported results';
   return (
     <div className="ib-build-summary" aria-label="Reported stage outcomes for selected architectures">
-      <strong className={counts.danger ? 'ib-summary-failed' : ''}>{label}</strong>
+      <strong>Stage results</strong>
       <div className="ib-summary-counts">
-        <span className="ib-summary-badge ib-status-danger">✕ {counts.danger} stage {counts.danger === 1 ? 'failure' : 'failures'}</span>
-        <span className="ib-summary-badge ib-status-warning">⚠ {counts.warning} stage {counts.warning === 1 ? 'warning' : 'warnings'}</span>
-        <span className="ib-summary-badge ib-status-success">✓ {counts.success} stage {counts.success === 1 ? 'pass' : 'passes'}</span>
-        {pending > 0 && <span className="ib-summary-badge ib-status-secondary">{pending} pending / unknown</span>}
+        {[['danger', 'Failures'], ['warning', 'Warnings'], ['success', 'Passed']].map(([status, label]) => (
+          <button type="button" key={status} className={`ib-summary-badge ib-status-${status}`}
+            aria-pressed={filter === status} onClick={() => onFilter?.(filter === status ? 'all' : status)}>
+            <StatusDot status={status} size={16} /><span className="ib-summary-number">{counts[status]}</span>{label}
+          </button>
+        ))}
+        {pending > 0 && <span className="ib-summary-badge ib-status-secondary"><StatusDot size={16} />{pending} pending / unknown</span>}
+        {!total && <span className="ib-summary-empty">No reported results</span>}
       </div>
     </div>
   );

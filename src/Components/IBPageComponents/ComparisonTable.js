@@ -1,9 +1,10 @@
-import { shadeStageOutliers } from "../../Utils/matrixHeat";
 import { stages } from "../../Utils/resultDelta";
 import { compareCell } from "../../Utils/ibComparison";
 import BuildSummary from "../common/BuildSummary";
 import { summarizeMatrix } from "../../Utils/matrixSummary";
 import ArchitectureHeader from "../common/ArchitectureHeader";
+import StatusDot from "../common/StatusDot";
+import { configurationBuildState, familyBuildState, architectureDefaults, matchesResultFilter } from "../../Utils/buildStatus";
 import { tableTheme as THEME } from "../../styles/theme";
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
@@ -97,23 +98,6 @@ const removeKeysFromDetails = (details, keysToRemove = []) => {
 
 const formatFlavorLabel = (value) => getDisplayName(value).replace(/_X$/, '');
 
-// Header status describes the build stage for this exact configuration.
-function buildHeaderStatus(ib, arch) {
-  const matches = (ib?.builds || []).filter(result => result.arch === arch);
-  if (matches.length !== 1) return 'unknown';
-  const result = matches[0];
-  if (result.done === false) return 'running';
-  if ([false, 'error', 'failed'].includes(result.passed)) return 'failed';
-  if (result.passed === 'warning') return 'warnings';
-  if ([true, 'passed'].includes(result.passed)) return 'passed';
-  return 'unknown';
-}
-
-function familyBuildStatus(ib, archs) {
-  const states = archs.map(arch => buildHeaderStatus(ib, arch));
-  return ['failed', 'running', 'warnings', 'unknown', 'passed'].find(state => states.includes(state)) || 'unknown';
-}
-
 function makeSafeId(value) {
   return String(value || 'unknown').replace(/[^a-zA-Z0-9_-]/g, '-');
 }
@@ -173,7 +157,7 @@ const ArchTooltip = ({ cmsdistTag, isPatch, baseTag }) => (
   </div>
 );
 
-const StatusTooltip = ({ status, value, details, type }) => {
+const StatusTooltip = ({ status, value, details, type, running = false }) => {
   const style = statusStyles[status] || statusStyles.secondary;
 
   const formatValue = (val) => {
@@ -191,10 +175,8 @@ const StatusTooltip = ({ status, value, details, type }) => {
   return (
     <div className="text-start p-3" style={{ minWidth: '250px' }}>
       <div className="d-flex align-items-center border-bottom pb-2 mb-2">
-        <div className={`ib-status-marker ib-status-${status} ${status === "success" ? "is-pass" : status === "danger" ? "is-fail" : ""} ${running ? "is-running" : ""}`}>
-          {style.sphereIcon}
-        </div>
-        <span className="fw-semibold ms-2">{type || 'Status'} Information</span>
+        <StatusDot status={status} running={running} size={22} />
+        <span className="fw-semibold ms-2">{type || 'Status'} Information{running ? ' · running' : ''}</span>
       </div>
 
       <div className="mb-2">
@@ -203,9 +185,7 @@ const StatusTooltip = ({ status, value, details, type }) => {
           <span className="text-muted small fw-semibold">Current Status:</span>
         </div>
         <div className="d-flex align-items-center mt-1">
-          <div className={`ib-status-marker ib-status-${status} ${status === "success" ? "is-pass" : status === "danger" ? "is-fail" : ""} ${running ? "is-running" : ""}`}>
-            {style.sphereIcon}
-          </div>
+          <StatusDot status={status} running={running} size={22} />
           <span className="small">{style.description}</span>
         </div>
       </div>
@@ -255,7 +235,6 @@ function baseRenderCell(cellInfo, key) {
 }
 
 function renderStatusMarker({ status = "secondary", value, icon, link, tooltipContent, details, type, tooltipId, running = false } = {}) {
-  const style = statusStyles[status] || statusStyles.secondary;
   const displayValue = value !== undefined ? value : '';
 
   if (displayValue === 0 || displayValue === '') return null;
@@ -264,21 +243,19 @@ function renderStatusMarker({ status = "secondary", value, icon, link, tooltipCo
     typeof displayValue === 'number' ||
     (typeof displayValue === 'string' && /\d/.test(displayValue));
 
-  const resolvedIcon = hasNumericValue
-    ? null
-    : (icon === null ? null : (icon || style.sphereIcon));
-
   const metric = type?.toLowerCase().includes('build') ? (status === 'warning' ? 'compiler warnings' : 'build errors') : type === 'Q/A' ? 'duplicate-check outcome' : 'test results';
   const sphereContent = (
     <span className={`ib-status-marker ib-status-${status} ${status === "success" ? "is-pass" : status === "danger" ? "is-fail" : ""} ${running ? "is-running" : ""}`}
       role="img" data-result-status={status} data-running={running || undefined} data-result-count={hasNumericValue ? Number.parseFloat(displayValue) : undefined} title={`${displayValue} ${metric}`} aria-label={`${running ? "Running — partial result. " : ""}${type || 'Test'}: ${statusStyles[status]?.description || 'Unknown'}${hasNumericValue ? ` (${displayValue} ${metric})` : ''}`}>
-      <span className="ib-status-circle dot" aria-hidden="true"><span className="ib-status-fill" /><span className="ib-status-sweep" /><span className="ib-status-glyph">{status === 'success' || status === 'danger' ? <svg viewBox="0 0 16 16"><path d={status === 'success' ? 'M3.5 8.4l3 3 6-6.4' : 'M4.5 4.5l7 7M11.5 4.5l-7 7'} /></svg> : style.sphereIcon}</span></span>{hasNumericValue && <span className="ib-status-count">{displayValue}</span>}
+      <StatusDot status={status} running={running} solid={!running} />
+      {hasNumericValue && status !== 'success' && <span className="ib-status-count">{displayValue}</span>}
     </span>
   );
 
   const enhancedTooltip = tooltipContent || (
     <StatusTooltip
       status={status}
+      running={running}
       value={displayValue}
       details={details ? { ...details } : {}}
       type={type}
@@ -352,7 +329,7 @@ const copyText = (text) => {
 
 const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => {
   const [copiedText, setCopiedText] = useState(null);
-  const [failuresOnly, setFailuresOnly] = useState(false);
+  const [resultFilter, setResultFilter] = useState('all');
   const [hasOverflow, setHasOverflow] = useState(false);
   const tableContainer = useRef(null);
   const { getActiveArchsForQue = () => [] } = useShowArch();
@@ -384,6 +361,11 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
     [data, activeArchs]
   );
 
+  const headerDefaults = useMemo(
+    () => architectureDefaults(archsByIb.flatMap(item => item.archs || [])),
+    [archsByIb]
+  );
+
   useEffect(() => {
     const container = tableContainer.current;
     if (!container) return undefined;
@@ -406,22 +388,26 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
     const delta = stages.includes(stage) ? compareCell(ib, context, stage, arch) : null;
     const running = current?.done === false;
     let hasMarker = false;
+    let resultStatus = 'secondary';
     const decorate = node => {
-      if (Array.isArray(node)) return node.map(decorate);
+      if (Array.isArray(node)) return React.Children.map(node, decorate);
       if (!React.isValidElement(node)) return node;
+      if (node.type === StatusTooltip) return React.cloneElement(node, { running });
+      if (node.type === StatusDot) return React.cloneElement(node, { running, solid: !running });
       if (node.props['data-result-status']) {
         hasMarker = true;
         const status = node.props['data-result-status'];
+        resultStatus = status;
         const label = status === 'success' ? 'Running — passing so far' : status === 'danger' ? 'Running — failures detected' : 'Running — partial result';
-        return React.cloneElement(node, { className: `${node.props.className} ${running ? 'is-running' : ''}`, 'data-running': running || undefined, 'aria-label': `${running ? label : current?.done === true ? "Completed" : "Reported"}. ${node.props['aria-label']}` });
+        return React.cloneElement(node, { className: `${node.props.className} ${running ? 'is-running' : ''}`, 'data-running': running || undefined, 'aria-label': `${running ? label : current?.done === true ? "Completed" : "Reported"}. ${node.props['aria-label']}` }, decorate(node.props.children));
       }
-      const extra = running && node.props.overlay ? { overlay: React.cloneElement(node.props.overlay, {}, <><strong>Running — partial results, not final.</strong>{node.props.overlay.props.children}</>) } : {};
+      const extra = node.props.overlay ? { overlay: decorate(node.props.overlay) } : {};
       return React.cloneElement(node, extra, decorate(node.props.children));
     };
     let content = decorate(cellInfo);
     if (running && !hasMarker) content = renderStatusMarker({ status: 'secondary', value: ' ', running: true, type: stage });
     const boundary = arch === archsByIb[Number(position)]?.archs[0];
-    return <td key={key} className={`align-middle ib-result-cell ${boundary ? 'ib-group-start' : ''}`}>
+    return <td key={key} className={`align-middle ib-result-cell ${boundary ? 'ib-group-start' : ''}`} data-muted={!matchesResultFilter(resultStatus, resultFilter)}>
       {content}
       {delta && !running && <div className="ib-cell-comparison" title={delta.detail}>
         {delta.label && <span className={`ib-result-delta ${delta.novel ? 'ib-novel-failure' : `ib-delta-${delta.tone || 'secondary'}`}`} aria-label={delta.detail}>{delta.label}</span>}
@@ -778,18 +764,16 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
               <tr>
                 <th className="name-column" rowSpan={2} style={{ verticalAlign: 'middle' }}>
                   <div className="d-flex align-items-center justify-content-center h-100">
-                    <span className="type-header-desktop fw-bold text-uppercase" style={{ fontSize: "var(--ui-type-label)" }}>
-                      Stage
-                    </span>
+                    <span className="type-header-desktop ib-stage-corner"><span>Stage</span><small>Configuration →</small></span>
                     <span className="type-header-mobile fw-bold text-uppercase" style={{ fontSize: "var(--ui-type-caption)" }} />
                   </div>
                 </th>
 
                 {archsByIb.map((item, pos) => {
                   if (!item.archs?.length) return null;
-                  if (!item.archs?.length) return null;
 
                   const flavorLabel = formatFlavorLabel(item.flavor);
+                  const familyState = familyBuildState(data[pos], item.archs);
                   const releaseNameToCopy = item.current_tag || data[pos]?.release_name || '';
 
                   const flavorLink = releaseNameToCopy
@@ -813,7 +797,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
                   return (
                     <th
                       key={`flavor-${pos}-${item.flavor}`}
-                      className={`ib-group-start ib-family-header ib-config-${familyBuildStatus(data[pos], item.archs)}`}
+                      className={`ib-group-start ib-family-header ib-config-${familyState.status} ${familyState.running ? 'is-running' : ''}`}
                       colSpan={item.archs.length}
                       style={{
                         textAlign: 'center',
@@ -881,13 +865,13 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
                   const buildTypePrefixIcon = cmsdistTag && cmsdistTag !== "Not Found"
                     ? (
                         isPatch
-                          ? <span title="Patch build: reuses CMSDist tag"><FaTools size={15} /> Patch</span>
-                          : <span title="Full build: dedicated CMSDist tag"><FaWrench size={15} /> Full</span>
+                          ? <span title="Patch build: reuses CMSDist tag"><FaTools size={13} /></span>
+                          : <span title="Full build: dedicated CMSDist tag"><FaWrench size={13} /></span>
                       )
                     : null;
 
-                  const headerStatus = buildHeaderStatus(data[pos], arch);
-                  const archStack = <ArchitectureHeader architecture={arch} icon={buildTypePrefixIcon} status={headerStatus} />;
+                  const headerState = configurationBuildState(data[pos], arch);
+                  const archStack = <ArchitectureHeader architecture={arch} icon={buildTypePrefixIcon} status={headerState.status} running={headerState.running} defaults={headerDefaults} />;
 
                   const cellContent = link ? (
                     <OverlayTrigger
@@ -910,7 +894,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
                   return (
                     <th
                       key={`arch-${pos}-${arch}`}
-                      className={`ib-config-header ib-config-${headerStatus} ${archIndex === 0 ? "ib-group-start" : ""}`}
+                      className={`ib-config-header ib-config-${headerState.status} ${headerState.running ? 'is-running' : ''} ${archIndex === 0 ? "ib-group-start" : ""}`}
                       style={{
                         padding: '3px 2px',
                         backgroundColor: THEME.light,
@@ -1028,8 +1012,8 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
                   <td className="name-column fw-semibold">
                     <a
                       href={urls.newRelVals(que, date)}
-                      className="text-decoration-none d-flex align-items-center justify-content-center"
-                      style={{ color: THEME.primary, height: '100%' }}
+                      className="text-decoration-none d-flex align-items-center ib-row-label-link"
+                      style={{ color: THEME.text.primary, height: '100%' }}
                       title="RelVal"
                     >
                       <span className="type-label-desktop">RelVal</span>
@@ -1117,18 +1101,20 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
   );
   const counts = summarizeMatrix(matrix);
   return (
-    <section className="ib-matrix-section" data-failures-only={failuresOnly} aria-label="Build test matrix">
-      <BuildSummary counts={counts} />
-      <ButtonGroup className="ib-result-filter" aria-label="Test results filter">
-        <Button variant="light" active={!failuresOnly} aria-pressed={!failuresOnly} onClick={() => setFailuresOnly(false)}>All results ({Object.values(counts).reduce((sum, count) => sum + count, 0)})</Button>
-        <Button variant="light" active={failuresOnly} aria-pressed={failuresOnly} onClick={() => setFailuresOnly(true)}>Failures only ({counts.danger})</Button>
-      </ButtonGroup>
-      {failuresOnly && counts.danger === 0 && <p className="ib-matrix-empty" role="status">No failed results in the selected architectures. Warnings remain available under All results.</p>}
-      {shadeStageOutliers(matrix)}
+    <section className="ib-matrix-section" data-result-filter={resultFilter} aria-label="Build test matrix">
+      <div className="ib-matrix-toolbar">
+        <BuildSummary counts={counts} filter={resultFilter} onFilter={setResultFilter} />
+        <ButtonGroup className="ib-result-filter" aria-label="Test results filter">
+          <Button variant="light" active={resultFilter === 'all'} aria-pressed={resultFilter === 'all'} onClick={() => setResultFilter('all')}>All results <span>{Object.values(counts).reduce((sum, count) => sum + count, 0)}</span></Button>
+          <Button variant="light" active={resultFilter === 'issues'} aria-pressed={resultFilter === 'issues'} onClick={() => setResultFilter('issues')} title="Emphasize failures and warnings without hiding other results">Failures only <span>{counts.danger + counts.warning}</span></Button>
+        </ButtonGroup>
+      </div>
+      {resultFilter !== 'all' && <p className="ib-filter-status" role="status">{resultFilter === 'issues' ? 'Failures and warnings' : resultFilter === 'danger' ? 'Failures' : resultFilter === 'warning' ? 'Warnings' : 'Passed results'} highlighted. Other results remain visible.</p>}
+      {matrix}
       <details className="ib-matrix-help">
         <summary>How to read results and comparisons</summary>
-      <p className="ib-matrix-legend">✓ passed · ✕ failed · ⚠ warning · ? unavailable. Build numbers count errors/warnings; Unit, RelVal and AddOn numbers count test results. Q/A is the reported duplicate-check outcome; ✕ is a failure, not “not run”. Linked cells open details. Darker failure pills indicate larger counts within the same stage, not necessarily regressions.</p>
-        <p className="ib-matrix-footnote">Stage counts describe reported outcomes for selected configurations, including partial results. A pulsing inner fill means running; final comparisons are withheld until completion. Only the latest IB in an exact queue/variant sequence has comparisons. Missing or ambiguous configurations never count as zero. Newly failing means a pass-to-fail transition, not a unique failure identity. Each metric delta compares the same named count; +passes is favorable, +failures is adverse. Unchanged counts have no delta. Baselines are drawn from the complete response available to this page, before filters.</p>
+      <p className="ib-matrix-legend">✓ passed · ✕ failed · ! warning · – unavailable. Build numbers count errors/warnings; Unit, RelVal and AddOn numbers count test results. Q/A is the reported duplicate-check outcome; ✕ is a failure, not “not run”. Linked cells open details. Counts remain separate from their state marks; a large count does not by itself mean a new regression.</p>
+        <p className="ib-matrix-footnote">Stage counts describe reported outcomes for selected configurations, including partial results. A rotating rim, radar sweep and breathing inner glow mean running; final comparisons are withheld until completion. Only the latest IB in an exact queue/variant sequence has comparisons. Missing or ambiguous configurations never count as zero. Newly failing means a pass-to-fail transition, not a unique failure identity. Each metric delta compares the same named count; +passes is favorable, +failures is adverse. Unchanged counts have no delta. Baselines are drawn from the complete response available to this page, before filters.</p>
       </details>
     </section>
   );

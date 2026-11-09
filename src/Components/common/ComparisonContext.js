@@ -1,12 +1,12 @@
 import React from 'react';
 
 export default function ComparisonContext({ builds, comparisons }) {
-  const latest = builds.filter(build => build.isIB === true && comparisons.get(build)?.latest);
+  const latest = builds.filter(build => build.isIB === true && comparisons.get(build)?.latest && comparisons.get(build)?.previous);
   if (!latest.length) return null;
   const comparisonLine = build => {
     const context = comparisons.get(build);
     return <div key={build.release_name}><span className="ib-comparison-series">{build.release_queue}: </span>
-      {context.previous ? <>Compared with <code>{context.previous.release_name}</code></> : context.reason}
+      Compared with <code>{context.previous.release_name}</code>
     </div>;
   };
   return <div className="ib-comparison-context" onClick={event => event.stopPropagation()}>

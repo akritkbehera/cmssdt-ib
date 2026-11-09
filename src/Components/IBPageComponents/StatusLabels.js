@@ -16,6 +16,8 @@ import {
 import { getCurrentIbTag, getDisplayName } from "../../Utils/processing";
 import { UnitTestsLabel } from "./UnitTestsLabel";
 import { RelvalsLabel } from "./RelvalsLabel";
+import StatusDot from "../common/StatusDot";
+import { sectionState } from "../../Utils/buildStatus";
 
 const { statusLabelsConfigs } = config;
 
@@ -103,17 +105,17 @@ class StatusLabels extends Component {
     return {
       colors,
       style: {
-        backgroundColor: colors.bg,
-        color: colors.text,
+        backgroundColor: 'var(--ui-surface)',
+        color: 'var(--ui-text)',
         fontSize: "0.85rem",
         fontWeight: "500",
-        padding: "4px 10px",
-        borderRadius: "4px",
-        border: `1px solid ${colors.border}`,
+        padding: "4px 11px 4px 5px",
+        borderRadius: "999px",
+        border: '1px solid var(--ui-border)',
         display: "inline-flex",
         alignItems: "center",
         gap: "4px",
-        lineHeight: 1.0,
+        lineHeight: 1.3,
         boxShadow: "none",
         transition: "all 0.2s ease",
         whiteSpace: "nowrap",
@@ -132,12 +134,13 @@ class StatusLabels extends Component {
       tooltip
     });
 
-    const severity = labelColor === 'red' ? 'danger' : labelColor === 'orange' ? 'warning' : variant;
-    const statusIcon = severity === 'danger' ? ICON_MAP.error : severity === 'warning' ? ICON_MAP.warning : icon;
+    const state = sectionState([{ variant, labelColor }]);
+    const severity = state.status;
+    const isStatus = ['success', 'danger', 'warning', 'info', 'secondary'].includes(variant) || labelColor;
     const content = (
       <>
-        {statusIcon && <span className="me-1" style={{ color: colors.text }}>{statusIcon}</span>}
-        <span style={{ color: colors.text }}>{name}</span>{url && <span aria-hidden="true">↗</span>}
+        {isStatus ? <StatusDot status={state.status} running={state.running} size={22} /> : icon}
+        <span>{name}</span>{url && <span aria-hidden="true">↗</span>}
       </>
     );
 
@@ -153,7 +156,7 @@ class StatusLabels extends Component {
         <a
           key={`label-${name}-${url || "no-url"}`}
           href={url}
-          className="me-1 ib-tool-link"
+          className="ib-section-pill ib-tool-link"
           data-severity={severity}
           style={{ ...style, ...hoverStyle }}
           target="_blank"
@@ -166,7 +169,7 @@ class StatusLabels extends Component {
     }
 
     return (
-      <span key={`label-${name}-${tooltip || "no-tooltip"}`} data-severity={severity} className="me-1" style={style} title={tooltip}>
+      <span key={`label-${name}-${tooltip || "no-tooltip"}`} data-severity={severity} className="ib-section-pill" style={style} title={tooltip}>
         {content}
       </span>
     );
@@ -284,45 +287,8 @@ class StatusLabels extends Component {
 
   static renderGroupedDropdown(title, items) {
     if (!items || items.length === 0) return null;
-      const hasDanger = items.some((item) => item?.labelColor === "red" || item?.variant === "danger");
-      const hasWarning = items.some((item) => item?.labelColor === "orange" || item?.variant === "warning");
-      const hasInProgress = items.some((item) => item?.variant === "info");
-      const allPending = items.every((item) => item?.variant === "info");
-      const allSuccessLikeOrPending = items.every((item) => { const isSuccessLikeOrPending = item?.variant === "success" || item?.variant === "info";
-      const isExplicitFailure = item?.labelColor === "red" || item?.variant === "danger";
-      const isWarningState = item?.labelColor === "orange" || item?.variant === "warning";
-    return isSuccessLikeOrPending && !isExplicitFailure && !isWarningState;
-      });
-
-      const hasAtLeastOneSuccessLike = items.some(
-        (item) => item?.variant === "success"
-      );
-
-      let variant = "secondary";
-      if (hasDanger) {
-        variant = "danger";
-      } else if (allPending) {
-        variant = "secondary";
-      } else if (allSuccessLikeOrPending && hasAtLeastOneSuccessLike) {
-        variant = "success";
-      } else if (hasWarning) {
-        variant = "warning";
-      }
-
-      const colors = COLOR_SCHEME[variant] || COLOR_SCHEME.secondary;
-
-      let mainIcon = null;
-      if (hasDanger) {
-        mainIcon = ICON_MAP.error;
-      } else if (hasWarning) {
-        mainIcon = ICON_MAP.warning;
-      } else if (hasInProgress) {
-        mainIcon = ICON_MAP.refresh;
-      } else if (allSuccessLikeOrPending && hasAtLeastOneSuccessLike) {
-        mainIcon = ICON_MAP.success;
-      } else if (hasWarning) {
-        mainIcon = ICON_MAP.warning;
-      }
+    const state = sectionState(items);
+    const variant = state.status;
 
     return (
       <Dropdown key={`group-${title}`} className="d-inline-block me-1" data-severity={variant} autoClose="outside">
@@ -330,30 +296,15 @@ class StatusLabels extends Component {
           variant="light"
           size="sm"
           id={`dropdown-group-${title.replace(/\s+/g, "-").toLowerCase()}`}
-          style={{
-            backgroundColor: colors.bg,
-            borderColor: colors.border,
-            color: colors.text,
-            fontWeight: "500",
-            padding: "4px 10px",
-            fontSize: "0.85rem",
-            boxShadow: "none",
-            display: "inline-flex",
-            alignItems: "center"
-          }}
+          className="ib-section-pill"
           title={title}
         >
-          {mainIcon && (
-            <span className="me-1" style={{ color: colors.text, display: "inline-flex", alignItems: "center" }}>
-              {mainIcon}
-            </span>
-          )}
-          <span style={{ color: colors.text }}>{title}</span>
+          <StatusDot status={state.status} running={state.running} size={22} />
+          <span>{title}</span>
         </Dropdown.Toggle>
 
         <Dropdown.Menu style={{ minWidth: "240px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
           {items.map((item) => {
-            const itemColors = StatusLabels.resolveColors(item.variant, item.labelColor);
 
             return (
               <Dropdown.Item
@@ -370,11 +321,7 @@ class StatusLabels extends Component {
                   gap: "8px"
                 }}
               >
-                {item.icon && (
-                  <span style={{ color: itemColors.text, display: "inline-flex", alignItems: "center" }}>
-                    {item.icon}
-                  </span>
-                )}
+                <StatusDot {...sectionState([item])} size={16} />
                 <span>{item.name}</span>
               </Dropdown.Item>
             );
@@ -555,7 +502,7 @@ class StatusLabels extends Component {
       (severityOrder[a.props?.['data-severity']] ?? 5) - (severityOrder[b.props?.['data-severity']] ?? 5));
 
     return (
-     <div className="d-flex flex-wrap align-items-center" style={{  marginLeft: "15px" }}>
+     <div className="ib-section-controls d-flex flex-wrap align-items-center">
         {validMenuData}
     </div>
     );

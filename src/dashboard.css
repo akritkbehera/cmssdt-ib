@@ -319,38 +319,132 @@ body { font-family: var(--ui-font-sans); -webkit-font-smoothing: antialiased; }
 .ib-comparison-context > details { display: inline-block; margin-top: var(--ui-space-1); }
 .ib-comparison-context > details > summary { cursor: pointer; color: var(--ui-primary); }
 
-/* Adapted directly from Build Status Badge.html; demo-card layout omitted. */
+/* Shared results design: semantic state circles, neutral controls, tinted headers. */
+.ib-state-dot {
+  --dot-tone: var(--ui-muted-light); --dot-soft: var(--ui-hover); --dot-ink: var(--ui-text-secondary);
+  --dot-glow: color-mix(in srgb, var(--dot-tone) 42%, transparent);
+  position: relative; display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: var(--dot-size, 24px); height: var(--dot-size, 24px);
+  border: var(--dot-stroke, 2px) solid var(--dot-tone); border-radius: 50%;
+  color: var(--dot-ink); background: var(--dot-soft) !important; isolation: isolate;
+}
+.ib-state-dot.ib-status-success { --dot-tone: var(--ui-success); --dot-soft: var(--ui-success-tint); --dot-ink: var(--ui-success-dark); }
+.ib-state-dot.ib-status-danger { --dot-tone: var(--ui-danger); --dot-soft: var(--ui-danger-tint); --dot-ink: var(--ui-danger-text); }
+.ib-state-dot.ib-status-warning { --dot-tone: var(--ui-warning); --dot-soft: var(--ui-warning-tint); --dot-ink: var(--ui-warning-text); }
+.ib-state-dot.ib-status-info { --dot-tone: var(--ui-primary); --dot-soft: var(--ui-info-tint); --dot-ink: var(--ui-primary-dark); }
+.ib-state-dot.is-solid { background: var(--dot-tone) !important; color: white; }
+.ib-state-dot.ib-status-warning.is-solid { color: #4e3500; }
+.ib-dot-mark { display: inline-flex; align-items: center; justify-content: center; position: relative; z-index: 3; width: 56%; height: 56%; }
+.ib-dot-mark svg { display: block; width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+.ib-dot-pin { width: 40%; height: 40%; border-radius: 50%; background: currentColor; }
+.ib-dot-pulse, .ib-dot-sweep { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+.ib-dot-sweep { display: none; background: conic-gradient(transparent 0 50%, var(--dot-glow)); z-index: 1; }
+.ib-state-dot::before { position: absolute; inset: calc(-1 * var(--dot-stroke, 2px)); border-radius: inherit; pointer-events: none; z-index: 2;
+  background: conic-gradient(transparent 0 50%, var(--dot-tone));
+  mask: radial-gradient(farthest-side, transparent calc(100% - var(--dot-stroke, 2px)), #000 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--dot-stroke, 2px)), #000 0);
+}
+.ib-state-dot.is-running, .ib-status-marker.is-running .ib-state-dot { border-color: color-mix(in srgb, var(--dot-tone) 35%, transparent); }
+.ib-state-dot.is-running::before, .ib-status-marker.is-running .ib-state-dot::before { content: ''; animation: ib-reference-spin 2s linear infinite; }
+.ib-state-dot.is-running .ib-dot-sweep, .ib-status-marker.is-running .ib-dot-sweep { display: block; animation: ib-reference-spin 2s linear infinite; }
+.ib-state-dot.is-running .ib-dot-pulse, .ib-status-marker.is-running .ib-dot-pulse { animation: ib-reference-pulse 1.8s ease-in-out infinite; }
+@keyframes ib-reference-spin { to { transform: rotate(360deg); } }
+@keyframes ib-reference-pulse {
+  0%, 100% { box-shadow: inset 0 0 1px transparent; }
+  50% { box-shadow: inset 0 0 calc(var(--dot-size) * .32) calc(var(--dot-size) * .07) var(--dot-glow), 0 0 calc(var(--dot-size) * .25) var(--dot-glow); }
+}
 .ib-status-marker {
-  --badge-tone: var(--ui-muted); --badge-soft: var(--ui-hover);
-  --badge-glow: rgb(100 116 139 / 35%); --badge-ink: var(--ui-text-secondary);
   display: inline-grid; grid-template-columns: var(--ui-status-size) minmax(var(--ui-status-count-width), max-content);
-  align-items: center; gap: var(--ui-status-gap); padding: 0;
-  font-size: var(--ui-type-label); line-height: var(--ui-leading-body);
+  align-items: center; gap: 6px; padding: 0; border-radius: 0; line-height: 1.5;
   font-family: var(--ui-font-mono); font-variant-numeric: tabular-nums;
   background: transparent !important;
 }
-.ib-status-marker.is-pass { --badge-tone: var(--ui-badge-green); --badge-soft: var(--ui-badge-green-soft); --badge-glow: var(--ui-badge-green-glow); --badge-ink: var(--ui-badge-green-ink); }
-.ib-status-marker.is-fail { --badge-tone: var(--ui-badge-red); --badge-soft: var(--ui-badge-red-soft); --badge-glow: var(--ui-badge-red-glow); --badge-ink: var(--ui-badge-red-ink); }
-.ib-status-marker.ib-status-warning { --badge-tone: var(--ui-warning); --badge-soft: var(--ui-warning-tint); --badge-ink: var(--ui-warning-text); }
-.ib-status-circle.dot {
-  position: relative; width: var(--ui-status-size); height: var(--ui-status-size);
-  flex: none; display: grid; place-items: center; border: var(--ui-status-stroke) solid var(--badge-tone);
-  border-radius: 50%; background: var(--badge-soft); overflow: hidden; isolation: isolate;
+.ib-status-count { font: 600 var(--ui-type-label)/1.5 var(--ui-font-mono); text-align: left; color: inherit; white-space: nowrap; }
+.ib-matrix-section .ib-table-frame { padding: 0; }
+.ib-matrix-section .ib-table-responsive { margin: 0; }
+.ib-matrix-section .table { border-collapse: separate; border-spacing: 0; }
+.ib-matrix-section .table tbody td { height: 58px; padding: 6px 8px; }
+.ib-matrix-section .table .name-column { font-weight: 600; text-align: left; padding-left: 16px; }
+.ib-row-label-link { justify-content: flex-start; font-weight: 600; }
+.ib-matrix-section .ib-stage-corner { display: flex !important; flex-direction: column; align-items: flex-start; gap: 8px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.ib-stage-corner small { font: 400 10px/1.6 var(--ui-font-sans); color: var(--ui-muted); letter-spacing: 0; text-transform: none; }
+.ib-matrix-section td[data-muted="true"] > * { opacity: .27; transition: opacity .15s; }
+.ib-matrix-section td[data-muted="true"]:is(:hover,:focus-within) > * { opacity: 1; }
+.ib-matrix-section td a:focus-visible { outline: var(--ui-focus-ring); outline-offset: 2px; }
+.ib-matrix-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 14px 16px;
+  background: var(--ui-surface-muted); border-block: 1px solid var(--ui-border); }
+.ib-build-summary { padding: 0; gap: 10px; }
+.ib-build-summary > strong { color: var(--ui-text-secondary); font: 500 var(--ui-type-label)/1.5 var(--ui-font-sans); }
+.ib-summary-counts { gap: 8px; }
+.ib-summary-badge { display: inline-flex; align-items: center; gap: 6px; border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  border-radius: 999px; padding: 4px 10px 4px 5px; font-size: var(--ui-type-caption); line-height: 18px; white-space: nowrap; }
+button.ib-summary-badge:hover { border-color: currentColor; }
+button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; outline-offset: 2px; }
+.ib-summary-number { font: 600 12px/1.5 var(--ui-font-mono); font-variant-numeric: tabular-nums; }
+.ib-summary-empty { color: var(--ui-muted); font-size: var(--ui-type-caption); }
+.ib-result-filter.btn-group { margin: 0; padding: 3px; gap: 3px; border: 1px solid var(--ui-border); border-radius: 8px; background: var(--ui-surface); }
+.ib-result-filter .btn { flex: none; min-height: 30px; padding: 3px 10px; border-radius: 5px !important; font-size: 12px; line-height: 20px; display: inline-flex; align-items: center; gap: 7px; }
+.ib-result-filter .btn span { font: 500 10px/18px var(--ui-font-mono); padding: 0 5px; border-radius: 4px; background: color-mix(in srgb, currentColor 8%, transparent); }
+.ib-result-filter .btn.active { background: var(--ui-info-tint); border-color: transparent; color: var(--ui-primary-dark); }
+.ib-filter-status { font-size: var(--ui-type-caption); color: var(--ui-text-secondary); margin: 0; padding: 8px 16px; }
+.ib-matrix-help { margin: 0; border-top: 1px solid var(--ui-border); padding: 12px 16px; }
+.ib-matrix-help summary { color: var(--ui-text-secondary); font-size: 12px; }
+.ib-matrix-help p { font-size: 12px; line-height: 1.65; padding: 0; }
+.ib-comparison-context { padding: 8px 16px; }
+.ib-comparison-context > details > summary { color: var(--ui-text-secondary); }
+
+/* A neutral family band and status-tinted configuration columns. */
+.ib-config-passed { --ib-config-tone: #2b9f60; --ib-config-bg: #eff9f4; }
+.ib-config-failed { --ib-config-tone: #df3943; --ib-config-bg: #fff0f3; }
+.ib-config-warnings { --ib-config-tone: #d99500; --ib-config-bg: #fff7e2; }
+.ib-config-running { --ib-config-tone: #2f70ed; --ib-config-bg: #eef3ff; }
+.ib-config-queued, .ib-config-unknown { --ib-config-tone: #8d99ac; --ib-config-bg: #f4f6f9; }
+.ib-matrix-section .table thead th.ib-family-header { height: 42px; background: #ecf1f8 !important; border-bottom: 1px solid #d3dce9; }
+.ib-family-header .flavor-card { color: #414e64 !important; background: transparent !important; padding: 4px 6px !important; font-size: 11px !important; font-weight: 600 !important; letter-spacing: .07em; white-space: nowrap; }
+.ib-family-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ib-config-tone); }
+.ib-family-header.is-running .ib-family-dot { box-shadow: 0 0 0 3px color-mix(in srgb, var(--ib-config-tone) 25%, transparent); }
+.ib-config-queued .ib-family-dot, .ib-config-unknown .ib-family-dot { border: 1.5px solid var(--ib-config-tone); background: transparent; }
+.flavor-copy-button:focus-visible, .flavor-card-wrapper:focus-within .flavor-copy-button { opacity: 1; }
+.ib-matrix-section .table thead th.ib-config-header { background: var(--ib-config-bg) !important; border-top: 3px solid var(--ib-config-tone) !important; height: 150px; min-width: 92px !important; }
+.ib-matrix-section .table thead th.ib-config-header .ib-architecture-header { align-items: center; padding: 10px 4px; gap: 9px; }
+.ib-config-header .ib-architecture-platform { display: inline-flex; flex-direction: row; align-items: center; justify-content: center; gap: 5px;
+  min-height: 26px; padding: 1px 7px; border: 1.5px solid #d6dfed; border-radius: 5px; background: #f0f3f8;
+  color: var(--ui-text); font: 600 13px/20px var(--ui-font-sans); }
+.ib-build-kind { margin: 0; font-size: 11px; color: var(--ui-muted); }
+.ib-build-kind > span { display: inline-flex; }
+.ib-config-header .ib-architecture-toolchain { gap: 7px; font: 500 12px/20px var(--ui-font-mono); color: #5d6a7e; }
+.ib-config-header .ib-architecture-value { min-height: 24px; padding: 0 5px; border: 1.5px solid transparent; border-radius: 5px; }
+.ib-config-header .is-alternate { background: var(--ui-surface); border-color: var(--ui-text); color: var(--ui-text); font-weight: 600; }
+.ib-config-status { margin-top: 2px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font: 600 11px/20px var(--ui-font-sans); }
+.ib-config-passed .ib-config-status { color: var(--ui-success-dark); }
+.ib-config-failed .ib-config-status { color: var(--ui-danger-text); }
+.ib-config-warnings .ib-config-status { color: var(--ui-warning-text); }
+.ib-config-queued .ib-config-status, .ib-config-unknown .ib-config-status { color: var(--ui-text-secondary); }
+.ib-config-queued .ib-dot-mark { visibility: hidden; }
+.ib-table-responsive th a { text-decoration: none; }
+.ib-table-responsive th a:hover .ib-architecture-platform { box-shadow: 0 0 0 2px rgb(49 95 232 / 12%); }
+
+/* Keep all section controls neutral; the shared dot alone carries state. */
+.ib-section-controls { gap: 8px; margin: 0; padding: 4px 16px 16px; }
+.ib-section-pill, .ib-section-pill.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 34px; padding: 4px 11px 4px 5px !important; border-radius: 999px !important;
+  border: 1px solid var(--ui-border) !important; background: var(--ui-surface) !important;
+  color: var(--ui-text) !important; font: 500 13px/1.3 var(--ui-font-sans) !important;
+  box-shadow: none !important; text-decoration: none; white-space: nowrap; }
+.ib-section-pill:hover, .ib-section-pill.btn.show { background: var(--ui-hover) !important; border-color: var(--ui-border-strong) !important; }
+.ib-section-pill:focus-visible, .ib-summary-badge:focus-visible { outline: var(--ui-focus-ring); outline-offset: 2px; }
+.ib-section-pill.dropdown-toggle::after { color: var(--ui-muted); margin-left: 1px; }
+.ib-workspace[data-density="compact"] .ib-result-cell .ib-state-dot { --dot-size: 20px !important; }
+.ib-workspace[data-density="compact"] .ib-matrix-section .table tbody td { height: 42px; padding-block: 3px; }
+@media (max-width: 767.98px) {
+  .ib-matrix-toolbar { padding: 12px 8px; }
+  .ib-section-controls { padding-inline: 8px; }
+  .ib-config-header .ib-architecture-toolchain { font-size: 11px; }
+  .ib-matrix-section .ib-stage-corner small { display: none; }
 }
-.ib-status-glyph { position: relative; z-index: 2; display: inline-flex; color: var(--badge-ink); }
-.ib-status-glyph svg { width: var(--ui-status-glyph-size); height: var(--ui-status-glyph-size); }
-.ib-status-marker:is(.is-pass,.is-fail) .ib-status-glyph svg { fill: none; stroke: var(--badge-ink); stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
-.ib-status-count { font-family: var(--ui-font-mono); font-weight: var(--ui-status-count-weight); font-size: var(--ui-type-label); line-height: inherit; text-align: left; color: var(--badge-ink); }
-.ib-status-fill { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
-.ib-status-sweep { display: none; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: conic-gradient(from 0deg, transparent 0 50%, var(--badge-glow) 100%); }
-.ib-status-circle::before { content: none; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: conic-gradient(from 0deg, transparent 0 50%, var(--badge-tone) 100%); mask: radial-gradient(farthest-side, transparent calc(100% - var(--ui-status-stroke)), #000 calc(100% - var(--ui-status-stroke))); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--ui-status-stroke)), #000 calc(100% - var(--ui-status-stroke))); }
-.ib-status-marker.is-running .dot { border-color: color-mix(in srgb, var(--badge-tone) 35%, transparent); }
-.ib-status-marker.is-running .dot::before { content: ""; animation: ib-reference-spin 2s linear infinite; }
-.ib-status-marker.is-running .ib-status-sweep { display: block; animation: ib-reference-spin 2s linear infinite; }
-.ib-status-marker.is-running .ib-status-fill { animation: ib-reference-pulse 1.8s ease-in-out infinite; }
-@keyframes ib-reference-spin { to { transform: rotate(360deg); } }
-@keyframes ib-reference-pulse { 0%,100% { box-shadow: inset 0 0 1px 0 transparent; } 50% { box-shadow: inset 0 0 9px 2px var(--badge-glow); } }
 @media (prefers-reduced-motion: reduce) {
-  .ib-status-marker.is-running .dot::before, .ib-status-marker.is-running .ib-status-sweep, .ib-status-marker.is-running .ib-status-fill { animation: none; }
-  .ib-status-marker.is-running .ib-status-fill { box-shadow: inset 0 0 7px 1px var(--badge-glow); }
+  .ib-state-dot.is-running::before, .ib-status-marker.is-running .ib-state-dot::before,
+  .ib-state-dot.is-running .ib-dot-sweep, .ib-status-marker.is-running .ib-dot-sweep,
+  .ib-state-dot.is-running .ib-dot-pulse, .ib-status-marker.is-running .ib-dot-pulse { animation: none; }
+  .ib-state-dot.is-running .ib-dot-pulse, .ib-status-marker.is-running .ib-dot-pulse { box-shadow: inset 0 0 7px var(--dot-glow); }
 }
