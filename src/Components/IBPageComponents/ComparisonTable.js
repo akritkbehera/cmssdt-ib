@@ -1,6 +1,5 @@
 import { stages } from "../../Utils/resultDelta";
 import { compareCell, comparableCellResults } from "../../Utils/ibComparison";
-import BuildSummary from "../common/BuildSummary";
 import { summarizeMatrix } from "../../Utils/matrixSummary";
 import ArchitectureHeader from "../common/ArchitectureHeader";
 import StatusDot from "../common/StatusDot";
@@ -10,7 +9,7 @@ import { configurationBuildState, familyBuildState, architectureDefaults, matche
 import { tableTheme as THEME } from "../../styles/theme";
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { Button, ButtonGroup, OverlayTrigger, Table, Tooltip } from "react-bootstrap";
+import { OverlayTrigger, Table, Tooltip } from "react-bootstrap";
 import {
   checkLabelType,
   getAllActiveArchitecturesFromIBGroupByFlavor,
@@ -321,13 +320,12 @@ const copyText = (text) => {
   }
 };
 
-const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => {
+const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resultFilter = 'all', onCountsChange }) => {
   const [configuration, setConfiguration] = useState('');
   const [compareOnPhone, setCompareOnPhone] = useState(false);
   const [inView, setInView] = useState(true);
   const sectionRef = useRef(null);
   const [copiedText, setCopiedText] = useState(null);
-  const [resultFilter, setResultFilter] = useState('all');
   const [hasOverflow, setHasOverflow] = useState(false);
   const tableContainer = useRef(null);
   const { getActiveArchsForQue = () => [] } = useShowArch();
@@ -1124,16 +1122,11 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
     </div>
   );
   const counts = summarizeMatrix(matrix);
+  useEffect(() => { onCountsChange?.(counts); },
+    [onCountsChange, counts.success, counts.danger, counts.warning, counts.secondary, counts.info]);
   return (
     <section ref={sectionRef} className="ib-matrix-section" data-in-view={inView} data-result-filter={resultFilter} aria-label="Build test matrix">
-      <div className="ib-matrix-toolbar">
-        <BuildSummary counts={counts} filter={resultFilter} onFilter={setResultFilter} />
-        <ButtonGroup className="ib-result-filter" aria-label="Test results filter">
-          <Button variant="light" active={resultFilter === 'all'} aria-pressed={resultFilter === 'all'} onClick={() => setResultFilter('all')}>All results <span>{Object.values(counts).reduce((sum, count) => sum + count, 0)}</span></Button>
-          <Button variant="light" active={resultFilter === 'issues'} aria-pressed={resultFilter === 'issues'} onClick={() => setResultFilter('issues')} title="Emphasize failures and warnings without hiding other results">Failures only <span>{counts.danger + counts.warning}</span></Button>
-        </ButtonGroup>
-      </div>
-      {resultFilter !== 'all' && <p className="ib-filter-status" role="status">{resultFilter === 'issues' ? 'Failures and warnings' : resultFilter === 'danger' ? 'Failures' : resultFilter === 'warning' ? 'Warnings' : 'Passed results'} highlighted. Other results remain visible.</p>}
+      {resultFilter !== 'all' && <p className="visually-hidden" role="status">{resultFilter === 'issues' ? 'Failures and warnings' : resultFilter === 'danger' ? 'Failures' : resultFilter === 'warning' ? 'Warnings' : 'Passed results'} highlighted. Other results remain visible.</p>}
       <div className="ib-phone-controls">
         <label>Configuration
           <select value={selected?.key || ''} onChange={event => setConfiguration(event.target.value)}>
@@ -1147,7 +1140,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue }) => 
       <div className={`ib-phone-results ${compareOnPhone ? 'is-hidden' : ''}`}>
         {selected ? <>
           <p className="ib-phone-config-name">{formatFlavorLabel(selected.flavor)} · {selected.arch}</p>
-          <p className="ib-phone-results-hint">Tap a result for details and logs. Summary counts cover all selected configurations.</p>
+          <p className="ib-phone-results-hint">Tap a result for details and logs. Header counts cover all selected configurations.</p>
           <dl>
             {mobileCells.filter(item => item.position === selected.position && item.arch === selected.arch).map(item => (
               <div key={item.key} className="ib-phone-stage" data-muted={item.cell.props['data-muted']}>

@@ -540,3 +540,11 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-preview-metrics { padding: 8px 12px; margin: 0; text-align: left; font-size: 12px; }
 .ib-change-preview small { display: block; color: var(--ui-text-secondary); margin-top: 8px; }
 .ib-result-cell .ib-result-details-trigger:has(.ib-cell-comparison) { display: flex; margin-inline: auto; }
+
+.ib-header-result-filter { margin-left: auto; flex: 0 0 auto; }
+.ib-header-result-filter .ib-result-filter { margin: 0; }
+.ib-header-result-filter .ib-result-filter .btn { min-height: 44px; }
+@media (max-width: 767.98px) {
+  .ib-header-result-filter { flex: 1 1 auto; }
+  .ib-header-result-filter .ib-result-filter .btn { flex: 1; }
+}

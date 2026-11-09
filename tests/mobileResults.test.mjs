@@ -29,10 +29,10 @@ const build = {
     file: 'not-ready', details: { compError: index ? 3 : 0 } })),
   utests: archs.map(arch => ({ arch, passed: 'passed', done: true, details: { num_passed: 10 }, file: 'not-ready' }))
 };
-function render(active = true) {
+function render(active = true, resultFilter = 'all') {
   return renderToStaticMarkup(React.createElement(Context.Provider, { value: {
     getActiveArchsForQue: () => ({ os: active ? ['el9'] : [], cpu: ['amd64', 'aarch64'], compiler: ['gcc14'] })
-  } }, React.createElement(ComparisonTable, { data: [build], releaseQue: 'CMSSW_20_1_X' })));
+  } }, React.createElement(ComparisonTable, { data: [build], resultFilter, releaseQue: 'CMSSW_20_1_X' })));
 }
 test('phone view shows only the selected configuration with the same stage results', () => {
   const html = render();
@@ -57,4 +57,15 @@ test('touch inspection extracts the exact original URL and accessible partial re
     href: url, label: 'Running — failures detected. 3 errors'
   });
   assert.deepEqual(inspectResult(null), { href: undefined, label: 'View result details' });
+});
+
+test('header-controlled filter emphasizes issues without restoring the removed summary row', () => {
+  const html = render(true, 'issues');
+  assert.doesNotMatch(html, /Stage results|ib-matrix-toolbar|ib-build-summary/);
+  assert.match(html, /class="visually-hidden" role="status"/);
+  const cells = html.match(/<td[^>]*ib-result-cell[^>]*>[\s\S]*?<\/td>/g) || [];
+  const emphasized = cells.filter(cell => cell.includes('data-muted="false"'));
+  assert.equal(emphasized.length, 1);
+  assert.match(emphasized[0], /ib-status-danger/);
+  assert.ok(cells.some(cell => cell.includes('data-muted="true"') && cell.includes('ib-status-success')));
 });

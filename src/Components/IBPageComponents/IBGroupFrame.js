@@ -1,3 +1,4 @@
+import ResultFilter from "../common/ResultFilter";
 import ComparisonContext from "../common/ComparisonContext";
 import IconButton from "../common/IconButton";
 import React, { PureComponent } from 'react';
@@ -37,8 +38,13 @@ const copyText = (text) => {
 class IBGroupFrame extends PureComponent {
     state = {
         showPullRequests: this.props.showPullRequests || false,
-        copiedText: null
+        copiedText: null,
+        resultFilter: 'all',
+        resultCounts: null
     };
+
+    setResultFilter = resultFilter => this.setState({ resultFilter });
+    updateResultCounts = resultCounts => this.setState({ resultCounts });
 
     copyToClipboard = (e, text) => {
         e.preventDefault();
@@ -119,6 +125,8 @@ class IBGroupFrame extends PureComponent {
                         <ComparisonTable
                             data={IBGroup}
                             comparisons={this.props.comparisons}
+                            resultFilter={this.state.resultFilter}
+                            onCountsChange={this.updateResultCounts}
                             releaseQue={releaseQue}
                         />
                     );
@@ -252,6 +260,11 @@ class IBGroupFrame extends PureComponent {
                                     )}
                                 </IconButton>
                             </div>
+
+                            {comparisonTable && !isCollapsed && <div className="ib-header-result-filter"
+                                title="Test results filter" onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()}>
+                                <ResultFilter filter={this.state.resultFilter} counts={this.state.resultCounts} onChange={this.setResultFilter} />
+                            </div>}
 
                             <span
                                 style={{
