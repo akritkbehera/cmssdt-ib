@@ -18,9 +18,8 @@ export default function ArchitectureHeader({ architecture, icon, status = 'unkno
           <span className={`ib-architecture-value ${alternate(value, index + 1)}`} key={`${value}-${index}`}>{value}</span>
         ))}
       </span>
-      <span className="ib-config-status" aria-label={`Build status: ${description}`} title={description}>
+      <span className="ib-config-status" role="img" aria-label={`Build status: ${description}`} title={description}>
         <StatusDot status={tones[status]} running={running} size={20} solid={['passed', 'failed', 'warnings'].includes(status) && !running} />
-        {labels[status]}
       </span>
     </div>
   );
