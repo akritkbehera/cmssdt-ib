@@ -574,15 +574,15 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-result-cell > .ib-status-details { display: flex !important; align-items: center; justify-content: center; min-height: 36px; }
 .ib-result-cell > button.ib-status-details { width: 100%; min-height: 44px; padding: 0; }
 
-/* One-line configuration labels; green follows the configured production fields. */
-.ib-matrix-section .table thead th.ib-config-header { height: 40px; vertical-align: middle; }
+/* Compact vertical configuration labels with soft production-color fills. */
+.ib-matrix-section .table thead th.ib-config-header { height: 90px; vertical-align: middle; }
 .ib-matrix-section .table thead th.ib-config-header .ib-config-label {
-  display: inline-flex; flex-direction: row; align-items: center; justify-content: center;
-  gap: 3px; padding: 2px 4px; white-space: nowrap;
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; padding: 2px 4px; white-space: nowrap;
   font: 600 13px/22px var(--ui-font-sans); color: var(--ui-text);
 }
-.ib-config-label .ib-config-value { display: inline-block; padding: 0 3px; border-radius: 3px; }
-.ib-config-label .ib-config-value.is-default { background: var(--ib-field-color); color: #102b16; }
+.ib-config-label .ib-config-value { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 60px; padding: 0 6px; border: 1px solid transparent; border-radius: 4px; }
+.ib-config-label .ib-config-value.is-default { background: color-mix(in srgb, var(--ib-field-color) 16%, transparent); border-color: color-mix(in srgb, var(--ib-field-color) 30%, transparent); color: #245438; }
 .ib-config-label .ib-config-separator { color: var(--ui-text-secondary); }
 .ib-config-label .ib-build-kind { display: inline-flex; margin-right: 2px; }
 .ib-workspace[data-density="compact"] .ib-matrix-section .ib-config-label { gap: 2px; }
@@ -599,7 +599,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-matrix-section .table .ib-configuration-column { width: var(--ib-column-width); }
 .ib-matrix-section .table .name-column { width: var(--ib-stage-width); min-width: 0; padding-inline: 8px; }
 .ib-matrix-section .table thead th.ib-config-header .ib-config-label {
-  display: flex; flex-wrap: wrap; gap: 0 2px; padding-inline: 0; white-space: normal;
+  display: flex; flex-direction: column; flex-wrap: nowrap; gap: 2px; padding: 2px 0; white-space: nowrap;
 }
 .ib-config-field { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
 .ib-matrix-section .table thead th.ib-family-header { overflow: hidden; }

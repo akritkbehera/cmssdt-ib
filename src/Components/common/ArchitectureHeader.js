@@ -9,11 +9,11 @@ export default function ArchitectureHeader({ architecture, icon, status = 'unkno
   const description = `${architecture} · ${defaultConfiguration ? 'Default configuration · ' : ''}Build status: ${labels[status]}${running && status !== 'running' ? ' so far; build still running' : ''}`;
   return (
     <div className="ib-architecture-header ib-config-label" aria-label={description} title={description}>
-      {icon && <span className="ib-build-kind" aria-hidden="true">{icon}</span>}
       {values.map((value, index) => <span className="ib-config-field" key={`${value}-${index}`}>
-        {index > 0 && <span className="ib-config-separator" aria-hidden="true">·</span>}
         <span className={`ib-config-value ${isDefault(value) ? 'is-default' : ''}`}
-          style={colors[value] ? { '--ib-field-color': colors[value] } : undefined}>{value}</span>
+          style={colors[value] ? { '--ib-field-color': colors[value] } : undefined}>
+          {index === 0 && icon && <span className="ib-build-kind" aria-hidden="true">{icon}</span>}{value}
+        </span>
       </span>)}
     </div>
   );
