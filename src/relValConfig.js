@@ -36,8 +36,11 @@ export const RELVAL_STATUS_ENUM = {
     NOTRUN: 'NOTRUN'
 };
 
-// Base path for all data files - using relative paths for local files
-const DATA_PATH = '/SDT/public/cms-sw.github.io/data';
+// Default to the local SDT tree; GitHub Pages builds use the public CMS mirror.
+const DATA_PATH = (
+  import.meta.env.VITE_CMS_PUBLIC_DATA_BASE_URL || '/SDT/public/cms-sw.github.io/data'
+).replace(/\/+$/, '');
+const CMSSDT_SERVER = import.meta.env.VITE_CMSSDT_SERVER || '';
 
 export const urls = {
     exitcodes: "https://cms-sw.github.io/exitcodes.json",
@@ -67,8 +70,8 @@ export const urls = {
     // Log viewer URLs - these still need to go to CERN
     relValLog: (arch, ib, workflowID, workflowName, filename, type, name) =>
         type && type !== ""
-          ? `/SDT/cgi-bin/logreader/${arch}/${ib}/${type}/${name}/pyRelValMatrixLogs/run/${workflowID}_${workflowName}/${filename}`
-          : `/SDT/cgi-bin/logreader/${arch}/${ib}/pyRelValMatrixLogs/run/${workflowID}_${workflowName}/${filename}`
+          ? `${CMSSDT_SERVER}/SDT/cgi-bin/logreader/${arch}/${ib}/${type}/${name}/pyRelValMatrixLogs/run/${workflowID}_${workflowName}/${filename}`
+          : `${CMSSDT_SERVER}/SDT/cgi-bin/logreader/${arch}/${ib}/pyRelValMatrixLogs/run/${workflowID}_${workflowName}/${filename}`
 };
 
 const _legendConf = [

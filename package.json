@@ -20,6 +20,7 @@
   "scripts": {
     "start": "vite",
     "build": "vite build",
+    "build:pages": "vite build --mode pages",
     "preview": "vite preview",
     "sync:preview": "python3 scripts/sync-preview.py",
     "build:preview": "npm run build && python3 scripts/sync-preview.py --build"

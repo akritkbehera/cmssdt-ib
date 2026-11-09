@@ -317,11 +317,11 @@ function getSeriesKeyFromTag(tag) {
 
 function getPrJsonUrl(seriesKey) {
   if (!seriesKey) return null;
-  return `/SDT/public/cms-sw.github.io/data/prs/${seriesKey}.json`;
+  return `${config.urls.publicDataDir}/prs/${seriesKey}.json`;
 }
 
 function getCmsswLabelsUrl() {
-  return "/SDT/public/cms-sw.github.io/data/cmssw_labels.json";
+  return `${config.urls.publicDataDir}/cmssw_labels.json`;
 }
 
 function getRepoKey(repo) {
