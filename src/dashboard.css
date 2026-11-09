@@ -548,3 +548,28 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   .ib-header-result-filter { flex: 1 1 auto; }
   .ib-header-result-filter .ib-result-filter .btn { flex: 1; }
 }
+
+/* Tooltip wrappers must not put comparisons beside the primary status. */
+.ib-result-cell > .ib-status-details,
+.ib-result-cell > .ib-comparison-details,
+.ib-phone-stage dd > .ib-status-details,
+.ib-phone-stage dd > .ib-comparison-details { display: block !important; }
+.ib-result-cell > .ib-comparison-details { margin: 2px auto 0; }
+.ib-result-cell > button.ib-status-details { margin-inline: auto; }
+.ib-matrix-section .table tr:has(.ib-comparison-details) > .ib-result-cell {
+  vertical-align: top !important; padding-top: 4px;
+}
+.ib-result-cell .ib-cell-comparison { justify-content: center; }
+.ib-phone-stage dd > button.ib-status-details,
+.ib-phone-stage dd > button.ib-comparison-details { margin-left: auto; }
+.ib-build-actions { flex: 1 1 380px; }
+.ib-build-actions .ib-build-identity { min-width: 0; }
+.ib-build-actions > .ib-icon-button { flex-shrink: 0; }
+.ib-release-panel-header .ib-header-result-filter { margin-left: 0; }
+.ib-collapse-toggle { flex: 0 0 auto; white-space: nowrap; }
+@media (max-width: 767.98px) {
+  .ib-build-actions { flex-basis: 100%; }
+  .ib-build-actions .ib-build-timestamp { overflow-wrap: anywhere; }
+}
+.ib-result-cell > .ib-status-details { display: flex !important; align-items: center; justify-content: center; min-height: 36px; }
+.ib-result-cell > button.ib-status-details { width: 100%; min-height: 44px; padding: 0; }

@@ -39,17 +39,17 @@ function subscribeDevice(notify) {
   };
 }
 
-export default function ResultDetails({ children, overlay, tooltipId }) {
+export default function ResultDetails({ children, overlay, tooltipId, className = '' }) {
   const touch = useSyncExternalStore(subscribeDevice, () => getDeviceQuery().matches, () => false);
   const [open, setOpen] = useState(false);
   useEffect(() => { setOpen(false); }, [touch]);
   const { href, label } = inspectResult(children);
   if (!touch) return <OverlayTrigger placement="top" delay={config.tooltipDelayInMs}
     overlay={<Tooltip id={tooltipId} className="custom-tooltip p-0">{overlay}</Tooltip>}>
-    <span className="d-inline-block">{children}</span>
+    <span className={`d-inline-block ${className}`}>{children}</span>
   </OverlayTrigger>;
   return <>
-    <button type="button" className="ib-result-details-trigger" aria-label={label}
+    <button type="button" className={`ib-result-details-trigger ${className}`} aria-label={label}
       aria-haspopup="dialog" onClick={() => setOpen(true)}>{withoutLinks(children)}</button>
     <Modal show={open} onHide={() => setOpen(false)} centered scrollable className="ib-result-details-dialog">
       <Modal.Header closeButton><Modal.Title>Result details</Modal.Title></Modal.Header>

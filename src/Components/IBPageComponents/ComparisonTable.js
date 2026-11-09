@@ -216,7 +216,7 @@ const StatusTooltip = ({ status, value, details, type, running = false }) => {
 };
 
 function renderTooltip(cellContent, tooltipContent, tooltipId = 'tooltip-status') {
-  return <ResultDetails overlay={tooltipContent} tooltipId={tooltipId}>{cellContent}</ResultDetails>;
+  return <ResultDetails className="ib-status-details" overlay={tooltipContent} tooltipId={tooltipId}>{cellContent}</ResultDetails>;
 }
 
 function baseRenderCell(cellInfo, key) {
@@ -428,7 +428,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     const boundary = arch === archsByIb[Number(position)]?.archs[0];
     const cell = <td key={key} className={`align-middle ib-result-cell ${boundary ? 'ib-group-start' : ''}`} data-muted={!matchesResultFilter(resultStatus, resultFilter)}>
       {content}
-      {delta && !running && <ResultDetails tooltipId={`${key}-changes`} overlay={<><p className="ib-preview-metrics">{delta.detail}</p>{preview}</>}>
+      {delta && !running && <ResultDetails className="ib-comparison-details" tooltipId={`${key}-changes`} overlay={<><p className="ib-preview-metrics">{delta.detail}</p>{preview}</>}>
       <div className="ib-cell-comparison" tabIndex={0} aria-label={delta.detail}>
         {delta.label && <span className={`ib-result-delta ${delta.novel ? 'ib-novel-failure' : `ib-delta-${delta.tone || 'secondary'}`}`} aria-label={delta.detail}>{delta.label}</span>}
         {delta.metrics?.map(metric => <span key={metric.key} className={`ib-result-delta ib-delta-${metric.tone}`} title={`${metric.key}: previous ${metric.previous}, current ${metric.current}; ${delta.detail}`} aria-label={`${metric.key}: ${delta.detail}`}>{metric.label}</span>)}

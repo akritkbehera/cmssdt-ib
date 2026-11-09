@@ -223,7 +223,7 @@ class IBGroupFrame extends PureComponent {
                             </div>
                         ) : (
                         <>
-                            <div
+                            <div className="ib-build-actions"
                                 style={{
                                     display: 'inline-flex',
                                     alignItems: 'center',
@@ -266,14 +266,14 @@ class IBGroupFrame extends PureComponent {
                                 <ResultFilter filter={this.state.resultFilter} counts={this.state.resultCounts} onChange={this.setResultFilter} />
                             </div>}
 
-                            <span
+                            <span className="ib-collapse-toggle"
                                 style={{
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     color: '#1d4ed8',
                                     fontSize: "var(--ui-type-heading)",
-                                    marginLeft: 'auto'
+                                    flexShrink: 0
                                 }}
                             >
                                 {isCollapsed ? <FaEyeSlash /> : <FaEye />}<span className="ib-collapse-label">{isCollapsed ? 'Expand' : 'Collapse'}</span>
