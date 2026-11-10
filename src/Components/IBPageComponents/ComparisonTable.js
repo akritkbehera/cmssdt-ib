@@ -1,6 +1,7 @@
 import { flavourHistory, historyFlavours } from '../../Utils/flavourHistory';
 import { ibIdentity } from '../../Utils/ibComparison';
 import TogglesShowArchs from '../TogglesShowArchs';
+import ResultFilter from '../common/ResultFilter';
 import ResultDeltaGutter from '../common/ResultDeltaGutter';
 import MatrixHelp from '../common/MatrixHelp';
 import useMatrixFit from "../common/useMatrixFit";
@@ -330,7 +331,11 @@ const copyText = (text) => {
 
 const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resultFilter = 'all', onCountsChange, historyArchs }) => {
   const [history, setHistory] = useState(null);
+  const [historyFilter, setHistoryFilter] = useState('all');
+  const [historyCounts, setHistoryCounts] = useState(null);
   function openHistory(position) {
+    setHistoryFilter('all');
+    setHistoryCounts(null);
     const builds = flavourHistory(data[position], comparisons.keys());
     if (builds.length) setHistory({ anchor: data[position], builds, filters: extractInfoFromArchs(archsByIb[position].archs) });
   }
@@ -1195,7 +1200,11 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
       {history && <Modal show onHide={() => setHistory(null)} size="xl" fullscreen="md-down"
         scrollable centered aria-label={'Build history'}>
         <Modal.Header closeButton>
-          <Modal.Title>Build history</Modal.Title>
+          <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 w-100 me-2">
+            <Modal.Title>Build history</Modal.Title>
+            <ResultFilter filter={historyFilter} onChange={setHistoryFilter}
+              counts={hasHistoryResults ? historyCounts : { success: 0, danger: 0, warning: 0, secondary: 0, info: 0 }} />
+          </div>
         </Modal.Header>
         <Modal.Body className="ib-history-body">
           <p>{history.builds.length} {history.builds.length === 1 ? 'build' : 'builds'}, newest first</p>
@@ -1229,7 +1238,8 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
             </div>
           </details>
           {hasHistoryResults ? <ComparisonTable data={history.builds} comparisons={comparisons}
-            historyArchs={selectedHistoryArchs} releaseQue={releaseQue} /> : <p>{selectedHistoryArchs.length ? "No results for the selected architectures." : "Select an architecture to see its results."}</p>}
+            historyArchs={selectedHistoryArchs} releaseQue={releaseQue}
+            resultFilter={historyFilter} onCountsChange={setHistoryCounts} /> : <p>{selectedHistoryArchs.length ? "No results for the selected architectures." : "Select an architecture to see its results."}</p>}
         </Modal.Body>
       </Modal>}
     </section>

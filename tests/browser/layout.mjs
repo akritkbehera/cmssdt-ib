@@ -112,6 +112,12 @@ try {
           cellWidth:el.closest('th').getBoundingClientRect().width})));
       assert.ok(dates.every(date => /^\d{4}-\d{2}-\d{2}$/.test(date.text) && date.width <= date.cellWidth),
         'complete history dates fit their header cells');
+      const historyFailures = dialog.getByRole('button', {name:/Failures only/});
+      await historyFailures.click();
+      assert.equal(await dialog.locator('.ib-matrix-section').getAttribute('data-result-filter'), 'issues');
+      assert.ok(await dialog.locator('.ib-result-cell[data-muted="true"]').count() > 0);
+      await dialog.getByRole('button', {name:/All results/}).click();
+      assert.equal(await dialog.locator('.ib-matrix-section').getAttribute('data-result-filter'), 'all');
       const compilers = dialog.getByRole('group', {name:'COMPILER', exact:true});
       await compilers.getByRole('button', {name:'gcc14', exact:true}).click();
       assert.equal(await dialog.locator('th.ib-config-header').count(), 4);
