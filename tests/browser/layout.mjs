@@ -10,6 +10,9 @@ try {
     await page.route(/https?:\/\/(?!localhost:5173)/, route=>route.fulfill({json:[]}));
     const errors=[];
     page.on('pageerror', e=>errors.push(e.message));
+    page.on('console', message => {
+      if (message.type() === 'error' && /children prop|An error occurred in/.test(message.text())) errors.push(message.text());
+    });
     await page.goto('http://localhost:5173/tests/browser/index.html');
     await page.locator('.ib-release-panel').first().waitFor();
     const metrics = () => page.evaluate(() => {
@@ -99,6 +102,15 @@ try {
     await page.evaluate(()=>scrollTo(0,0));
     assert.ok((await metrics()).visible>=2,'hiding again restores two-card layout');
     rows.push({viewport:`${width}×${height}`,cardHeight:compact.cards[0].height,cardsVisible:compact.visible});
+    const firstCard = page.locator('.ib-release-panel').first();
+    await firstCard.getByRole('button', {name:/Failures only/}).click();
+    assert.ok(await firstCard.locator('table').isVisible(), 'failure filtering keeps the card visible');
+    assert.equal(await firstCard.locator('tbody tr').count(), 3);
+    assert.equal(await firstCard.locator('tr[data-stage="addons"]').count(), 0);
+    assert.ok(await page.locator('.ib-workspace').isVisible(), 'workspace survives filtering');
+    await firstCard.getByRole('button', {name:/All results/}).click();
+    assert.equal(await firstCard.locator('tbody tr').count(), 5);
+    assert.deepEqual(errors, []);
     if (width === 1440) {
       const card = page.locator('.ib-release-panel').first();
       const trigger = card.getByRole('button', {name: 'View ASAN build history'});

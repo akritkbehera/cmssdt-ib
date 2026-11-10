@@ -1171,10 +1171,15 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     return cells.length > 0 && cells.every(cell => cell.resultStatus === 'success' && !cell.running);
   }) : []);
   const hidePassingRows = node => {
-    if (Array.isArray(node)) return React.Children.map(node, hidePassingRows);
+    if (Array.isArray(node)) return node.map(hidePassingRows);
     if (!React.isValidElement(node)) return node;
-    if (hiddenStages.has(node.props['data-stage'])) return null;
-    return React.cloneElement(node, {}, React.Children.map(node.props.children, hidePassingRows));
+    if (node.type === 'tbody') {
+      return React.cloneElement(node, {}, React.Children.toArray(node.props.children)
+        .filter(row => !hiddenStages.has(row.props?.['data-stage'])));
+    }
+    // Traverse only table containers. Keep styles, headers and result cells intact.
+    if (node.type !== 'div' && node.type !== Table) return node;
+    return React.cloneElement(node, {}, hidePassingRows(node.props.children));
   };
   if (hiddenStages.size) matrix = hidePassingRows(matrix);
   useEffect(() => { onCountsChange?.(counts); },
