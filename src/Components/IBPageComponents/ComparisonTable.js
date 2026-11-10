@@ -1,3 +1,4 @@
+import useMatrixFit from "../common/useMatrixFit";
 import { stages } from "../../Utils/resultDelta";
 import { compareCell, comparableCellResults } from "../../Utils/ibComparison";
 import { summarizeMatrix } from "../../Utils/matrixSummary";
@@ -377,17 +378,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     return () => { observer.disconnect(); document.removeEventListener('visibilitychange', update); element.style.removeProperty('--ib-motion-state'); };
   }, []);
 
-  useEffect(() => {
-    const container = tableContainer.current;
-    if (!container) return undefined;
-    const measure = () => setHasOverflow(container.scrollWidth > container.clientWidth + 1);
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(container);
-    const table = container.querySelector('table');
-    if (table) observer.observe(table);
-    return () => observer.disconnect();
-  }, [archsByIb]);
+  useMatrixFit(tableContainer, configurations.length, archsByIb, setHasOverflow);
 
   const mobileCells = [];
   function renderCell(cellInfo, key) {

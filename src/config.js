@@ -6,6 +6,15 @@ const ib_data_base = (import.meta.env.VITE_IB_DATA_BASE_URL || "").replace(/\/+$
 const cms_public_data_base = (
     import.meta.env.VITE_CMS_PUBLIC_DATA_BASE_URL || "/SDT/public/cms-sw.github.io/data"
 ).replace(/\/+$/, "");
+// Two-phase matrix layout. Fractions use 0..1; padding is capped before content widens.
+export const matrixFitConfig = Object.freeze({
+    horizontalThreshold: 0.05,
+    maxGapMultiplier: 2,
+    maxUniformScale: 1.25,
+    viewportHeightRatio: 0.65,
+    maxHeightPx: null
+});
+
 export const STATUS_ENUM = {
     found: "found",
     passed: "passed",

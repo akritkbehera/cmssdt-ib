@@ -636,11 +636,6 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   min-width: calc(var(--ib-stage-width) + var(--ib-column-count, 0) * var(--ib-column-width));
   margin-inline: 0;
 }
-@supports (width: 1cqi) {
-  .ib-matrix-section .table {
-    --ib-cell-unit: clamp(1px, calc(100cqi / max(1, var(--ib-stage-units) + var(--ib-column-count, 0) * var(--ib-column-units))), 1.25px);
-  }
-}
 .ib-matrix-section .table .ib-configuration-column { width: auto; }
 .ib-matrix-section .table tbody td { height: calc(44 * var(--ib-cell-unit)); font-size: calc(13 * var(--ib-cell-unit)); padding: calc(2 * var(--ib-cell-unit)) calc(6 * var(--ib-cell-unit)); }
 .ib-workspace[data-density="compact"] .ib-matrix-section .table tbody td { height: calc(42 * var(--ib-cell-unit)); padding-block: calc(3 * var(--ib-cell-unit)); }
@@ -681,3 +676,11 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   max-width: none;
   margin-inline: var(--ui-page-inset);
 }
+
+/* Width and padding are supplied by the measured two-phase fit. */
+.ib-matrix-section .ib-table-responsive { overflow: auto; container-type: normal; }
+.ib-matrix-section .table { width: var(--ib-fit-width, calc(var(--ib-stage-width) + var(--ib-column-count, 0) * var(--ib-column-width))); min-width: 0; }
+.ib-matrix-section .table .ib-configuration-column { width: var(--ib-column-width); }
+.ib-matrix-section .table tbody td:not(.name-column) { padding-inline: var(--ib-fit-padding, calc(6 * var(--ib-cell-unit))); }
+.ib-matrix-section .table thead th.ib-config-header { padding-inline: calc(2 * var(--ib-cell-unit) + var(--ib-fit-extra-padding, 0px)) !important; }
+.ib-fit-measure *, .ib-fit-measure *::before, .ib-fit-measure *::after { animation: none !important; }
