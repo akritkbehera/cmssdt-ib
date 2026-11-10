@@ -40,12 +40,11 @@ class IBGroupFrame extends PureComponent {
         showPullRequests: this.props.showPullRequests || false,
         copiedText: null,
         resultFilter: 'all',
-        resultCounts: null,
-        resultColumnCount: null
+        resultCounts: null
     };
 
     setResultFilter = resultFilter => this.setState({ resultFilter });
-    updateResultCounts = (resultCounts, resultColumnCount) => this.setState({ resultCounts, resultColumnCount });
+    updateResultCounts = resultCounts => this.setState({ resultCounts });
 
     copyToClipboard = (e, text) => {
         e.preventDefault();
@@ -162,8 +161,7 @@ class IBGroupFrame extends PureComponent {
         );
 
         return (
-            <Card className={`ib-release-panel ${isNextIB ? "ib-release-panel--upcoming" : ""}`}
-                style={this.state.resultColumnCount > 0 ? { '--ib-config-count': this.state.resultColumnCount } : undefined}>
+            <Card className={`ib-release-panel ${isNextIB ? "ib-release-panel--upcoming" : ""}`}>
                 <Card.Header
                     className="ib-release-panel-header"
                     onClick={onToggleCollapse}

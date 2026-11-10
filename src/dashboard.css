@@ -674,16 +674,5 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   .ib-matrix-section .table td a { min-width: 44px; min-height: max(44px, calc(36 * var(--ib-cell-unit))); }
 }
 
-/* Constrain the whole card, so its title, controls and matrix share an edge. */
-.ib-release-panel { --ib-card-column-units: 104; --ib-card-stage-units: 88; }
-.ib-workspace[data-density="compact"] .ib-release-panel { --ib-card-column-units: 92; --ib-card-stage-units: 80; }
-.ib-release-panel[style*="--ib-config-count"] {
-  width: calc(100% - 2 * var(--ui-page-inset));
-  max-width: calc((var(--ib-card-stage-units) + var(--ib-config-count) * var(--ib-card-column-units)) * 1.25px + 2px);
-  margin-inline: auto;
-}
+/* The card spans the page; only the left-aligned matrix has a growth limit. */
 .ib-matrix-section .table { margin-inline: 0; }
-@media (hover: none), (pointer: coarse) {
-  .ib-release-panel { --ib-card-column-units: 116; }
-  .ib-workspace[data-density="compact"] .ib-release-panel { --ib-card-column-units: 108; }
-}
