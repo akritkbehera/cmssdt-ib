@@ -705,6 +705,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
     --ib-compact-pad: clamp(0px, calc((var(--ib-card-budget) - 240px) / 20), 3px);
     margin-block: var(--ib-card-gap);
     max-height: var(--ib-card-budget);
+    min-height: min-content;
     min-width: 0;
     & .ib-release-panel-header { min-height: 30px; padding: var(--ib-compact-pad) 8px; gap: 8px; flex-wrap: nowrap; }
     & .ib-build-actions { flex-basis: 0; }
@@ -732,7 +733,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
     & .ib-matrix-section .table thead th.ib-family-header { height: 20px; padding-block: 0 !important; }
     & .ib-matrix-section .table .ib-family-header .flavor-card { font-size: 12px !important; line-height: 18px !important; padding-block: 0 !important; }
     & .ib-matrix-section .table thead th.ib-config-header { height: 48px; padding-block: 0 !important; }
-    & .ib-matrix-section .table thead th.ib-config-header .ib-config-label { font-size: 12px; line-height: 14px; gap: 0; padding-block: 0; }
+    & .ib-matrix-section .table thead th.ib-config-header .ib-config-label { font-size: 12px; line-height: 12px; gap: 0; padding-block: 0; }
     & .ib-matrix-section .table .ib-stage-corner { gap: 4px; font-size: 12px; }
     & .ib-matrix-section .table .ib-stage-corner small { font-size: 12px; }
     & .ib-matrix-section .table .ib-inline-result { --ib-result-lane: 44px; max-width: none; }
