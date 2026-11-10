@@ -32,6 +32,10 @@ groups.forEach((group, time) => group.forEach((ib, flavor) => {
     details:{num_failed:scenario===0 ? 3 : scenario===1 ? (time===0 ? 3 : 12) : scenario===2 ? (time===0 ? 12 : 3) : (time===0 ? 3 : 12),
       num_passed:scenario===3 && time===0 ? 35 : 0}}));
 }));
+// An advertised configuration with no stage results must not occupy a history column.
+for (const stage of ['builds', 'utests', 'relvals', 'addons', 'dupDict']) {
+  groups.at(-1)[1][stage] = groups.at(-1)[1][stage].filter(result => result.arch !== 'el9_amd64_gcc15');
+}
 const comparisons = buildComparisonIndex(groups.flat());
 export const fixture = <HashRouter>
   <Navigation toLinks={[]} flaworControl={<span>Build variants</span>} archControl={<span>Architectures</span>}/>

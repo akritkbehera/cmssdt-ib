@@ -109,9 +109,14 @@ try {
       assert.match(await timestamps.first().innerText(), /2026-11-09.*23:00/s);
       const compilers = dialog.getByRole('group', {name:'COMPILER', exact:true});
       await compilers.getByRole('button', {name:'gcc14', exact:true}).click();
-      assert.equal(await dialog.locator('th.ib-config-header').count(), 5);
+      assert.equal(await dialog.locator('th.ib-config-header').count(), 4);
       await compilers.getByRole('button', {name:'gcc15', exact:true}).click();
       assert.ok(await dialog.getByText('Select an architecture to see its results.').isVisible());
+      await dialog.getByLabel('Flavour', {exact:true}).selectOption('CMSSW_20_1_CLANG_X');
+      assert.ok(await dialog.getByText('Select an architecture to see its results.').isVisible());
+      await dialog.getByRole('group', {name:'COMPILER', exact:true}).getByRole('button', {name:'gcc14', exact:true}).click();
+      assert.equal(await dialog.locator('th.ib-family-header').count(), 5);
+      assert.equal(await dialog.locator('th.ib-config-header').count(), 5);
       await page.keyboard.press('Escape');
       await dialog.waitFor({state:'hidden'});
       await page.setViewportSize({width:390, height:844});

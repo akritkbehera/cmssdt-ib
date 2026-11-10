@@ -1,4 +1,4 @@
-import { flavourHistory } from '../../Utils/flavourHistory';
+import { flavourHistory, historyFlavours } from '../../Utils/flavourHistory';
 import { ibIdentity } from '../../Utils/ibComparison';
 import TogglesShowArchs from '../TogglesShowArchs';
 import ResultDeltaGutter from '../common/ResultDeltaGutter';
@@ -332,8 +332,10 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
   const [history, setHistory] = useState(null);
   function openHistory(position) {
     const builds = flavourHistory(data[position], comparisons.keys());
-    if (builds.length) setHistory({ builds, filters: extractInfoFromArchs(archsByIb[position].archs) });
+    if (builds.length) setHistory({ anchor: data[position], builds, filters: extractInfoFromArchs(archsByIb[position].archs) });
   }
+  const flavourOptions = useMemo(() => history ? historyFlavours(history.anchor, comparisons.keys()) : [],
+    [history?.anchor, comparisons]);
   const availableHistoryArchs = useMemo(() => history
     ? [...new Set(history.builds.flatMap(ib => ib.tests_archs || []))].sort() : [], [history?.builds]);
   const historyOptions = useMemo(() => extractInfoFromArchs(availableHistoryArchs), [availableHistoryArchs]);
@@ -342,6 +344,8 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     return history.filters.os.includes(os) && history.filters.cpu.includes(cpu) &&
       history.filters.compiler.includes(compiler);
   }), [availableHistoryArchs, history?.filters]);
+  const hasHistoryResults = history && history.builds.some(ib => stages.some(stage =>
+    (ib[stage] || []).some(result => selectedHistoryArchs.includes(result.arch))));
   const [configuration, setConfiguration] = useState('');
   const [compareOnPhone, setCompareOnPhone] = useState(false);
   const [inView, setInView] = useState(true);
@@ -377,7 +381,10 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
   const archsByIb = useMemo(
     () => {
       const items = getAllActiveArchitecturesFromIBGroupByFlavor(data, activeArchs);
-      return historyArchs ? items.map(item => ({ ...item, archs: historyArchs })) : items;
+      return historyArchs ? items.map((item, index) => ({ ...item,
+        archs: historyArchs.filter(arch => stages.some(stage =>
+          (data[index][stage] || []).some(result => result.arch === arch)))
+      })) : items;
     },
     [data, activeArchs, historyArchs]
   );
@@ -1179,14 +1186,26 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
           <Modal.Title>{formatFlavorLabel(history.builds[0].release_queue)} build history</Modal.Title>
         </Modal.Header>
         <Modal.Body className="ib-history-body">
+          <label className="d-flex align-items-center gap-2 mb-3">Flavour
+            <select className="form-select w-auto" value={history.builds[0].release_queue}
+              onChange={({ target }) => {
+                const selectedFlavour = flavourOptions.find(ib => ib.release_queue === target.value);
+                if (selectedFlavour) setHistory(previous => ({ ...previous,
+                  builds: flavourHistory(selectedFlavour, comparisons.keys()) }));
+              }}>
+              {flavourOptions.map(ib => <option key={ib.release_queue} value={ib.release_queue}>
+                {formatFlavorLabel(ib.release_queue)}
+              </option>)}
+            </select>
+          </label>
           <p>{history.builds[0].release_queue} · {history.builds.length} {history.builds.length === 1 ? 'build' : 'builds'}, newest first</p>
           <div className="ib-history-architectures">
             <strong>Architectures</strong>
             <TogglesShowArchs releaseQue={releaseQue} architectures={historyOptions} selection={history.filters}
               onSelectionChange={filters => setHistory(previous => ({ ...previous, filters }))} />
           </div>
-          {selectedHistoryArchs.length ? <ComparisonTable data={history.builds} comparisons={comparisons}
-            historyArchs={selectedHistoryArchs} releaseQue={releaseQue} /> : <p>Select an architecture to see its results.</p>}
+          {hasHistoryResults ? <ComparisonTable data={history.builds} comparisons={comparisons}
+            historyArchs={selectedHistoryArchs} releaseQue={releaseQue} /> : <p>{selectedHistoryArchs.length ? "No results for the selected architectures." : "Select an architecture to see its results."}</p>}
         </Modal.Body>
       </Modal>}
     </section>
