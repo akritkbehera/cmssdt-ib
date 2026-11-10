@@ -979,3 +979,18 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   height: auto; vertical-align: middle !important; padding: 4px 6px !important; line-height: 1.2;
 }
 .ib-history-body .ib-history-day-heading time { display: block; line-height: 1.2; }
+
+/* Only overflowing flavour names move; the icon and header geometry stay fixed. */
+.ib-overflow-label { display: block; flex: 0 1 auto; min-width: 0; max-width: 100%; overflow: hidden; white-space: nowrap; }
+.ib-overflow-track { display: inline-flex; align-items: center; width: max-content; white-space: nowrap; }
+.ib-overflow-track > span { flex-shrink: 0; }
+.ib-overflow-label.is-scrolling .ib-overflow-track > span { padding-right: 20px; }
+.ib-overflow-label.is-scrolling .ib-overflow-track { animation: ib-label-scroll 9s linear infinite; }
+.ib-family-header:hover .ib-overflow-track,
+.ib-family-header:focus-within .ib-overflow-track { animation-play-state: paused; }
+@keyframes ib-label-scroll { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .ib-overflow-label.is-scrolling .ib-overflow-track { animation: none; }
+  .ib-overflow-label.is-scrolling .ib-overflow-track > span { padding-right: 0; }
+  .ib-overflow-label.is-scrolling .ib-overflow-track > span[aria-hidden] { display: none; }
+}

@@ -2,6 +2,7 @@ import { flavourHistory, historyFlavours, selectHistoryBuilds } from '../../Util
 import { ibIdentity } from '../../Utils/ibComparison';
 import TogglesShowArchs from '../TogglesShowArchs';
 import useHistorySize from '../common/useHistorySize';
+import OverflowLabel from '../common/OverflowLabel';
 import ResultFilter from '../common/ResultFilter';
 import ResultDeltaGutter from '../common/ResultDeltaGutter';
 import MatrixHelp from '../common/MatrixHelp';
@@ -862,7 +863,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
                       </time>
                       {historyLatest.includes(data[pos].release_name) && <small className="ib-history-latest">Latest</small>}
                     </span>
-                  ) : flavorLabel;
+                  ) : <OverflowLabel text={flavorLabel} />;
                   const familyState = familyBuildState(data[pos], item.archs);
                   const releaseNameToCopy = item.current_tag || data[pos]?.release_name || '';
 
