@@ -899,12 +899,12 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
                       }
                       delay={tooltipDelayInMs}
                     >
-                      <a href={link} target="_blank" rel="noopener noreferrer" style={{ display: 'block' }}>
+                      <a className="ib-config-content" href={link} target="_blank" rel="noopener noreferrer" style={{ display: 'block' }}>
                         {archStack}
                       </a>
                     </OverlayTrigger>
                   ) : (
-                    <div>{archStack}</div>
+                    <div className="ib-config-content">{archStack}</div>
                   );
 
                   return (

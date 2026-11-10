@@ -29,6 +29,30 @@ try {
     await page.evaluate(()=>document.fonts.ready);
     await page.waitForFunction(()=>document.querySelector('table')?.dataset.fitPhase && document.querySelector('.ib-workspace').style.getPropertyValue('--ib-card-list-top'));
     await page.waitForTimeout(250);
+    const alignment = await page.evaluate(() => {
+      const rect = el => el.getBoundingClientRect();
+      const center = r => ({x:r.x+r.width/2,y:r.y+r.height/2});
+      const families=[...document.querySelectorAll('table .ib-family-header')].map(th=>{
+        const a=center(rect(th)), b=center(rect(th.querySelector('.flavor-card')));
+        return Math.max(Math.abs(a.x-b.x),Math.abs(a.y-b.y));
+      });
+      const configurations=[...document.querySelectorAll('table .ib-config-label')].map(label=>{
+        const tracks=[...label.children].map(rect);
+        return {equal:Math.max(...tracks.map(r=>r.height))-Math.min(...tracks.map(r=>r.height)),
+          badges:[...label.children].map((field,i)=>{
+            const row=tracks[i], badge=rect(field.querySelector('.ib-config-value'));
+            const a=center(row),b=center(badge);
+            return {center:Math.max(Math.abs(a.x-b.x),Math.abs(a.y-b.y)),
+              contained:badge.x>=row.x-.5&&badge.right<=row.right+.5&&badge.y>=row.y-.5&&badge.bottom<=row.bottom+.5};
+          })};
+      });
+      return {families,configurations};
+    });
+    assert.ok(alignment.families.every(error=>error<=1.5),'every family dot/label group is centered');
+    for(const config of alignment.configurations) {
+      assert.ok(config.equal<=1,'three equal configuration tracks');
+      assert.ok(config.badges.every(b=>b.center<=1&&b.contained),'badges centered and contained in their tracks');
+    }
     const compact=await metrics();
     console.log(JSON.stringify({width,height,...compact}));
     assert.deepEqual(errors,[], 'fixture must render without errors');
