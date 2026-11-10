@@ -838,7 +838,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   position: absolute; inset: 0; display: block; overflow: hidden;
 }
 .ib-result-cell .ib-inline-result .ib-delta-slot {
-  position: absolute; inset-inline: 6px 0;
+  position: absolute; inset-inline: 6px 0; height: 11px;
   font: 500 11px/1 var(--ui-font-sans); font-variant-numeric: tabular-nums;
   text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }

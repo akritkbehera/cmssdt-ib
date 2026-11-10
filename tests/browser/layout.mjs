@@ -61,7 +61,7 @@ try {
         return {centerError:m?Math.max(Math.abs(m.x+m.width/2-c.x-c.width/2),Math.abs(m.y+m.height/2-c.y-c.height/2)):0,
           labels:cell.querySelector('.ib-cell-comparison')?.textContent||'',
           slots:[...cell.querySelectorAll('.ib-delta-slot')].map(slot=>{
-            const r=rect(slot);return {sign:slot.dataset.sign,height:r.height,top:r.top,bottom:r.bottom,
+            const r=rect(slot);return {sign:slot.dataset.sign,height:r.height,top:r.top,bottom:r.bottom,rect:{left:r.left,right:r.right,cellLeft:c.left,cellRight:c.right,cellTop:c.top,cellBottom:c.bottom,markerRight:m?.right},
               contained:r.x>=(m?.right||c.left)&&r.right<=c.right+.5&&r.top>=c.top-.5&&r.bottom<=c.bottom+.5};
           })};
       });
@@ -70,7 +70,7 @@ try {
     assert.ok(statusLayout.every(c=>!(/New|Fixed/.test(c.labels))),'no transition banners');
     assert.ok(statusLayout.some(c=>c.slots.length===2),'fixture exercises both signs');
     for(const cell of statusLayout) {
-      assert.ok(cell.slots.every(s=>s.contained&&s.height<=11.5),'11px corner slots fit without touching the status');
+      assert.ok(cell.slots.every(s=>s.contained&&s.height<=11.5),'11px corner slots fit without touching the status: '+JSON.stringify(cell));
       if(cell.slots.length===2) assert.ok(cell.slots[0].bottom<=cell.slots[1].top+.5,'corner lines do not overlap');
     }
     const compact=await metrics();
