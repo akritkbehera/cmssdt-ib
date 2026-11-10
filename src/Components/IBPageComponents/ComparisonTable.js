@@ -413,7 +413,8 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     return () => { observer.disconnect(); document.removeEventListener('visibilitychange', update); element.style.removeProperty('--ib-motion-state'); };
   }, []);
 
-  useMatrixFit(tableContainer, configurations.length, archsByIb, setHasOverflow);
+  const matrixLayout = useMemo(() => [archsByIb, resultFilter], [archsByIb, resultFilter]);
+  useMatrixFit(tableContainer, configurations.length, matrixLayout, setHasOverflow);
 
   const mobileCells = [];
   function renderCell(cellInfo, key) {
@@ -455,7 +456,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
       <ResultDeltaGutter metrics={delta.metrics} detail={delta.detail} /></ResultDetails>}
       </div>
     </td>;
-    mobileCells.push({ key, stage, position: Number(position), arch, cell });
+    mobileCells.push({ key, stage, position: Number(position), arch, cell, resultStatus, running });
     return cell;
   }
 
@@ -682,7 +683,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     }, 0) > 0;
   };
 
-  const matrix = (
+  let matrix = (
     <div className="container-fluid px-0">
       <div className="ib-table-frame">
         {hasOverflow && <p className="ib-table-scroll-hint">Scroll horizontally to see all architectures <span aria-hidden="true">→</span></p>}
@@ -975,7 +976,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
 
             <tbody>
               {shouldShowRow("builds") && (
-                <tr>
+                <tr data-stage="builds">
                   <td className="name-column fw-semibold">
                     {renderStickyRowLabel('builds')}
                   </td>
@@ -1045,7 +1046,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
               )}
 
               {shouldShowRow("utests") && (
-                <tr>
+                <tr data-stage="utests">
                   <td className="name-column fw-semibold">
                     {renderStickyRowLabel('utests')}
                   </td>
@@ -1073,7 +1074,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
               )}
 
               {shouldShowRow("relvals") && (
-                <tr>
+                <tr data-stage="relvals">
                   <td className="name-column fw-semibold">
                     <a
                       href={urls.newRelVals(que, date)}
@@ -1098,7 +1099,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
               )}
 
               {shouldShowRow("addons") && (
-                <tr>
+                <tr data-stage="addons">
                   <td className="name-column fw-semibold">
                     {renderStickyRowLabel('addons')}
                   </td>
@@ -1129,7 +1130,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
               )}
 
               {shouldShowRow("dupDict") && (
-                <tr>
+                <tr data-stage="dupDict">
                   <td className="name-column fw-semibold">
                     {renderStickyRowLabel('dupDict')}
                   </td>
@@ -1165,11 +1166,22 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     </div>
   );
   const counts = summarizeMatrix(matrix);
+  const hiddenStages = new Set(resultFilter === 'issues' ? stages.filter(stage => {
+    const cells = mobileCells.filter(cell => cell.stage === stage);
+    return cells.length > 0 && cells.every(cell => cell.resultStatus === 'success' && !cell.running);
+  }) : []);
+  const hidePassingRows = node => {
+    if (Array.isArray(node)) return React.Children.map(node, hidePassingRows);
+    if (!React.isValidElement(node)) return node;
+    if (hiddenStages.has(node.props['data-stage'])) return null;
+    return React.cloneElement(node, {}, React.Children.map(node.props.children, hidePassingRows));
+  };
+  if (hiddenStages.size) matrix = hidePassingRows(matrix);
   useEffect(() => { onCountsChange?.(counts); },
     [onCountsChange, counts.success, counts.danger, counts.warning, counts.secondary, counts.info]);
   return (
     <section ref={sectionRef} className="ib-matrix-section" data-in-view={inView} data-result-filter={resultFilter} aria-label="Build test matrix">
-      {resultFilter !== 'all' && <p className="visually-hidden" role="status">{resultFilter === 'issues' ? 'Failures and warnings' : resultFilter === 'danger' ? 'Failures' : resultFilter === 'warning' ? 'Warnings' : 'Passed results'} highlighted. Other results remain visible.</p>}
+      {resultFilter !== 'all' && <p className="visually-hidden" role="status">{resultFilter === 'issues' ? 'Failures and warnings' : resultFilter === 'danger' ? 'Failures' : resultFilter === 'warning' ? 'Warnings' : 'Passed results'} highlighted. Fully passing stages are hidden.</p>}
       {!historyArchs && <div className="ib-phone-controls">
         <label>Configuration
           <select value={selected?.key || ''} onChange={event => setConfiguration(event.target.value)}>
@@ -1186,7 +1198,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
           <p className="ib-phone-config-name">{formatFlavorLabel(selected.flavor)} · {selected.arch}</p>
           <p className="ib-phone-results-hint">Tap a result for details and logs. Header counts cover all selected configurations.</p>
           <dl>
-            {mobileCells.filter(item => item.position === selected.position && item.arch === selected.arch).map(item => (
+            {mobileCells.filter(item => item.position === selected.position && item.arch === selected.arch && !hiddenStages.has(item.stage)).map(item => (
               <div key={item.key} className="ib-phone-stage" data-muted={item.cell.props['data-muted']}>
                 <dt>{rowLabelConfig[item.stage]?.text || item.stage}</dt>
                 <dd>{item.cell.props.children}</dd>

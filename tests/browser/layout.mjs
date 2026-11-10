@@ -115,9 +115,12 @@ try {
       const historyFailures = dialog.getByRole('button', {name:/Failures only/});
       await historyFailures.click();
       assert.equal(await dialog.locator('.ib-matrix-section').getAttribute('data-result-filter'), 'issues');
-      assert.ok(await dialog.locator('.ib-result-cell[data-muted="true"]').count() > 0);
+      assert.equal(await dialog.locator('tr[data-stage="addons"]').count(), 0);
+      assert.equal(await dialog.locator('tr[data-stage="dupDict"]').count(), 0);
+      assert.equal(await dialog.locator('tr[data-stage="utests"]').count(), 1);
       await dialog.getByRole('button', {name:/All results/}).click();
       assert.equal(await dialog.locator('.ib-matrix-section').getAttribute('data-result-filter'), 'all');
+      assert.equal(await dialog.locator('tr[data-stage="addons"]').count(), 1);
       const compilers = dialog.getByRole('group', {name:'COMPILER', exact:true});
       await compilers.getByRole('button', {name:'gcc14', exact:true}).click();
       assert.equal(await dialog.locator('th.ib-config-header').count(), 4);

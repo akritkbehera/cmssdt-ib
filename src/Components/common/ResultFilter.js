@@ -8,7 +8,7 @@ export default function ResultFilter({ filter = 'all', counts, onChange }) {
       All results {counts && <span>{total}</span>}
     </Button>
     <Button variant="light" active={filter === 'issues'} aria-pressed={filter === 'issues'} onClick={() => onChange('issues')}
-      title="Emphasize failures and warnings without hiding other results">
+      title="Emphasize failures and warnings; hide fully passing stage rows">
       Failures only {counts && <span>{counts.danger + counts.warning}</span>}
     </Button>
   </ButtonGroup>;
