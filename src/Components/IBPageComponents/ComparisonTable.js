@@ -1,4 +1,4 @@
-import { flavourHistory, historyFlavours } from '../../Utils/flavourHistory';
+import { flavourHistory, historyFlavours, selectHistoryBuilds } from '../../Utils/flavourHistory';
 import { ibIdentity } from '../../Utils/ibComparison';
 import TogglesShowArchs from '../TogglesShowArchs';
 import ResultFilter from '../common/ResultFilter';
@@ -1224,7 +1224,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
           </div>
         </Modal.Header>
         <Modal.Body className="ib-history-body">
-          <p>{history.builds.length} {history.builds.length === 1 ? 'build' : 'builds'}, newest first</p>
+          <p>{history.builds.length} {history.builds.length === 1 ? 'build' : 'builds'} · Newest → oldest</p>
           <div className="ib-history-architectures">
             <strong>Architectures</strong>
             <TogglesShowArchs releaseQue={releaseQue} architectures={historyOptions} selection={history.filters}
@@ -1242,11 +1242,10 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
                       const queues = new Set(selectedQueues);
                       if (target.checked) queues.add(ib.release_queue);
                       else queues.delete(ib.release_queue);
-                      const builds = flavourOptions.filter(option => queues.has(option.release_queue))
-                        .flatMap(option => flavourHistory(option, comparisons.keys()))
-                        .sort((a, b) => ibIdentity(b).time - ibIdentity(a).time ||
-                          ibIdentity(b).sequence - ibIdentity(a).sequence ||
-                          a.release_queue.localeCompare(b.release_queue));
+                      const selectedFlavours = flavourOptions.filter(option => queues.has(option.release_queue))
+                        .map(option => queues.size === 1 && option.release_queue === history.anchor.release_queue
+                          ? history.anchor : option);
+                      const builds = selectHistoryBuilds(selectedFlavours, comparisons.keys());
                       setHistory(previous => ({ ...previous, builds }));
                     }} />
                   {formatFlavorLabel(ib.release_queue)}
