@@ -891,3 +891,29 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   position: relative;
   min-height: 2.5em;
 }
+
+/* History timestamps need two complete lines even in a single-architecture group. */
+.ib-history-body .ib-matrix-section .table .ib-family-header .flavor-card-wrapper {
+  padding-inline: 2px;
+}
+.ib-history-body .ib-matrix-section .table .ib-family-header .flavor-card {
+  padding: 2px 0 !important;
+  letter-spacing: 0;
+  font-size: clamp(12px, calc(12 * var(--ib-cell-unit)), 14px) !important;
+}
+.ib-history-heading, .ib-history-heading time {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+.ib-history-time { display: inline-flex; align-items: center; gap: 5px; }
+.ib-history-body .ib-matrix-section .table .flavor-card-wrapper > .flavor-copy-button {
+  top: auto;
+  bottom: 0;
+  transform: none;
+  min-width: 16px;
+  min-height: 20px;
+}

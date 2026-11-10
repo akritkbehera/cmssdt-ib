@@ -816,6 +816,18 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
 
                   const stamp = data[pos].release_name.slice(item.flavor.length + 1);
                   const flavorLabel = historyArchs ? (new Set(data.map(ib => ib.release_queue)).size > 1 ? `${formatFlavorLabel(item.flavor)} · ` : '') + stamp.replace(/^(.*)-(..)(..)$/, '$1 · $2:$3') : formatFlavorLabel(item.flavor);
+                  const headerContent = historyArchs ? (
+                    <span className="ib-history-heading">
+                      {new Set(data.map(ib => ib.release_queue)).size > 1 &&
+                        <span>{formatFlavorLabel(item.flavor)}</span>}
+                      <time dateTime={stamp.replace(/-(\d{2})(\d{2})$/, 'T$1:$2')}>
+                        <span>{stamp.slice(0, 10)}</span>
+                        <span className="ib-history-time"><span className="ib-family-dot" aria-hidden="true" />
+                          {stamp.slice(11, 13)}:{stamp.slice(13, 15)}
+                        </span>
+                      </time>
+                    </span>
+                  ) : flavorLabel;
                   const familyState = familyBuildState(data[pos], item.archs);
                   const releaseNameToCopy = item.current_tag || data[pos]?.release_name || '';
 
@@ -863,14 +875,14 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
                             title={`Open ${releaseNameToCopy}`}
                           >
                             <div className="flavor-card" style={flavorCardStyle}>
-                              <span className="ib-family-dot" aria-hidden="true" />
-                              {flavorLabel}
+                              {!historyArchs && <span className="ib-family-dot" aria-hidden="true" />}
+                              {headerContent}
                             </div>
                           </a>
                         ) : (
                           <div className="flavor-card" style={flavorCardStyle} title={flavorLabel}>
-                            <span className="ib-family-dot" aria-hidden="true" />
-                            {flavorLabel}
+                            {!historyArchs && <span className="ib-family-dot" aria-hidden="true" />}
+                            {headerContent}
                           </div>
                         )}
 

@@ -107,6 +107,11 @@ try {
       const timestamps = dialog.locator('th.ib-family-header');
       assert.equal(await timestamps.count(), 5);
       assert.match(await timestamps.first().innerText(), /2026-11-09.*23:00/s);
+      const dates = await dialog.locator('.ib-history-heading time > span:first-child').evaluateAll(elements =>
+        elements.map(el => ({text:el.textContent, width:el.getBoundingClientRect().width,
+          cellWidth:el.closest('th').getBoundingClientRect().width})));
+      assert.ok(dates.every(date => /^\\d{4}-\\d{2}-\\d{2}$/.test(date.text) && date.width <= date.cellWidth),
+        'complete history dates fit their header cells');
       const compilers = dialog.getByRole('group', {name:'COMPILER', exact:true});
       await compilers.getByRole('button', {name:'gcc14', exact:true}).click();
       assert.equal(await dialog.locator('th.ib-config-header').count(), 4);
