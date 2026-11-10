@@ -815,7 +815,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
                   if (!item.archs?.length) return null;
 
                   const stamp = data[pos].release_name.slice(item.flavor.length + 1);
-                  const flavorLabel = historyArchs ? stamp.replace(/^(.*)-(..)(..)$/, '$1 · $2:$3') : formatFlavorLabel(item.flavor);
+                  const flavorLabel = historyArchs ? (new Set(data.map(ib => ib.release_queue)).size > 1 ? `${formatFlavorLabel(item.flavor)} · ` : '') + stamp.replace(/^(.*)-(..)(..)$/, '$1 · $2:$3') : formatFlavorLabel(item.flavor);
                   const familyState = familyBuildState(data[pos], item.archs);
                   const releaseNameToCopy = item.current_tag || data[pos]?.release_name || '';
 
@@ -1181,29 +1181,41 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
       <div className={`ib-comparison-matrix ${historyArchs || compareOnPhone ? 'is-phone-visible' : ''}`}>{matrix}</div>
       {!historyArchs && <MatrixHelp />}
       {history && <Modal show onHide={() => setHistory(null)} size="xl" fullscreen="md-down"
-        scrollable centered aria-label={`${formatFlavorLabel(history.builds[0].release_queue)} build history`}>
+        scrollable centered aria-label={'Build history'}>
         <Modal.Header closeButton>
-          <Modal.Title>{formatFlavorLabel(history.builds[0].release_queue)} build history</Modal.Title>
+          <Modal.Title>Build history</Modal.Title>
         </Modal.Header>
         <Modal.Body className="ib-history-body">
-          <label className="d-flex align-items-center gap-2 mb-3">Flavour
-            <select aria-label="Flavour" className="form-select w-auto" value={history.builds[0].release_queue}
-              onChange={({ target }) => {
-                const selectedFlavour = flavourOptions.find(ib => ib.release_queue === target.value);
-                if (selectedFlavour) setHistory(previous => ({ ...previous,
-                  builds: flavourHistory(selectedFlavour, comparisons.keys()) }));
-              }}>
-              {flavourOptions.map(ib => <option key={ib.release_queue} value={ib.release_queue}>
-                {formatFlavorLabel(ib.release_queue)}
-              </option>)}
-            </select>
-          </label>
-          <p>{history.builds[0].release_queue} · {history.builds.length} {history.builds.length === 1 ? 'build' : 'builds'}, newest first</p>
+          <p>{history.builds.length} {history.builds.length === 1 ? 'build' : 'builds'}, newest first</p>
           <div className="ib-history-architectures">
             <strong>Architectures</strong>
             <TogglesShowArchs releaseQue={releaseQue} architectures={historyOptions} selection={history.filters}
               onSelectionChange={filters => setHistory(previous => ({ ...previous, filters }))} />
           </div>
+          <details className="ib-history-flavours mb-3">
+            <summary>Compare flavours</summary>
+            <div className="d-flex flex-wrap gap-3 border rounded p-3 mt-2" role="group" aria-label="Flavours">
+              {flavourOptions.map(ib => {
+                const selected = history.builds.some(build => build.release_queue === ib.release_queue);
+                const selectedQueues = new Set(history.builds.map(build => build.release_queue));
+                return <label key={ib.release_queue} className="d-inline-flex align-items-center gap-2">
+                  <input type="checkbox" checked={selected} disabled={selected && selectedQueues.size === 1}
+                    onChange={({ target }) => {
+                      const queues = new Set(selectedQueues);
+                      if (target.checked) queues.add(ib.release_queue);
+                      else queues.delete(ib.release_queue);
+                      const builds = flavourOptions.filter(option => queues.has(option.release_queue))
+                        .flatMap(option => flavourHistory(option, comparisons.keys()))
+                        .sort((a, b) => ibIdentity(b).time - ibIdentity(a).time ||
+                          ibIdentity(b).sequence - ibIdentity(a).sequence ||
+                          a.release_queue.localeCompare(b.release_queue));
+                      setHistory(previous => ({ ...previous, builds }));
+                    }} />
+                  {formatFlavorLabel(ib.release_queue)}
+                </label>;
+              })}
+            </div>
+          </details>
           {hasHistoryResults ? <ComparisonTable data={history.builds} comparisons={comparisons}
             historyArchs={selectedHistoryArchs} releaseQue={releaseQue} /> : <p>{selectedHistoryArchs.length ? "No results for the selected architectures." : "Select an architecture to see its results."}</p>}
         </Modal.Body>

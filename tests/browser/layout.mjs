@@ -112,11 +112,15 @@ try {
       assert.equal(await dialog.locator('th.ib-config-header').count(), 4);
       await compilers.getByRole('button', {name:'gcc15', exact:true}).click();
       assert.ok(await dialog.getByText('Select an architecture to see its results.').isVisible());
-      await dialog.getByLabel('Flavour', {exact:true}).selectOption('CMSSW_20_1_CLANG_X');
+      const flavourMenu = dialog.locator('details.ib-history-flavours');
+      assert.equal(await flavourMenu.getAttribute('open'), null);
+      await flavourMenu.locator('summary').click();
+      await flavourMenu.getByRole('checkbox', {name:'CLANG', exact:true}).check();
+      assert.ok(await flavourMenu.getByRole('checkbox', {name:'ASAN', exact:true}).isChecked());
       assert.ok(await dialog.getByText('Select an architecture to see its results.').isVisible());
       await dialog.getByRole('group', {name:'COMPILER', exact:true}).getByRole('button', {name:'gcc14', exact:true}).click();
-      assert.equal(await dialog.locator('th.ib-family-header').count(), 5);
-      assert.equal(await dialog.locator('th.ib-config-header').count(), 5);
+      assert.equal(await dialog.locator('th.ib-family-header').count(), 10);
+      assert.equal(await dialog.locator('th.ib-config-header').count(), 10);
       await page.keyboard.press('Escape');
       await dialog.waitFor({state:'hidden'});
       await page.setViewportSize({width:390, height:844});
