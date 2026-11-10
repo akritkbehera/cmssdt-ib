@@ -32,8 +32,8 @@ export function historyFlavours(selected, records) {
 }
 
 /** One flavour retains its full history. Multiple flavours retain their latest
- * runs plus every exact timestamp shared by at least two selected flavours. */
-export function selectHistoryBuilds(selected, records) {
+ * runs plus every exact timestamp shared by all selected flavours. */
+export function selectHistoryBuilds(selected, records, showAll = false) {
   const available = [...records];
   const candidates = selected.flatMap(ib => flavourHistory(ib, available));
   if (selected.length < 2) return candidates;
@@ -49,7 +49,7 @@ export function selectHistoryBuilds(selected, records) {
   for (const ib of candidates) {
     const id = ibIdentity(ib);
     const stamp = JSON.stringify([id.time, id.sequence]);
-    if (latest.has(ib) || timestamps.get(stamp).size >= 2) {
+    if (showAll || latest.has(ib) || timestamps.get(stamp).size === selected.length) {
       unique.set(JSON.stringify([id.series, id.variant, id.name]), { ib, id });
     }
   }

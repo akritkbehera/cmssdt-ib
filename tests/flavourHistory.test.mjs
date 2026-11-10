@@ -37,12 +37,13 @@ test('latest selected flavours survive without any exact match', () => {
   assert.deepEqual(selectHistoryBuilds([u, dbg], [dbg, u, run('DBG', '2026-11-07-2300')]), [u, dbg]);
 });
 
-test('matches require the full time, can involve a subset, and deduplicate inputs', () => {
+test('matches require the full time and all selected flavours', () => {
   const d = run('', '2026-11-10-2300'), u = run('UBSAN', '2026-11-10-1100'), c = run('CLANG', '2026-11-09-2300');
   const dOld = run('', '2026-11-08-2300'), uOld = run('UBSAN', '2026-11-08-2300');
   const unmatched = run('CLANG', '2026-11-08-1100');
   const builds = selectHistoryBuilds([d, u, c], [d, u, c, dOld, uOld, { ...dOld }, unmatched]);
-  assert.deepEqual(builds, [d, u, c, uOld, dOld]);
+  assert.deepEqual(builds, [d, u, c]);
+  assert.deepEqual(selectHistoryBuilds([d, u, c], [d, u, c, dOld, uOld, unmatched], true), [d, u, c, uOld, dOld, unmatched]);
 });
 
 test('one flavour keeps its uninterrupted anchored history', () => {

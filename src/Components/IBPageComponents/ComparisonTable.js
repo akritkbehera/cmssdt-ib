@@ -329,11 +329,13 @@ const copyText = (text) => {
   }
 };
 
-const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resultFilter = 'all', onCountsChange, historyArchs }) => {
+const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resultFilter = 'all', onCountsChange, historyArchs, historyLatest = [] }) => {
   const [history, setHistory] = useState(null);
+  const [showAllHistory, setShowAllHistory] = useState(false);
   const [historyFilter, setHistoryFilter] = useState('all');
   const [historyCounts, setHistoryCounts] = useState(null);
   function openHistory(position) {
+    setShowAllHistory(false);
     setHistoryFilter('all');
     setHistoryCounts(null);
     const builds = flavourHistory(data[position], comparisons.keys());
@@ -342,15 +344,19 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
   const flavourOptions = useMemo(() => history ? historyFlavours(history.anchor, comparisons.keys()) : [],
     [history?.anchor, comparisons]);
   const availableHistoryArchs = useMemo(() => history
-    ? [...new Set(history.builds.flatMap(ib => ib.tests_archs || []))].sort() : [], [history?.builds]);
+    ? [...new Set(flavourOptions.filter(option => history.builds.some(ib => ib.release_queue === option.release_queue))
+      .flatMap(option => flavourHistory(option, comparisons.keys())).flatMap(ib => ib.tests_archs || []))].sort() : [], [history?.builds, flavourOptions, comparisons]);
   const historyOptions = useMemo(() => extractInfoFromArchs(availableHistoryArchs), [availableHistoryArchs]);
   const selectedHistoryArchs = useMemo(() => availableHistoryArchs.filter(arch => {
     const [os, cpu, compiler] = arch.split('_');
     return history.filters.os.includes(os) && history.filters.cpu.includes(cpu) &&
       history.filters.compiler.includes(compiler);
   }), [availableHistoryArchs, history?.filters]);
-  const hasHistoryResults = history && history.builds.some(ib => stages.some(stage =>
-    (ib[stage] || []).some(result => selectedHistoryArchs.includes(result.arch))));
+  const visibleHistoryBuilds = history ? history.builds.filter(ib => stages.some(stage =>
+    (ib[stage] || []).some(result => selectedHistoryArchs.includes(result.arch)))) : [];
+  const hasHistoryResults = visibleHistoryBuilds.length > 0;
+  const missingFlavours = history ? [...new Set(history.builds.map(ib => ib.release_queue))]
+    .filter(queue => !visibleHistoryBuilds.some(ib => ib.release_queue === queue)) : [];
   const [configuration, setConfiguration] = useState('');
   const [compareOnPhone, setCompareOnPhone] = useState(false);
   const [inView, setInView] = useState(true);
@@ -394,6 +400,21 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     [data, activeArchs, historyArchs]
   );
 
+  const historyDays = [];
+  const historyBoundaries = new Map();
+  if (historyArchs) {
+    let previousStamp;
+    archsByIb.forEach((item, position) => {
+      if (!item.archs.length) return;
+      const stamp = data[position].release_name.slice(item.flavor.length + 1);
+      const day = stamp.slice(0, 10);
+      historyBoundaries.set(position, day !== previousStamp?.slice(0, 10) ? 'ib-history-day-start'
+        : stamp !== previousStamp ? 'ib-history-time-start' : '');
+      if (historyDays.at(-1)?.day === day) historyDays.at(-1).columns += item.archs.length;
+      else historyDays.push({ day, columns: item.archs.length });
+      previousStamp = stamp;
+    });
+  }
   const configurations = archsByIb.flatMap((item, position) => (item.archs || []).map(arch => ({
     key: JSON.stringify([item.name, arch]), position, arch, flavor: item.flavor
   })));
@@ -449,7 +470,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     let content = decorate(cellInfo);
     if (running && !hasMarker) content = renderStatusMarker({ status: 'secondary', value: ' ', running: true, type: stage });
     const boundary = arch === archsByIb[Number(position)]?.archs[0];
-    const cell = <td key={key} className={`align-middle ib-result-cell ${boundary ? 'ib-group-start' : ''}`} data-muted={!matchesResultFilter(resultStatus, resultFilter)}>
+    const cell = <td key={key} className={`align-middle ib-result-cell ${boundary ? `ib-group-start ${historyBoundaries.get(Number(position)) || ''}` : ''}`} data-muted={!matchesResultFilter(resultStatus, resultFilter)}>
       <div className="ib-inline-result">
       <div className="ib-status-center">{content}</div>
       {delta?.metrics?.length > 0 && !running && <ResultDetails className="ib-comparison-details" tooltipId={`${key}-changes`} overlay={<><p className="ib-preview-metrics">{delta.detail}</p>{preview}</>}>
@@ -809,6 +830,13 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
               {configurations.map(item => <col key={item.key} className="ib-configuration-column" />)}
             </colgroup>
             <thead>
+              {historyArchs && <tr className="ib-history-day-row">
+                <th scope="col">Newest → older</th>
+                {historyDays.map(group => <th key={group.day} colSpan={group.columns}
+                  className="ib-history-day-heading ib-history-day-start" scope="colgroup">
+                  <time dateTime={group.day}>{group.day}</time>
+                </th>)}
+              </tr>}
               <tr>
                 <th className="name-column" rowSpan={2} style={{ verticalAlign: 'middle' }}>
                   <div className="d-flex align-items-center justify-content-center h-100">
@@ -824,14 +852,13 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
                   const flavorLabel = historyArchs ? (new Set(data.map(ib => ib.release_queue)).size > 1 ? `${formatFlavorLabel(item.flavor)} · ` : '') + stamp.replace(/^(.*)-(..)(..)$/, '$1 · $2:$3') : formatFlavorLabel(item.flavor);
                   const headerContent = historyArchs ? (
                     <span className="ib-history-heading">
-                      {new Set(data.map(ib => ib.release_queue)).size > 1 &&
-                        <span>{formatFlavorLabel(item.flavor)}</span>}
+                      <span>{formatFlavorLabel(item.flavor)}</span>
                       <time dateTime={stamp.replace(/-(\d{2})(\d{2})$/, 'T$1:$2')}>
-                        <span>{stamp.slice(0, 10)}</span>
                         <span className="ib-history-time"><span className="ib-family-dot" aria-hidden="true" />
                           {stamp.slice(11, 13)}:{stamp.slice(13, 15)}
                         </span>
                       </time>
+                      {historyLatest.includes(data[pos].release_name) && <small className="ib-history-latest">Latest</small>}
                     </span>
                   ) : flavorLabel;
                   const familyState = familyBuildState(data[pos], item.archs);
@@ -858,7 +885,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
                   return (
                     <th
                       key={`flavor-${pos}-${item.flavor}`}
-                      className={`ib-group-start ib-family-header ib-config-${familyState.status} ${familyState.running ? 'is-running' : ''}`}
+                      className={`ib-group-start ${historyBoundaries.get(pos) || ''} ib-family-header ib-config-${familyState.status} ${familyState.running ? 'is-running' : ''}`}
                       colSpan={item.archs.length}
                       style={{
                         textAlign: 'center',
@@ -960,7 +987,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
                   return (
                     <th
                       key={`arch-${pos}-${arch}`}
-                      className={`ib-config-header ib-config-${headerState.status} ${headerState.running ? 'is-running' : ''} ${archIndex === 0 ? "ib-group-start" : ""}`}
+                      className={`ib-config-header ib-config-${headerState.status} ${headerState.running ? 'is-running' : ''} ${archIndex === 0 ? `ib-group-start ${historyBoundaries.get(pos) || ''} ` : ""}`}
                       style={{
                         padding: '3px 2px',
                         backgroundColor: THEME.light,
@@ -1224,7 +1251,11 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
           </div>
         </Modal.Header>
         <Modal.Body className="ib-history-body">
-          <p>{history.builds.length} {history.builds.length === 1 ? 'build' : 'builds'} · Newest → oldest</p>
+          <p>{visibleHistoryBuilds.length} {visibleHistoryBuilds.length === 1 ? 'build' : 'builds'} · Newest → oldest</p>
+          {missingFlavours.length > 0 && <div role="status" className="alert alert-light border">
+            {missingFlavours.map(queue => <p key={queue} className="mb-1">No {formatFlavorLabel(queue)}_X build available for the selected architectures
+              {selectedHistoryArchs.length > 0 ? `: ${selectedHistoryArchs.join(', ')}` : '.'}</p>)}
+          </div>}
           <div className="ib-history-architectures">
             <strong>Architectures</strong>
             <TogglesShowArchs releaseQue={releaseQue} architectures={historyOptions} selection={history.filters}
@@ -1245,7 +1276,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
                       const selectedFlavours = flavourOptions.filter(option => queues.has(option.release_queue))
                         .map(option => queues.size === 1 && option.release_queue === history.anchor.release_queue
                           ? history.anchor : option);
-                      const builds = selectHistoryBuilds(selectedFlavours, comparisons.keys());
+                      const builds = selectHistoryBuilds(selectedFlavours, comparisons.keys(), showAllHistory);
                       setHistory(previous => ({ ...previous, builds }));
                     }} />
                   {formatFlavorLabel(ib.release_queue)}
@@ -1253,8 +1284,21 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
               })}
             </div>
           </details>
+          <label className="d-flex align-items-center gap-2 mb-3">
+            <input type="checkbox" checked={showAllHistory} onChange={({ target }) => {
+              const selectedQueues = new Set(history.builds.map(ib => ib.release_queue));
+              const anchors = flavourOptions.filter(option => selectedQueues.has(option.release_queue))
+                .map(option => selectedQueues.size === 1 && option.release_queue === history.anchor.release_queue
+                  ? history.anchor : option);
+              setShowAllHistory(target.checked);
+              setHistory(previous => ({ ...previous,
+                builds: selectHistoryBuilds(anchors, comparisons.keys(), target.checked) }));
+            }} />
+            Show all builds chronologically
+          </label>
           {hasHistoryResults ? <ComparisonTable data={history.builds} comparisons={comparisons}
             historyArchs={selectedHistoryArchs} releaseQue={releaseQue}
+            historyLatest={flavourOptions.map(ib => ib.release_name)}
             resultFilter={historyFilter} onCountsChange={setHistoryCounts} /> : <p>{selectedHistoryArchs.length ? "No results for the selected architectures." : "Select an architecture to see its results."}</p>}
         </Modal.Body>
       </Modal>}
