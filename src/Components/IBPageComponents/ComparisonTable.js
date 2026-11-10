@@ -1187,7 +1187,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
         </Modal.Header>
         <Modal.Body className="ib-history-body">
           <label className="d-flex align-items-center gap-2 mb-3">Flavour
-            <select className="form-select w-auto" value={history.builds[0].release_queue}
+            <select aria-label="Flavour" className="form-select w-auto" value={history.builds[0].release_queue}
               onChange={({ target }) => {
                 const selectedFlavour = flavourOptions.find(ib => ib.release_queue === target.value);
                 if (selectedFlavour) setHistory(previous => ({ ...previous,
