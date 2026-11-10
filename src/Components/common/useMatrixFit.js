@@ -10,10 +10,10 @@ function measureBase(table, density, stageWidth, columnWidth, columnCount, twoCa
   const host = document.createElement('div');
   host.className = 'ib-workspace';
   host.dataset.density = density;
-  host.style.setProperty('--ib-card-list-top', getComputedStyle(table).getPropertyValue('--ib-card-list-top'));
   host.setAttribute('aria-hidden', 'true');
   host.inert = true;
   host.style.cssText = `position:fixed;left:-100000px;top:0;width:${stageWidth + columnCount * columnWidth}px;visibility:hidden;pointer-events:none`;
+  host.style.setProperty('--ib-card-list-top', getComputedStyle(table).getPropertyValue('--ib-card-list-top'));
   const section = document.createElement('div');
   section.className = 'ib-matrix-section ib-fit-measure';
   const clone = table.cloneNode(true);

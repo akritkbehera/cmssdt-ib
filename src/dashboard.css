@@ -702,17 +702,23 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
     & .ib-workspace-toolbar .btn { min-height: 28px; padding-block: 2px; font-size: 12px; }
   }
   .ib-workspace[data-density="compact"] .ib-release-panel[data-pr-visible="false"] {
-    --ib-compact-pad: clamp(0px, calc((var(--ib-card-budget) - 240px) / 20), 3px);
+    /* Comfortable's 32:90:44 header/configuration/row proportions.
+       Only the smallest laptops reach the dense floor. Taller viewports
+       spend their available budget on breathing room before larger type. */
+    --ib-spacing-unit: clamp(.5px, calc((var(--ib-card-budget) - 85px) / 342), 1.25px);
+    --ib-compact-pad: clamp(0px, calc((var(--ib-spacing-unit) - .5px) * 4), 3px);
+    --ib-compact-type: clamp(12px, calc(14 * var(--ib-spacing-unit)), 16px);
+    --ib-compact-dot: clamp(16px, calc(24 * var(--ib-spacing-unit)), 28px);
     margin-block: var(--ib-card-gap);
     max-height: var(--ib-card-budget);
     min-height: min-content;
     min-width: 0;
-    & .ib-release-panel-header { min-height: 30px; padding: var(--ib-compact-pad) 8px; gap: 8px; flex-wrap: nowrap; }
+    & .ib-release-panel-header { min-height: clamp(30px, calc(42 * var(--ib-spacing-unit)), 52px); padding: var(--ib-compact-pad) 8px; gap: 8px; flex-wrap: nowrap; }
     & .ib-build-actions { flex-basis: 0; }
     & .ib-build-identity { overflow: hidden; }
-    & .ib-build-identity strong { display: block; font-size: 12px; line-height: 18px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    & .ib-build-identity strong { display: block; font-size: clamp(12px, calc(16 * var(--ib-spacing-unit)), 20px); line-height: 1.4; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     & .ib-build-timestamp { display: none; }
-    & .ib-icon-button.btn { width: 26px; height: 26px; min-width: 26px; min-height: 26px; padding: 2px; }
+    & .ib-icon-button.btn { --ib-compact-control: clamp(26px, calc(36 * var(--ib-spacing-unit)), 44px); width: var(--ib-compact-control); height: var(--ib-compact-control); min-width: var(--ib-compact-control); min-height: var(--ib-compact-control); padding: 2px; }
     & .ib-header-result-filter .ib-result-filter { padding: 0; }
     & .ib-header-result-filter .ib-result-filter .btn { min-height: 26px; padding: 2px 6px; font-size: 12px; line-height: 18px; }
     & .ib-header-result-filter .btn span { font-size: 12px; }
@@ -723,25 +729,25 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
     & > .ib-comparison-context { display: none; }
     & .ib-release-panel-body { padding-block: var(--ib-compact-pad); min-width: 0; }
     & .ib-section-controls { padding: 0 8px var(--ib-compact-pad); gap: 3px; }
-    & .ib-section-pill, & .ib-section-pill.btn { min-height: 24px !important; padding: 1px 6px 1px 3px !important; gap: 4px; font-size: 12px !important; line-height: 18px !important; }
-    & .ib-section-pill .ib-state-dot { --dot-size: 16px !important; }
+    & .ib-section-pill, & .ib-section-pill.btn { min-height: clamp(24px, calc(30 * var(--ib-spacing-unit)), 36px) !important; padding: 1px 6px 1px 3px !important; gap: 4px; font-size: var(--ib-compact-type) !important; line-height: 1.4 !important; }
+    & .ib-section-pill .ib-state-dot { --dot-size: clamp(16px, calc(20 * var(--ib-spacing-unit)), 24px) !important; }
     & .ib-table-scroll-hint { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
     & .ib-matrix-section { --ib-stage-units: 104; }
     & .ib-matrix-section .table { font-size: 12px; }
-    & .ib-matrix-section .table tbody td { height: 22px; padding-block: 0; font-size: 12px; line-height: 18px; vertical-align: middle !important; }
-    & .ib-matrix-section .table .name-column { font-size: 12px; line-height: 14px; padding-block: 0; }
-    & .ib-matrix-section .table thead th.ib-family-header { height: 20px; padding-block: 0 !important; }
-    & .ib-matrix-section .table .ib-family-header .flavor-card { font-size: 12px !important; line-height: 18px !important; padding-block: 0 !important; }
-    & .ib-matrix-section .table thead th.ib-config-header { height: 48px; padding-block: 0 !important; }
-    & .ib-matrix-section .table thead th.ib-config-header .ib-config-label { font-size: 12px; line-height: 12px; gap: 0; padding-block: 0; }
+    & .ib-matrix-section .table tbody td { height: clamp(22px, calc(44 * var(--ib-spacing-unit)), 55px); padding-block: 0; font-size: var(--ib-compact-type); line-height: 1.4; vertical-align: middle !important; }
+    & .ib-matrix-section .table .name-column { font-size: var(--ib-compact-type); line-height: 1.2; padding-block: 0; }
+    & .ib-matrix-section .table thead th.ib-family-header { height: clamp(20px, calc(32 * var(--ib-spacing-unit)), 40px); padding-block: 0 !important; }
+    & .ib-matrix-section .table .ib-family-header .flavor-card { font-size: clamp(12px, calc(13 * var(--ib-spacing-unit)), 16px) !important; line-height: 1.4 !important; padding-block: 0 !important; }
+    & .ib-matrix-section .table thead th.ib-config-header { height: clamp(48px, calc(90 * var(--ib-spacing-unit)), 112.5px); padding-block: 0 !important; }
+    & .ib-matrix-section .table thead th.ib-config-header .ib-config-label { font-size: var(--ib-compact-type); line-height: clamp(12px, calc(22 * var(--ib-spacing-unit)), 27.5px); gap: clamp(0px, calc((var(--ib-spacing-unit) - .5px) * 3), 2px); padding-block: 0; }
     & .ib-matrix-section .table .ib-stage-corner { gap: 4px; font-size: 12px; }
     & .ib-matrix-section .table .ib-stage-corner small { font-size: 12px; }
-    & .ib-matrix-section .table .ib-inline-result { --ib-result-lane: 44px; max-width: none; }
+    & .ib-matrix-section .table .ib-inline-result { --ib-result-lane: clamp(44px, calc(56 * var(--ib-spacing-unit)), 70px); max-width: clamp(104px, calc(104 * var(--ib-spacing-unit)), 130px); }
     & .ib-matrix-section .ib-cell-comparison { flex-wrap: nowrap; gap: 2px; min-width: 0; }
     & .ib-matrix-section .ib-result-delta { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    & .ib-matrix-section .table .ib-status-marker { grid-template-columns: 16px minmax(20px, max-content); gap: 4px; }
-    & .ib-matrix-section .table .ib-result-cell .ib-state-dot { --dot-size: 16px !important; }
-    & .ib-matrix-section .table .ib-status-count { font-size: 12px; line-height: 18px; }
+    & .ib-matrix-section .table .ib-status-marker { grid-template-columns: var(--ib-compact-dot) minmax(20px, max-content); gap: clamp(4px, calc(6 * var(--ib-spacing-unit)), 7px); }
+    & .ib-matrix-section .table .ib-result-cell .ib-state-dot { --dot-size: var(--ib-compact-dot) !important; }
+    & .ib-matrix-section .table .ib-status-count { font-size: var(--ib-compact-type); line-height: 1.4; }
     & .ib-matrix-section .table .ib-result-delta { font-size: 12px; line-height: 14px; }
     & .ib-matrix-section .table .ib-inline-result > .ib-status-details,
     & .ib-matrix-section .table td a { min-height: 22px; min-width: 22px; }
@@ -750,5 +756,14 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
     & .ib-compact-guide { display: block; position: relative; flex: none; padding: 0; border: 0; }
     & .ib-matrix-help-content { position: absolute; z-index: 20; top: 100%; right: 0; width: min(600px, 80vw); max-height: 40dvh; overflow: auto; padding: 8px; background: var(--ui-surface); border: 1px solid var(--ui-border); box-shadow: var(--ui-shadow-panel); }
     & .ib-matrix-help summary { padding-block: 0; font-size: 12px; line-height: 16px; }
+  }
+}
+
+/* Keep complete change markers readable when the roomier row budget allows
+   wrapping. Sparse matrices keep status and comparison together in one group. */
+@media (min-width: 1024px) and (min-height: 740px) and (hover: hover) and (pointer: fine) {
+  .ib-workspace[data-density="compact"] .ib-release-panel[data-pr-visible="false"] {
+    & .ib-matrix-section .ib-cell-comparison { flex-wrap: wrap; }
+    & .ib-matrix-section .ib-result-delta { overflow: visible; text-overflow: clip; }
   }
 }

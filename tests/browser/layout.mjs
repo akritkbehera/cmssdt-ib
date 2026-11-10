@@ -57,5 +57,6 @@ try {
     rows.push({viewport:`${width}×${height}`,cardHeight:compact.cards[0].height,cardsVisible:compact.visible});
     await page.close();
   }
+  assert.ok(rows.at(-1).cardHeight > rows[0].cardHeight * 1.7, 'tall screens use Comfortable spacing proportions instead of the laptop compression floor');
   console.log('LAYOUT_REPORT '+JSON.stringify(rows));
 } finally {await browser.close();}

@@ -20,7 +20,9 @@ export default function DashboardDensity({ release, children }) {
       frame = undefined;
       const list = workspace.querySelector('.ib-card-list');
       if (!list) return;
-      const top = Math.max(0, list.getBoundingClientRect().top + window.scrollY);
+      // Upcoming notices precede results but are not one of the two result cards.
+      const firstResult = list.querySelector('.ib-release-panel:has(.ib-matrix-section)');
+      const top = Math.max(0, (firstResult || list).getBoundingClientRect().top + window.scrollY);
       const value = `${top}px`;
       if (workspace.style.getPropertyValue('--ib-card-list-top') !== value) {
         workspace.style.setProperty('--ib-card-list-top', value);
