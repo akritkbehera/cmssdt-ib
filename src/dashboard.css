@@ -714,6 +714,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
     & .ib-icon-button.btn { width: 26px; height: 26px; min-width: 26px; min-height: 26px; padding: 2px; }
     & .ib-header-result-filter .ib-result-filter { padding: 0; }
     & .ib-header-result-filter .ib-result-filter .btn { min-height: 26px; padding: 2px 6px; font-size: 12px; line-height: 18px; }
+    & .ib-header-result-filter .btn span { font-size: 12px; }
     & .ib-collapse-label { font-size: 12px; }
     & .ib-compact-baselines { display: block; position: relative; flex: none; font-size: 12px; }
     & .ib-compact-baselines summary { cursor: pointer; }
@@ -723,7 +724,8 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
     & .ib-section-controls { padding: 0 8px var(--ib-compact-pad); gap: 3px; }
     & .ib-section-pill, & .ib-section-pill.btn { min-height: 24px !important; padding: 1px 6px 1px 3px !important; gap: 4px; font-size: 12px !important; line-height: 18px !important; }
     & .ib-section-pill .ib-state-dot { --dot-size: 16px !important; }
-    & .ib-table-scroll-hint { margin: 0; font-size: 12px; line-height: 14px; }
+    & .ib-table-scroll-hint { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    & .ib-matrix-section { --ib-stage-units: 104; }
     & .ib-matrix-section .table { font-size: 12px; }
     & .ib-matrix-section .table tbody td { height: 22px; padding-block: 0; font-size: 12px; line-height: 18px; vertical-align: middle !important; }
     & .ib-matrix-section .table .name-column { font-size: 12px; line-height: 14px; padding-block: 0; }
