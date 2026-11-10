@@ -1,3 +1,4 @@
+import MatrixHelp from '../common/MatrixHelp';
 import ResultFilter from "../common/ResultFilter";
 import ComparisonContext from "../common/ComparisonContext";
 import IconButton from "../common/IconButton";
@@ -261,6 +262,7 @@ class IBGroupFrame extends PureComponent {
                                 </IconButton>
                             </div>
 
+                            <MatrixHelp compact />
                             <ComparisonContext compact builds={IBGroup} comparisons={this.props.comparisons || new Map()} />
                             {comparisonTable && !isCollapsed && <div className="ib-header-result-filter"
                                 title="Test results filter" onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()}>

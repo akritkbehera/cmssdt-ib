@@ -685,7 +685,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-matrix-section .table thead th.ib-config-header { padding-inline: calc(2 * var(--ib-cell-unit) + var(--ib-fit-extra-padding, 0px)) !important; }
 .ib-fit-measure *, .ib-fit-measure *::before, .ib-fit-measure *::after { animation: none !important; }
 
-.ib-compact-baselines { display: none; }
+.ib-compact-baselines, .ib-compact-guide { display: none; }
 
 /* Two complete cards on desktop: only compact density with PRs unmounted.
    The offset includes the real navigation, density toolbar and page padding.
@@ -712,18 +712,16 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
     & .ib-build-identity strong { display: block; font-size: 12px; line-height: 18px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     & .ib-build-timestamp { display: none; }
     & .ib-icon-button.btn { width: 26px; height: 26px; min-width: 26px; min-height: 26px; padding: 2px; }
+    & .ib-header-result-filter .ib-result-filter { padding: 0; }
     & .ib-header-result-filter .ib-result-filter .btn { min-height: 26px; padding: 2px 6px; font-size: 12px; line-height: 18px; }
     & .ib-collapse-label { font-size: 12px; }
     & .ib-compact-baselines { display: block; position: relative; flex: none; font-size: 12px; }
     & .ib-compact-baselines summary { cursor: pointer; }
     & .ib-compact-baselines > div { position: absolute; z-index: 20; top: 100%; right: 0; width: min(600px, 80vw); max-height: 40dvh; overflow: auto; padding: 8px; background: var(--ui-surface); border: 1px solid var(--ui-border); box-shadow: var(--ui-shadow-panel); }
     & > .ib-comparison-context { display: none; }
-    & .ib-comparison-context { display: flex; align-items: baseline; gap: 12px; padding: 0 8px; font-size: 12px; line-height: 16px; }
-    & .ib-comparison-context > div { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-    & .ib-comparison-context > details { flex: none; margin: 0; }
     & .ib-release-panel-body { padding-block: var(--ib-compact-pad); min-width: 0; }
     & .ib-section-controls { padding: 0 8px var(--ib-compact-pad); gap: 3px; }
-    & .ib-section-pill, & .ib-section-pill.btn { min-height: 24px; padding: 1px 6px 1px 3px !important; gap: 4px; font-size: 12px !important; line-height: 18px !important; }
+    & .ib-section-pill, & .ib-section-pill.btn { min-height: 24px !important; padding: 1px 6px 1px 3px !important; gap: 4px; font-size: 12px !important; line-height: 18px !important; }
     & .ib-section-pill .ib-state-dot { --dot-size: 16px !important; }
     & .ib-table-scroll-hint { margin: 0; font-size: 12px; line-height: 14px; }
     & .ib-matrix-section .table { font-size: 12px; }
@@ -735,7 +733,9 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
     & .ib-matrix-section .table thead th.ib-config-header .ib-config-label { font-size: 12px; line-height: 14px; gap: 0; padding-block: 0; }
     & .ib-matrix-section .table .ib-stage-corner { gap: 4px; font-size: 12px; }
     & .ib-matrix-section .table .ib-stage-corner small { font-size: 12px; }
-    & .ib-matrix-section .table .ib-inline-result { --ib-result-lane: 44px; }
+    & .ib-matrix-section .table .ib-inline-result { --ib-result-lane: 44px; max-width: none; }
+    & .ib-matrix-section .ib-cell-comparison { flex-wrap: nowrap; gap: 2px; min-width: 0; }
+    & .ib-matrix-section .ib-result-delta { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     & .ib-matrix-section .table .ib-status-marker { grid-template-columns: 16px minmax(20px, max-content); gap: 4px; }
     & .ib-matrix-section .table .ib-result-cell .ib-state-dot { --dot-size: 16px !important; }
     & .ib-matrix-section .table .ib-status-count { font-size: 12px; line-height: 18px; }
@@ -743,8 +743,9 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
     & .ib-matrix-section .table .ib-inline-result > .ib-status-details,
     & .ib-matrix-section .table td a { min-height: 22px; min-width: 22px; }
     & .ib-matrix-section .table tr:has(.ib-comparison-details) > .ib-result-cell { padding-top: 0; }
-    & .ib-matrix-help { position: relative; padding: 0 8px; }
-    & .ib-matrix-help-content { position: absolute; z-index: 20; bottom: 100%; inset-inline: 8px; max-height: 40dvh; overflow: auto; padding: 8px; background: var(--ui-surface); border: 1px solid var(--ui-border); box-shadow: var(--ui-shadow-panel); }
+    & .ib-matrix-section > .ib-matrix-help { display: none; }
+    & .ib-compact-guide { display: block; position: relative; flex: none; padding: 0; border: 0; }
+    & .ib-matrix-help-content { position: absolute; z-index: 20; top: 100%; right: 0; width: min(600px, 80vw); max-height: 40dvh; overflow: auto; padding: 8px; background: var(--ui-surface); border: 1px solid var(--ui-border); box-shadow: var(--ui-shadow-panel); }
     & .ib-matrix-help summary { padding-block: 0; font-size: 12px; line-height: 16px; }
   }
 }

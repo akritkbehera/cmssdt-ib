@@ -17,12 +17,13 @@ try {
       return {cards:cards.map(card=>{
         const r=card.getBoundingClientRect(), table=card.querySelector('table'), viewport=card.querySelector('.ib-table-responsive');
         return {height:r.height,top:r.top,bottom:r.bottom,scrollHeight:card.scrollHeight,
-          budget:parseFloat(getComputedStyle(card).maxHeight),matrixHeight:table?.getBoundingClientRect().height,
+          parts:Object.fromEntries(['.ib-release-panel-header','.ib-comparison-context','.ib-section-controls','.ib-matrix-help'].map(s=>[s,card.querySelector(s)?.getBoundingClientRect().height])),
+          rowHeights:[...table.rows].map(r=>r.getBoundingClientRect().height),budget:parseFloat(getComputedStyle(card).maxHeight),matrixHeight:table?.getBoundingClientRect().height,
           matrixClipped:viewport && viewport.scrollHeight>viewport.clientHeight+1,
           rows:table?.tBodies[0]?.rows.length, pr:card.dataset.prVisible};
       }),visible:cards.filter(c=>{const r=c.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight}).length,
       overflow:document.documentElement.scrollWidth>innerWidth,
-      font:parseFloat(getComputedStyle(document.querySelector('.ib-status-count')).fontSize)};
+      font:parseFloat(getComputedStyle(document.querySelector('table .ib-status-count')).fontSize)};
     });
     // Wait for fonts, the chrome observer, and the independent base measurement.
     await page.evaluate(()=>document.fonts.ready);
@@ -51,6 +52,7 @@ try {
     assert.ok(shown.cards[0].height>compact.cards[0].height,'PR shown restores original layout');
     await page.getByRole('button',{name:'Hide Pull Requests',exact:true}).first().click();
     await page.waitForTimeout(250);
+    await page.evaluate(()=>scrollTo(0,0));
     assert.ok((await metrics()).visible>=2,'hiding again restores two-card layout');
     rows.push({viewport:`${width}×${height}`,cardHeight:compact.cards[0].height,cardsVisible:compact.visible});
     await page.close();

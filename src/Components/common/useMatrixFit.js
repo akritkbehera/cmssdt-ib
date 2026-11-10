@@ -57,7 +57,7 @@ export default function useMatrixFit(containerRef, columnCount, contentVersion, 
       const availableHeight = Math.max(base.height, heightBudget);
       const key = `${nextBaseKey}:${availableWidth}:${availableHeight}:${base.height}`;
       if (key !== lastKey) {
-        const fit = fitMatrix({ ...options, ...(twoCards ? { maxUniformScale: 1 } : {}), containerWidth: availableWidth, containerHeight: availableHeight, columnCount, columnWidth, stageWidth, baseHeight: base.height });
+        const fit = fitMatrix({ ...options, ...(twoCards ? { maxUniformScale: 1, paddingX: 4 } : {}), containerWidth: availableWidth, containerHeight: availableHeight, columnCount, columnWidth, stageWidth, baseHeight: base.height });
         const values = [fit.width, fit.scale, fit.stageWidth, fit.columnWidth, fit.paddingX, fit.paddingAdded];
         properties.forEach((property, index) => table.style.setProperty(property, `${values[index]}px`));
         [...table.rows].forEach((row, index) => { row.style.height = `${base.rows[index] * fit.scale}px`; });
