@@ -8,7 +8,7 @@ const properties = ['--ib-fit-width', '--ib-cell-unit', '--ib-stage-width', '--i
 // back into the next measurement and the matrix can grow/oscillate on resize.
 function measureBase(table, density, stageWidth, columnWidth, columnCount, twoCards) {
   const host = document.createElement('div');
-  host.className = 'ib-workspace';
+  host.className = table.closest('.ib-history-body') ? 'ib-workspace ib-history-body' : 'ib-workspace';
   host.dataset.density = density;
   host.setAttribute('aria-hidden', 'true');
   host.inert = true;

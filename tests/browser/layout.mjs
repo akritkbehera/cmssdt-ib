@@ -119,11 +119,10 @@ try {
       await dialog.locator('.ib-history-resize summary').click();
       await dialog.getByRole('slider', {name:'Width', exact:true}).press('End');
       for (let i=0; i<18; i++) await dialog.getByRole('slider', {name:'Width', exact:true}).press('ArrowLeft');
-      await dialog.getByRole('slider', {name:'Height', exact:true}).press('End');
-      for (let i=0; i<13; i++) await dialog.getByRole('slider', {name:'Height', exact:true}).press('ArrowLeft');
+      assert.equal(await dialog.getByRole('slider', {name:'Height', exact:true}).count(), 0);
       await dialog.locator('.ib-history-resize summary').click();
       const savedSize = await page.evaluate(() => JSON.parse(localStorage.getItem('cms_ib_history_size')));
-      assert.deepEqual(savedSize, {width:80, height:85});
+      assert.deepEqual(savedSize, {width:80});
       const windowSize = await dialog.locator('.modal-content').boundingBox();
       assert.ok(Math.abs(windowSize.width - width * .8) < 3);
       await page.keyboard.press('Escape');
@@ -131,6 +130,13 @@ try {
       await trigger.click();
       const restoredSize = await dialog.locator('.modal-content').boundingBox();
       assert.ok(Math.abs(restoredSize.width - width * .8) < 3, 'history remembers its chosen width');
+      const dateBand = await dialog.locator('.ib-history-day-row').boundingBox();
+      assert.ok(dateBand.height <= 41, 'date header stays compact');
+      const heightStyles = await dialog.locator('.modal-content').evaluate(el => ({
+        height:el.style.height, resize:getComputedStyle(el).resize
+      }));
+      assert.equal(heightStyles.height, '');
+      assert.equal(heightStyles.resize, 'horizontal');
       const timestamps = dialog.locator('th.ib-family-header');
       assert.equal(await timestamps.count(), 5);
       assert.match(await timestamps.first().innerText(), /23:00/);
