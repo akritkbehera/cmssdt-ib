@@ -107,18 +107,17 @@ try {
       const timestamps = dialog.locator('th.ib-family-header');
       assert.equal(await timestamps.count(), 5);
       assert.match(await timestamps.first().innerText(), /2026-11-09.*23:00/s);
-      const filters = dialog.getByRole('checkbox');
-      assert.equal(await filters.count(), 2);
-      await filters.first().uncheck();
+      const compilers = dialog.getByRole('group', {name:'COMPILER', exact:true});
+      await compilers.getByRole('button', {name:'gcc14', exact:true}).click();
       assert.equal(await dialog.locator('th.ib-config-header').count(), 5);
-      await filters.last().uncheck();
+      await compilers.getByRole('button', {name:'gcc15', exact:true}).click();
       assert.ok(await dialog.getByText('Select an architecture to see its results.').isVisible());
       await page.keyboard.press('Escape');
       await dialog.waitFor({state:'hidden'});
       await page.setViewportSize({width:390, height:844});
       await card.getByRole('button', {name:'View DEFAULT history', exact:true}).click();
       assert.ok(await dialog.locator('table').isVisible());
-      assert.equal(await dialog.getByRole('checkbox').count(), 3);
+      assert.equal(await dialog.getByRole('group', {name:'CPU', exact:true}).getByRole('button').count(), 2);
       assert.deepEqual(errors, []);
     }
     await page.close();

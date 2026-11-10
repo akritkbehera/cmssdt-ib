@@ -1,5 +1,6 @@
 import { flavourHistory } from '../../Utils/flavourHistory';
 import { ibIdentity } from '../../Utils/ibComparison';
+import TogglesShowArchs from '../TogglesShowArchs';
 import ResultDeltaGutter from '../common/ResultDeltaGutter';
 import MatrixHelp from '../common/MatrixHelp';
 import useMatrixFit from "../common/useMatrixFit";
@@ -17,6 +18,7 @@ import PropTypes from 'prop-types';
 import { Modal, OverlayTrigger, Table, Tooltip } from "react-bootstrap";
 import {
   checkLabelType,
+  extractInfoFromArchs,
   getAllActiveArchitecturesFromIBGroupByFlavor,
   getDisplayName,
   getInfoFromRelease,
@@ -330,8 +332,16 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
   const [history, setHistory] = useState(null);
   function openHistory(position) {
     const builds = flavourHistory(data[position], comparisons.keys());
-    if (builds.length) setHistory({ builds, selected: archsByIb[position].archs });
+    if (builds.length) setHistory({ builds, filters: extractInfoFromArchs(archsByIb[position].archs) });
   }
+  const availableHistoryArchs = useMemo(() => history
+    ? [...new Set(history.builds.flatMap(ib => ib.tests_archs || []))].sort() : [], [history?.builds]);
+  const historyOptions = useMemo(() => extractInfoFromArchs(availableHistoryArchs), [availableHistoryArchs]);
+  const selectedHistoryArchs = useMemo(() => availableHistoryArchs.filter(arch => {
+    const [os, cpu, compiler] = arch.split('_');
+    return history.filters.os.includes(os) && history.filters.cpu.includes(cpu) &&
+      history.filters.compiler.includes(compiler);
+  }), [availableHistoryArchs, history?.filters]);
   const [configuration, setConfiguration] = useState('');
   const [compareOnPhone, setCompareOnPhone] = useState(false);
   const [inView, setInView] = useState(true);
@@ -1170,16 +1180,13 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
         </Modal.Header>
         <Modal.Body className="ib-history-body">
           <p>{history.builds[0].release_queue} · {history.builds.length} {history.builds.length === 1 ? 'build' : 'builds'}, newest first</p>
-          <fieldset className="ib-history-architectures">
-            <legend>Architectures</legend>
-            {[...new Set(history.builds.flatMap(ib => ib.tests_archs || []))].sort().map(arch => (
-              <label key={arch}><input type="checkbox" checked={history.selected.includes(arch)}
-                onChange={({ target }) => setHistory(previous => ({ ...previous, selected: target.checked
-                  ? [...previous.selected, arch].sort() : previous.selected.filter(value => value !== arch) }))} /> {arch}</label>
-            ))}
-          </fieldset>
-          {history.selected.length ? <ComparisonTable data={history.builds} comparisons={comparisons}
-            historyArchs={history.selected} releaseQue={releaseQue} /> : <p>Select an architecture to see its results.</p>}
+          <div className="ib-history-architectures">
+            <strong>Architectures</strong>
+            <TogglesShowArchs releaseQue={releaseQue} architectures={historyOptions} selection={history.filters}
+              onSelectionChange={filters => setHistory(previous => ({ ...previous, filters }))} />
+          </div>
+          {selectedHistoryArchs.length ? <ComparisonTable data={history.builds} comparisons={comparisons}
+            historyArchs={selectedHistoryArchs} releaseQue={releaseQue} /> : <p>Select an architecture to see its results.</p>}
         </Modal.Body>
       </Modal>}
     </section>

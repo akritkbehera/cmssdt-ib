@@ -157,11 +157,11 @@ const labelStyles = {
   }
 };
 
-const TogglesShowArchs = ({ releaseQue }) => {
+const TogglesShowArchs = ({ releaseQue, architectures, selection, onSelectionChange }) => {
     const { getAllArchsForQue, getActiveArchsForQue, setActiveArchs } = useShowArch();
     
-    const archs = getAllArchsForQue(releaseQue);
-    const activeArchs = getActiveArchsForQue(releaseQue);
+    const archs = architectures || getAllArchsForQue(releaseQue);
+    const activeArchs = selection || getActiveArchsForQue(releaseQue);
 
     // Use local state for immediate feedback
     const [localSelections, setLocalSelections] = useState({
@@ -200,8 +200,12 @@ const TogglesShowArchs = ({ releaseQue }) => {
         }));
         
         // Update context
-        setActiveArchs({ field, activeValues: newSelections, releaseQue });
-    }, [localSelections, setActiveArchs, releaseQue]);
+        if (onSelectionChange) {
+            onSelectionChange({ ...localSelections, [field]: newSelections });
+        } else {
+            setActiveArchs({ field, activeValues: newSelections, releaseQue });
+        }
+    }, [localSelections, setActiveArchs, releaseQue, onSelectionChange]);
 
     const getButtonStyle = (index, total, isSelected, colors) => {
         let borderRadius = {};
@@ -236,7 +240,7 @@ const TogglesShowArchs = ({ releaseQue }) => {
         const selectedCount = selections.length;
         
         return (
-            <div className="d-flex align-items-center me-3">
+            <div className="d-flex flex-wrap align-items-center me-3" role="group" aria-label={title}>
                 {/* Subtle Label */}
                 <div style={labelStyles.container} className="me-2">
                     <span style={{ ...labelStyles.icon, color: colors.label.color }}>
@@ -263,6 +267,7 @@ const TogglesShowArchs = ({ releaseQue }) => {
                                 onClick={(e) => handleButtonClick(field, item, e)}
                                 style={getButtonStyle(index, items.length, isSelected, colors)}
                                 className="btn btn-sm"
+                                aria-pressed={isSelected}
                                 onMouseEnter={(e) => {
                                     if (!isSelected) {
                                         e.currentTarget.style.backgroundColor = '#f1f3f5';
