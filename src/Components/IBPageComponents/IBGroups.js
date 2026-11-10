@@ -611,7 +611,7 @@ class IBGroups extends Component {
         }
 
         return (
-            <div style={{ position: 'relative' }}>
+            <div className="ib-card-list" style={{ position: 'relative' }}>
                 {this.renderCornerButtons()}
                 {this.renderNavigator(filteredData)}
 

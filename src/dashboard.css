@@ -684,3 +684,67 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-matrix-section .table tbody td:not(.name-column) { padding-inline: var(--ib-fit-padding, calc(6 * var(--ib-cell-unit))); }
 .ib-matrix-section .table thead th.ib-config-header { padding-inline: calc(2 * var(--ib-cell-unit) + var(--ib-fit-extra-padding, 0px)) !important; }
 .ib-fit-measure *, .ib-fit-measure *::before, .ib-fit-measure *::after { animation: none !important; }
+
+.ib-compact-baselines { display: none; }
+
+/* Two complete cards on desktop: only compact density with PRs unmounted.
+   The offset includes the real navigation, density toolbar and page padding.
+   Reserve two card margins and a bottom gutter before splitting the remainder. */
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  .ib-workspace[data-density="compact"] {
+    --ib-card-gap: 6px;
+    --ib-card-budget: calc((100dvh - var(--ib-card-list-top, 0px) - 3 * var(--ib-card-gap)) / 2);
+  }
+  .ib-workspace[data-density="compact"]:has(.ib-release-panel[data-pr-visible="false"]):not(:has(.ib-release-panel[data-pr-visible="true"])) {
+    & .ib-workspace-toolbar { padding-block: 4px; gap: 8px; }
+    & .ib-workspace-toolbar > div:first-child { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+    & .ib-workspace-toolbar h1 { margin: 0; font-size: 16px; }
+    & .ib-workspace-toolbar .btn { min-height: 28px; padding-block: 2px; font-size: 12px; }
+  }
+  .ib-workspace[data-density="compact"] .ib-release-panel[data-pr-visible="false"] {
+    --ib-compact-pad: clamp(0px, calc((var(--ib-card-budget) - 240px) / 20), 3px);
+    margin-block: var(--ib-card-gap);
+    max-height: var(--ib-card-budget);
+    min-width: 0;
+    & .ib-release-panel-header { min-height: 30px; padding: var(--ib-compact-pad) 8px; gap: 8px; flex-wrap: nowrap; }
+    & .ib-build-actions { flex-basis: 0; }
+    & .ib-build-identity { overflow: hidden; }
+    & .ib-build-identity strong { display: block; font-size: 12px; line-height: 18px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    & .ib-build-timestamp { display: none; }
+    & .ib-icon-button.btn { width: 26px; height: 26px; min-width: 26px; min-height: 26px; padding: 2px; }
+    & .ib-header-result-filter .ib-result-filter .btn { min-height: 26px; padding: 2px 6px; font-size: 12px; line-height: 18px; }
+    & .ib-collapse-label { font-size: 12px; }
+    & .ib-compact-baselines { display: block; position: relative; flex: none; font-size: 12px; }
+    & .ib-compact-baselines summary { cursor: pointer; }
+    & .ib-compact-baselines > div { position: absolute; z-index: 20; top: 100%; right: 0; width: min(600px, 80vw); max-height: 40dvh; overflow: auto; padding: 8px; background: var(--ui-surface); border: 1px solid var(--ui-border); box-shadow: var(--ui-shadow-panel); }
+    & > .ib-comparison-context { display: none; }
+    & .ib-comparison-context { display: flex; align-items: baseline; gap: 12px; padding: 0 8px; font-size: 12px; line-height: 16px; }
+    & .ib-comparison-context > div { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    & .ib-comparison-context > details { flex: none; margin: 0; }
+    & .ib-release-panel-body { padding-block: var(--ib-compact-pad); min-width: 0; }
+    & .ib-section-controls { padding: 0 8px var(--ib-compact-pad); gap: 3px; }
+    & .ib-section-pill, & .ib-section-pill.btn { min-height: 24px; padding: 1px 6px 1px 3px !important; gap: 4px; font-size: 12px !important; line-height: 18px !important; }
+    & .ib-section-pill .ib-state-dot { --dot-size: 16px !important; }
+    & .ib-table-scroll-hint { margin: 0; font-size: 12px; line-height: 14px; }
+    & .ib-matrix-section .table { font-size: 12px; }
+    & .ib-matrix-section .table tbody td { height: 22px; padding-block: 0; font-size: 12px; line-height: 18px; vertical-align: middle !important; }
+    & .ib-matrix-section .table .name-column { font-size: 12px; line-height: 14px; padding-block: 0; }
+    & .ib-matrix-section .table thead th.ib-family-header { height: 20px; padding-block: 0 !important; }
+    & .ib-matrix-section .table .ib-family-header .flavor-card { font-size: 12px !important; line-height: 18px !important; padding-block: 0 !important; }
+    & .ib-matrix-section .table thead th.ib-config-header { height: 48px; padding-block: 0 !important; }
+    & .ib-matrix-section .table thead th.ib-config-header .ib-config-label { font-size: 12px; line-height: 14px; gap: 0; padding-block: 0; }
+    & .ib-matrix-section .table .ib-stage-corner { gap: 4px; font-size: 12px; }
+    & .ib-matrix-section .table .ib-stage-corner small { font-size: 12px; }
+    & .ib-matrix-section .table .ib-inline-result { --ib-result-lane: 44px; }
+    & .ib-matrix-section .table .ib-status-marker { grid-template-columns: 16px minmax(20px, max-content); gap: 4px; }
+    & .ib-matrix-section .table .ib-result-cell .ib-state-dot { --dot-size: 16px !important; }
+    & .ib-matrix-section .table .ib-status-count { font-size: 12px; line-height: 18px; }
+    & .ib-matrix-section .table .ib-result-delta { font-size: 12px; line-height: 14px; }
+    & .ib-matrix-section .table .ib-inline-result > .ib-status-details,
+    & .ib-matrix-section .table td a { min-height: 22px; min-width: 22px; }
+    & .ib-matrix-section .table tr:has(.ib-comparison-details) > .ib-result-cell { padding-top: 0; }
+    & .ib-matrix-help { position: relative; padding: 0 8px; }
+    & .ib-matrix-help-content { position: absolute; z-index: 20; bottom: 100%; inset-inline: 8px; max-height: 40dvh; overflow: auto; padding: 8px; background: var(--ui-surface); border: 1px solid var(--ui-border); box-shadow: var(--ui-shadow-panel); }
+    & .ib-matrix-help summary { padding-block: 0; font-size: 12px; line-height: 16px; }
+  }
+}

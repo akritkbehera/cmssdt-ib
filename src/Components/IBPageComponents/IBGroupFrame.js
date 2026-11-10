@@ -161,7 +161,7 @@ class IBGroupFrame extends PureComponent {
         );
 
         return (
-            <Card className={`ib-release-panel ${isNextIB ? "ib-release-panel--upcoming" : ""}`}>
+            <Card data-pr-visible={showPullRequests} className={`ib-release-panel ${isNextIB ? "ib-release-panel--upcoming" : ""}`}>
                 <Card.Header
                     className="ib-release-panel-header"
                     onClick={onToggleCollapse}
@@ -261,6 +261,7 @@ class IBGroupFrame extends PureComponent {
                                 </IconButton>
                             </div>
 
+                            <ComparisonContext compact builds={IBGroup} comparisons={this.props.comparisons || new Map()} />
                             {comparisonTable && !isCollapsed && <div className="ib-header-result-filter"
                                 title="Test results filter" onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()}>
                                 <ResultFilter filter={this.state.resultFilter} counts={this.state.resultCounts} onChange={this.setResultFilter} />

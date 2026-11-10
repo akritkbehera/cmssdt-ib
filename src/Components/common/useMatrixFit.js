@@ -6,10 +6,11 @@ const properties = ['--ib-fit-width', '--ib-cell-unit', '--ib-stage-width', '--i
 
 // Measure the unscaled layout independently of Phase 2; otherwise reflow feeds
 // back into the next measurement and the matrix can grow/oscillate on resize.
-function measureBase(table, density, stageWidth, columnWidth, columnCount) {
+function measureBase(table, density, stageWidth, columnWidth, columnCount, twoCards) {
   const host = document.createElement('div');
   host.className = 'ib-workspace';
   host.dataset.density = density;
+  host.style.setProperty('--ib-card-list-top', getComputedStyle(table).getPropertyValue('--ib-card-list-top'));
   host.setAttribute('aria-hidden', 'true');
   host.inert = true;
   host.style.cssText = `position:fixed;left:-100000px;top:0;width:${stageWidth + columnCount * columnWidth}px;visibility:hidden;pointer-events:none`;
@@ -23,7 +24,10 @@ function measureBase(table, density, stageWidth, columnWidth, columnCount) {
   clone.style.setProperty('--ib-column-width', `${columnWidth}px`);
   clone.style.setProperty('--ib-fit-padding', '6px');
   clone.style.setProperty('--ib-fit-extra-padding', '0px');
-  section.append(clone); host.append(section); document.body.append(host);
+  const card = document.createElement('div');
+  card.className = 'ib-release-panel';
+  card.dataset.prVisible = twoCards ? 'false' : 'true';
+  section.append(clone); card.append(section); host.append(card); document.body.append(host);
   try {
     return { height: clone.getBoundingClientRect().height, rows: [...clone.rows].map(row => row.getBoundingClientRect().height) };
   } finally { host.remove(); }
@@ -34,6 +38,7 @@ export default function useMatrixFit(containerRef, columnCount, contentVersion, 
     const container = containerRef.current, table = container?.querySelector('table');
     if (!table || !columnCount) return;
     const workspace = container.closest('.ib-workspace');
+    const card = container.closest('.ib-release-panel');
     let frame, base, baseKey, lastKey, disposed = false;
     const measure = () => {
       frame = undefined;
@@ -42,8 +47,9 @@ export default function useMatrixFit(containerRef, columnCount, contentVersion, 
       const columnWidth = Number(styles.getPropertyValue('--ib-column-units')) || 104;
       const stageWidth = Number(styles.getPropertyValue('--ib-stage-units')) || 88;
       const density = workspace?.dataset.density || 'comfortable';
-      const nextBaseKey = `${density}:${columnWidth}:${stageWidth}`;
-      if (!base || baseKey !== nextBaseKey) { base = measureBase(table, density, stageWidth, columnWidth, columnCount); baseKey = nextBaseKey; }
+      const twoCards = density === 'compact' && card?.dataset.prVisible === 'false' && window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)').matches;
+      const nextBaseKey = `${density}:${columnWidth}:${stageWidth}:${twoCards}:${twoCards ? window.innerHeight + ':' + getComputedStyle(workspace).getPropertyValue('--ib-card-list-top') : ''}`;
+      if (!base || baseKey !== nextBaseKey) { base = measureBase(table, density, stageWidth, columnWidth, columnCount, twoCards); baseKey = nextBaseKey; }
       if (!(base.height > 0)) return;
       const heightBudget = options.maxHeightPx ?? window.innerHeight * options.viewportHeightRatio;
       // Small screens retain readable base text inside a contained scroll viewport.
@@ -51,14 +57,16 @@ export default function useMatrixFit(containerRef, columnCount, contentVersion, 
       const availableHeight = Math.max(base.height, heightBudget);
       const key = `${nextBaseKey}:${availableWidth}:${availableHeight}:${base.height}`;
       if (key !== lastKey) {
-        const fit = fitMatrix({ ...options, containerWidth: availableWidth, containerHeight: availableHeight, columnCount, columnWidth, stageWidth, baseHeight: base.height });
+        const fit = fitMatrix({ ...options, ...(twoCards ? { maxUniformScale: 1 } : {}), containerWidth: availableWidth, containerHeight: availableHeight, columnCount, columnWidth, stageWidth, baseHeight: base.height });
         const values = [fit.width, fit.scale, fit.stageWidth, fit.columnWidth, fit.paddingX, fit.paddingAdded];
         properties.forEach((property, index) => table.style.setProperty(property, `${values[index]}px`));
         [...table.rows].forEach((row, index) => { row.style.height = `${base.rows[index] * fit.scale}px`; });
         table.dataset.fitPhase = fit.phase2 ? '2' : '1';
         lastKey = key;
       }
-      container.style.maxHeight = `${heightBudget}px`;
+      // The compact desktop layout exposes every row, without a vertical
+      // scrolling viewport. Horizontal expansion still follows Phase 2.
+      container.style.maxHeight = twoCards ? 'none' : `${heightBudget}px`;
       onOverflow?.(container.scrollWidth > container.clientWidth + 1);
     };
     const schedule = () => { if (!disposed && frame === undefined) frame = requestAnimationFrame(measure); };
@@ -66,7 +74,8 @@ export default function useMatrixFit(containerRef, columnCount, contentVersion, 
     const observer = new ResizeObserver(schedule);
     observer.observe(container);
     const mutation = new MutationObserver(invalidate);
-    if (workspace) mutation.observe(workspace, { attributes: true, attributeFilter: ['data-density'] });
+    if (workspace) mutation.observe(workspace, { attributes: true, attributeFilter: ['data-density', 'style'] });
+    if (card) mutation.observe(card, { attributes: true, attributeFilter: ['data-pr-visible'] });
     const deviceQuery = window.matchMedia('(hover: none), (pointer: coarse)');
     deviceQuery.addEventListener('change', invalidate);
     document.fonts?.addEventListener('loadingdone', invalidate);

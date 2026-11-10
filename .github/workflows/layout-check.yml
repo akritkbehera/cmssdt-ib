@@ -1,0 +1,29 @@
+name: Card layout regression
+on:
+  push:
+    branches: [master]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  layout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: node --test tests/*.test.mjs
+      - run: npm install --no-save playwright@1.62.1
+      - run: npx playwright install --with-deps chromium
+      - name: Check usable desktop viewport heights and state restoration
+        run: |
+          npx vite --config tests/browser/vite.config.mjs > /tmp/layout-vite.log 2>&1 &
+          trap 'cat /tmp/layout-vite.log' EXIT
+          for attempt in $(seq 1 30); do
+            curl -fsS http://localhost:5173/tests/browser/index.html > /dev/null && break
+            sleep 1
+          done
+          node tests/browser/layout.mjs
