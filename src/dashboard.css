@@ -592,11 +592,11 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-workspace[data-density="compact"] .ib-matrix-section { --ib-column-width: 92px; --ib-stage-width: 80px; }
 .ib-matrix-section .table {
   table-layout: fixed;
-  width: calc(var(--ib-stage-width) + var(--ib-column-count, 0) * var(--ib-column-width));
-  min-width: 0;
+  width: 100%;
+  min-width: calc(var(--ib-stage-width) + var(--ib-column-count, 0) * var(--ib-column-width));
 }
 .ib-matrix-section .table .ib-stage-column { width: var(--ib-stage-width); }
-.ib-matrix-section .table .ib-configuration-column { width: var(--ib-column-width); }
+.ib-matrix-section .table .ib-configuration-column { width: auto; }
 .ib-matrix-section .table .name-column { width: var(--ib-stage-width); min-width: 0; padding-inline: 8px; }
 .ib-matrix-section .table thead th.ib-config-header .ib-config-label {
   display: flex; flex-direction: column; flex-wrap: nowrap; gap: 2px; padding: 2px 0; white-space: nowrap;
@@ -610,7 +610,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-result-cell .ib-novel-failure { white-space: normal; }
 
 /* Result and change share a row, with a reserved lane keeping icons aligned. */
-.ib-inline-result { --ib-result-lane: 56px; display: grid; grid-template-columns: var(--ib-result-lane) minmax(0, 1fr); align-items: center; column-gap: 4px; min-width: 0; }
+.ib-inline-result { --ib-result-lane: 56px; display: grid; grid-template-columns: var(--ib-result-lane) minmax(0, 1fr); align-items: center; column-gap: 4px; min-width: 0; width: 100%; max-width: 104px; margin-inline: auto; }
 .ib-inline-result > .ib-status-details { grid-column: 1; display: flex !important; align-items: center; justify-content: center; min-height: 36px; margin: 0; }
 .ib-inline-result > .ib-comparison-details { grid-column: 2; display: flex !important; align-items: center; justify-content: center; min-width: 0; margin: 0; padding: 0; }
 .ib-inline-result .ib-cell-comparison { gap: 1px 3px; justify-content: center; line-height: 1.25; }
@@ -621,5 +621,6 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 @media (hover: none), (pointer: coarse) {
   .ib-matrix-section { --ib-column-width: 116px; }
   .ib-workspace[data-density="compact"] .ib-matrix-section { --ib-column-width: 108px; }
+  .ib-inline-result { max-width: 112px; }
   .ib-inline-result > .ib-result-details-trigger { min-width: 44px; min-height: 44px; }
 }
