@@ -1,3 +1,4 @@
+import ResultDeltaGutter from '../common/ResultDeltaGutter';
 import MatrixHelp from '../common/MatrixHelp';
 import useMatrixFit from "../common/useMatrixFit";
 import { stages } from "../../Utils/resultDelta";
@@ -416,12 +417,9 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     const boundary = arch === archsByIb[Number(position)]?.archs[0];
     const cell = <td key={key} className={`align-middle ib-result-cell ${boundary ? 'ib-group-start' : ''}`} data-muted={!matchesResultFilter(resultStatus, resultFilter)}>
       <div className="ib-inline-result">
-      {content}
-      {delta && !running && <ResultDetails className="ib-comparison-details" tooltipId={`${key}-changes`} overlay={<><p className="ib-preview-metrics">{delta.detail}</p>{preview}</>}>
-      <div className="ib-cell-comparison" tabIndex={0} aria-label={delta.detail}>
-        {delta.label && <span className={`ib-result-delta ${delta.novel ? 'ib-novel-failure' : `ib-delta-${delta.tone || 'secondary'}`}`} aria-label={delta.detail}>{{ 'Newly failing': 'New', 'Warning cleared': 'Clear', 'Now warning': 'Warn' }[delta.label] || delta.label}</span>}
-        {delta.metrics?.map(metric => <span key={metric.key} className={`ib-result-delta ib-delta-${metric.tone}`} title={`${metric.key}: previous ${metric.previous}, current ${metric.current}; ${delta.detail}`} aria-label={`${metric.key}: ${delta.detail}`}>{metric.label}</span>)}
-      </div></ResultDetails>}
+      <div className="ib-status-center">{content}</div>
+      {delta?.metrics?.length > 0 && !running && <ResultDetails className="ib-comparison-details" tooltipId={`${key}-changes`} overlay={<><p className="ib-preview-metrics">{delta.detail}</p>{preview}</>}>
+      <ResultDeltaGutter metrics={delta.metrics} detail={delta.detail} /></ResultDetails>}
       </div>
     </td>;
     mobileCells.push({ key, stage, position: Number(position), arch, cell });

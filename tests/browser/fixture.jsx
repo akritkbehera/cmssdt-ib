@@ -25,6 +25,13 @@ export const groups = times.map((time, group) => flavors.map((flavor, i) => {
     addons:stage(true,0),dupDict:stage(true,0),merged_prs:[],
     hlt:stage(true,0),static_checks:stage(true,0), runtests:stage(true,0),crab:stage(true,0),fwlite:stage(true,0),rntuple:stage(true,0)};
 }));
+// Exercise empty, decreasing, increasing and mixed gutters, plus a running cell.
+groups.forEach((group, time) => group.forEach((ib, flavor) => {
+  const scenario = flavor % 4;
+  ib.relvals = ib.tests_archs.map(arch => ({arch, passed:false, done:!(time===0 && flavor===6), file:'fixture.log',
+    details:{num_failed:scenario===0 ? 3 : scenario===1 ? (time===0 ? 3 : 12) : scenario===2 ? (time===0 ? 12 : 3) : (time===0 ? 3 : 12),
+      num_passed:scenario===3 && time===0 ? 35 : 0}}));
+}));
 const comparisons = buildComparisonIndex(groups.flat());
 export const fixture = <HashRouter>
   <Navigation toLinks={[]} flaworControl={<span>Build variants</span>} archControl={<span>Architectures</span>}/>

@@ -53,6 +53,26 @@ try {
       assert.ok(config.equal<=1,'three equal configuration tracks');
       assert.ok(config.badges.every(b=>b.center<=1&&b.contained),'badges centered and contained in their tracks');
     }
+    const statusLayout=await page.evaluate(()=>{
+      const rect=el=>el.getBoundingClientRect();
+      const cells=[...document.querySelectorAll('table .ib-result-cell')];
+      return cells.map(cell=>{
+        const c=rect(cell),marker=cell.querySelector('.ib-status-marker'),m=marker&&rect(marker);
+        return {centerError:m?Math.max(Math.abs(m.x+m.width/2-c.x-c.width/2),Math.abs(m.y+m.height/2-c.y-c.height/2)):0,
+          labels:cell.querySelector('.ib-cell-comparison')?.textContent||'',
+          slots:[...cell.querySelectorAll('.ib-delta-slot')].map(slot=>{
+            const r=rect(slot);return {sign:slot.dataset.sign,height:r.height,top:r.top,bottom:r.bottom,
+              contained:r.x>=(m?.right||c.left)&&r.right<=c.right+.5&&r.top>=c.top-.5&&r.bottom<=c.bottom+.5};
+          })};
+      });
+    });
+    assert.ok(statusLayout.every(c=>c.centerError<=1.5),'status/count groups stay on the true cell center');
+    assert.ok(statusLayout.every(c=>!(/New|Fixed/.test(c.labels))),'no transition banners');
+    assert.ok(statusLayout.some(c=>c.slots.length===2),'fixture exercises both signs');
+    for(const cell of statusLayout) {
+      assert.ok(cell.slots.every(s=>s.contained&&s.height<=11.5),'11px corner slots fit without touching the status');
+      if(cell.slots.length===2) assert.ok(cell.slots[0].bottom<=cell.slots[1].top+.5,'corner lines do not overlap');
+    }
     const compact=await metrics();
     console.log(JSON.stringify({width,height,...compact}));
     assert.deepEqual(errors,[], 'fixture must render without errors');
