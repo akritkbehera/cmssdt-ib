@@ -1124,8 +1124,8 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     </div>
   );
   const counts = summarizeMatrix(matrix);
-  useEffect(() => { onCountsChange?.(counts); },
-    [onCountsChange, counts.success, counts.danger, counts.warning, counts.secondary, counts.info]);
+  useEffect(() => { onCountsChange?.(counts, configurations.length); },
+    [onCountsChange, configurations.length, counts.success, counts.danger, counts.warning, counts.secondary, counts.info]);
   return (
     <section ref={sectionRef} className="ib-matrix-section" data-in-view={inView} data-result-filter={resultFilter} aria-label="Build test matrix">
       {resultFilter !== 'all' && <p className="visually-hidden" role="status">{resultFilter === 'issues' ? 'Failures and warnings' : resultFilter === 'danger' ? 'Failures' : resultFilter === 'warning' ? 'Warnings' : 'Passed results'} highlighted. Other results remain visible.</p>}
