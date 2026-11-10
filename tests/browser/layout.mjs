@@ -99,6 +99,28 @@ try {
     await page.evaluate(()=>scrollTo(0,0));
     assert.ok((await metrics()).visible>=2,'hiding again restores two-card layout');
     rows.push({viewport:`${width}×${height}`,cardHeight:compact.cards[0].height,cardsVisible:compact.visible});
+    if (width === 1440) {
+      const card = page.locator('.ib-release-panel').first();
+      const trigger = card.getByRole('button', {name: 'View ASAN build history'});
+      await trigger.click();
+      const dialog = page.getByRole('dialog');
+      const timestamps = dialog.locator('th.ib-family-header');
+      assert.equal(await timestamps.count(), 5);
+      assert.match(await timestamps.first().innerText(), /2026-11-09.*23:00/s);
+      const filters = dialog.getByRole('checkbox');
+      assert.equal(await filters.count(), 2);
+      await filters.first().uncheck();
+      assert.equal(await dialog.locator('th.ib-config-header').count(), 5);
+      await filters.last().uncheck();
+      assert.ok(await dialog.getByText('Select an architecture to see its results.').isVisible());
+      await page.keyboard.press('Escape');
+      await dialog.waitFor({state:'hidden'});
+      await page.setViewportSize({width:390, height:844});
+      await card.getByRole('button', {name:'View DEFAULT history', exact:true}).click();
+      assert.ok(await dialog.locator('table').isVisible());
+      assert.equal(await dialog.getByRole('checkbox').count(), 3);
+      assert.deepEqual(errors, []);
+    }
     await page.close();
   }
   assert.ok(rows.at(-1).cardHeight > rows[0].cardHeight * 1.7, 'tall screens use Comfortable spacing proportions instead of the laptop compression floor');

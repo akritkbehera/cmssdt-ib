@@ -866,3 +866,28 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-phone-stage .ib-delta-slot--positive { bottom: 4px; color: var(--ui-danger-text); }
 
 .ib-phone-stage .ib-delta-slot .ib-result-delta { font: inherit; color: inherit; }
+
+.ib-history-trigger {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block: 0;
+  display: grid;
+  place-items: center;
+  padding: 0 2px;
+  border: 0;
+  color: var(--ui-text-secondary);
+  background: var(--ui-surface-muted);
+  font-size: 11px;
+}
+.ib-history-trigger:hover, .ib-history-trigger:focus-visible { color: var(--bs-primary); }
+.ib-history-architectures { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-bottom: 1rem; }
+.ib-history-architectures legend { float: none; font-size: 1rem; font-weight: 600; }
+.ib-history-architectures label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.ib-history-body { min-width: 0; }
+.ib-history-body .table .ib-family-header .flavor-card {
+  white-space: normal; line-height: 1.15; text-align: center;
+}
+.ib-history-body .ib-matrix-section .table .ib-family-header .flavor-card-wrapper {
+  position: relative;
+  min-height: 2.5em;
+}

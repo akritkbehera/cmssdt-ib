@@ -1,3 +1,5 @@
+import { flavourHistory } from '../../Utils/flavourHistory';
+import { ibIdentity } from '../../Utils/ibComparison';
 import ResultDeltaGutter from '../common/ResultDeltaGutter';
 import MatrixHelp from '../common/MatrixHelp';
 import useMatrixFit from "../common/useMatrixFit";
@@ -12,7 +14,7 @@ import { configurationBuildState, familyBuildState, matchesResultFilter } from "
 import { tableTheme as THEME } from "../../styles/theme";
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { OverlayTrigger, Table, Tooltip } from "react-bootstrap";
+import { Modal, OverlayTrigger, Table, Tooltip } from "react-bootstrap";
 import {
   checkLabelType,
   getAllActiveArchitecturesFromIBGroupByFlavor,
@@ -40,6 +42,7 @@ import {
   FaClipboardList,
   FaLayerGroup,
   FaCubes,
+  FaHistory,
   FaCopy
 } from 'react-icons/fa';
 
@@ -323,7 +326,12 @@ const copyText = (text) => {
   }
 };
 
-const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resultFilter = 'all', onCountsChange }) => {
+const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resultFilter = 'all', onCountsChange, historyArchs }) => {
+  const [history, setHistory] = useState(null);
+  function openHistory(position) {
+    const builds = flavourHistory(data[position], comparisons.keys());
+    if (builds.length) setHistory({ builds, selected: archsByIb[position].archs });
+  }
   const [configuration, setConfiguration] = useState('');
   const [compareOnPhone, setCompareOnPhone] = useState(false);
   const [inView, setInView] = useState(true);
@@ -357,8 +365,11 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
   }, [data]);
 
   const archsByIb = useMemo(
-    () => getAllActiveArchitecturesFromIBGroupByFlavor(data, activeArchs),
-    [data, activeArchs]
+    () => {
+      const items = getAllActiveArchitecturesFromIBGroupByFlavor(data, activeArchs);
+      return historyArchs ? items.map(item => ({ ...item, archs: historyArchs })) : items;
+    },
+    [data, activeArchs, historyArchs]
   );
 
   const configurations = archsByIb.flatMap((item, position) => (item.archs || []).map(arch => ({
@@ -786,7 +797,8 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
                 {archsByIb.map((item, pos) => {
                   if (!item.archs?.length) return null;
 
-                  const flavorLabel = formatFlavorLabel(item.flavor);
+                  const stamp = data[pos].release_name.slice(item.flavor.length + 1);
+                  const flavorLabel = historyArchs ? stamp.replace(/^(.*)-(..)(..)$/, '$1 · $2:$3') : formatFlavorLabel(item.flavor);
                   const familyState = familyBuildState(data[pos], item.archs);
                   const releaseNameToCopy = item.current_tag || data[pos]?.release_name || '';
 
@@ -820,6 +832,11 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
                       }}
                     >
                       <div className="flavor-card-wrapper">
+                        {!historyArchs && ibIdentity(data[pos]) && (
+                          <button type="button" className="ib-history-trigger" aria-haspopup="dialog"
+                            aria-label={`View ${flavorLabel} build history`} title={`View ${flavorLabel} build history`}
+                            onClick={() => openHistory(pos)}><FaHistory aria-hidden="true" /></button>
+                        )}
                         {flavorLink ? (
                           <a
                             href={flavorLink}
@@ -1119,7 +1136,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
   return (
     <section ref={sectionRef} className="ib-matrix-section" data-in-view={inView} data-result-filter={resultFilter} aria-label="Build test matrix">
       {resultFilter !== 'all' && <p className="visually-hidden" role="status">{resultFilter === 'issues' ? 'Failures and warnings' : resultFilter === 'danger' ? 'Failures' : resultFilter === 'warning' ? 'Warnings' : 'Passed results'} highlighted. Other results remain visible.</p>}
-      <div className="ib-phone-controls">
+      {!historyArchs && <div className="ib-phone-controls">
         <label>Configuration
           <select value={selected?.key || ''} onChange={event => setConfiguration(event.target.value)}>
             {!configurations.length && <option value="">No configurations selected</option>}
@@ -1128,8 +1145,9 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
         </label>
         <button type="button" className="btn btn-light" aria-pressed={compareOnPhone}
           onClick={() => setCompareOnPhone(value => !value)}>{compareOnPhone ? 'Single configuration' : 'Compare configurations'}</button>
-      </div>
-      <div className={`ib-phone-results ${compareOnPhone ? 'is-hidden' : ''}`}>
+        {selected && ibIdentity(data[selected.position]) && <button type="button" className="btn btn-light" onClick={() => openHistory(selected.position)}>View {formatFlavorLabel(selected.flavor)} history</button>}
+      </div>}
+      {!historyArchs && <div className={`ib-phone-results ${compareOnPhone ? 'is-hidden' : ''}`}>
         {selected ? <>
           <p className="ib-phone-config-name">{formatFlavorLabel(selected.flavor)} · {selected.arch}</p>
           <p className="ib-phone-results-hint">Tap a result for details and logs. Header counts cover all selected configurations.</p>
@@ -1142,9 +1160,28 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
             ))}
           </dl>
         </> : <p>Select architectures to see results.</p>}
-      </div>
-      <div className={`ib-comparison-matrix ${compareOnPhone ? 'is-phone-visible' : ''}`}>{matrix}</div>
-      <MatrixHelp />
+      </div>}
+      <div className={`ib-comparison-matrix ${historyArchs || compareOnPhone ? 'is-phone-visible' : ''}`}>{matrix}</div>
+      {!historyArchs && <MatrixHelp />}
+      {history && <Modal show onHide={() => setHistory(null)} size="xl" fullscreen="md-down"
+        scrollable centered aria-label={`${formatFlavorLabel(history.builds[0].release_queue)} build history`}>
+        <Modal.Header closeButton>
+          <Modal.Title>{formatFlavorLabel(history.builds[0].release_queue)} build history</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="ib-history-body">
+          <p>{history.builds[0].release_queue} · {history.builds.length} {history.builds.length === 1 ? 'build' : 'builds'}, newest first</p>
+          <fieldset className="ib-history-architectures">
+            <legend>Architectures</legend>
+            {[...new Set(history.builds.flatMap(ib => ib.tests_archs || []))].sort().map(arch => (
+              <label key={arch}><input type="checkbox" checked={history.selected.includes(arch)}
+                onChange={({ target }) => setHistory(previous => ({ ...previous, selected: target.checked
+                  ? [...previous.selected, arch].sort() : previous.selected.filter(value => value !== arch) }))} /> {arch}</label>
+            ))}
+          </fieldset>
+          {history.selected.length ? <ComparisonTable data={history.builds} comparisons={comparisons}
+            historyArchs={history.selected} releaseQue={releaseQue} /> : <p>Select an architecture to see its results.</p>}
+        </Modal.Body>
+      </Modal>}
     </section>
   );
 };
