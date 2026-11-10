@@ -953,3 +953,16 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-history-resize-options label { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .ib-history-resize-options input { min-width: 0; width: 140px; }
 @media (max-width: 767px) { .ib-history-resize { display: none; } }
+
+.ib-matrix-section .ib-history-trigger {
+  inset-inline-start: 6px; inset-block: auto; top: 50%; transform: translateY(-50%);
+  width: 24px; height: 24px; padding: 0; background: transparent;
+  border-radius: 4px; opacity: 0; transition: opacity .12s;
+}
+.ib-family-header:hover .ib-history-trigger,
+.ib-family-header:focus-within .ib-history-trigger { opacity: 1; }
+@media (hover: none) { .ib-matrix-section .ib-history-trigger { opacity: 1; } }
+.ib-history-body .table thead .ib-history-day-row .ib-history-direction {
+  padding-inline: 4px; font-size: 11px; line-height: 1.3; white-space: normal;
+}
+.ib-history-direction span, .ib-history-direction small { display: block; }

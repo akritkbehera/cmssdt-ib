@@ -833,7 +833,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
             </colgroup>
             <thead>
               {historyArchs && <tr className="ib-history-day-row">
-                <th scope="col">Newest → older</th>
+                <th scope="col" className="ib-history-direction"><span>Newest</span><small>→ older</small></th>
                 {historyDays.map(group => <th key={group.day} colSpan={group.columns}
                   className="ib-history-day-heading ib-history-day-start" scope="colgroup">
                   <time dateTime={group.day}>{group.day}</time>
@@ -1287,7 +1287,6 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
                 </label>;
               })}
             </div>
-          </details>
           <label className="d-flex align-items-center gap-2 mb-3">
             <input type="checkbox" checked={showAllHistory} onChange={({ target }) => {
               const selectedQueues = new Set(history.builds.map(ib => ib.release_queue));
@@ -1300,6 +1299,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
             }} />
             Show all builds chronologically
           </label>
+          </details>
           {hasHistoryResults ? <ComparisonTable data={history.builds} comparisons={comparisons}
             historyArchs={selectedHistoryArchs} releaseQue={releaseQue}
             historyLatest={flavourOptions.map(ib => ib.release_name)}

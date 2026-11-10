@@ -374,7 +374,7 @@ const Navigation = ({ toLinks, flaworControl, archControl, showAllPullRequests =
                   width: 38,
                   height: 38,
                   background: showAllPullRequests ? "#2563eb" : "transparent",
-                  color: "#ffffff",
+                  color: showAllPullRequests ? "#ffffff" : NAV_THEME.navbarText,
                   borderColor: showAllPullRequests ? "#2563eb" : NAV_THEME.iconBtnBorder,
                   position: "relative"
                 }}
