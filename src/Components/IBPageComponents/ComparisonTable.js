@@ -1,6 +1,7 @@
 import { flavourHistory, historyFlavours, selectHistoryBuilds } from '../../Utils/flavourHistory';
 import { ibIdentity } from '../../Utils/ibComparison';
 import TogglesShowArchs from '../TogglesShowArchs';
+import useHistorySize from '../common/useHistorySize';
 import ResultFilter from '../common/ResultFilter';
 import ResultDeltaGutter from '../common/ResultDeltaGutter';
 import MatrixHelp from '../common/MatrixHelp';
@@ -330,6 +331,7 @@ const copyText = (text) => {
 };
 
 const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resultFilter = 'all', onCountsChange, historyArchs, historyLatest = [] }) => {
+  const historyWindow = useHistorySize();
   const [history, setHistory] = useState(null);
   const [showAllHistory, setShowAllHistory] = useState(false);
   const [historyFilter, setHistoryFilter] = useState('all');
@@ -1242,10 +1244,12 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
       <div className={`ib-comparison-matrix ${historyArchs || compareOnPhone ? 'is-phone-visible' : ''}`}>{matrix}</div>
       {!historyArchs && <MatrixHelp />}
       {history && <Modal show onHide={() => setHistory(null)} size="xl" fullscreen="md-down"
-        scrollable centered aria-label={'Build history'}>
+        scrollable centered aria-label={'Build history'} className="ib-history-window"
+        style={historyWindow.style} onPointerDownCapture={historyWindow.onPointerDownCapture}>
         <Modal.Header closeButton>
           <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 w-100 me-2">
             <Modal.Title>Build history</Modal.Title>
+            {historyWindow.controls}
             <ResultFilter filter={historyFilter} onChange={setHistoryFilter}
               counts={hasHistoryResults ? historyCounts : { success: 0, danger: 0, warning: 0, secondary: 0, info: 0 }} />
           </div>
