@@ -31,9 +31,9 @@ function DateCard({ group, renderTable, report }) {
       <small>{group.differentTimes ? 'Different timestamps · latest of each flavour' : 'Swipe this header to browse dates'}</small>
     </header>
     <div className="ib-history-inner-controls" aria-label="Configuration navigation">
-      <button type="button" disabled={!range.left} onClick={() => move(-1)} aria-label="Previous configuration">←</button>
-      <small>Configurations {range.first}–{range.last} of {range.total}</small>
-      <button type="button" disabled={!range.right} onClick={() => move(1)} aria-label="Next configuration">→</button>
+      <button type="button" hidden={!range.left && !range.right} disabled={!range.left} onClick={() => move(-1)} aria-label="Previous configuration">←</button>
+      <small>{!range.left && !range.right ? `${range.total} configurations · all visible` : `Configurations ${range.first}–${range.last} of ${range.total}`}</small>
+      <button type="button" hidden={!range.left && !range.right} disabled={!range.right} onClick={() => move(1)} aria-label="Next configuration">→</button>
     </div>
     {renderTable(group.builds, counts)}
   </article>;
