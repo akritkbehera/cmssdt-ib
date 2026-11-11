@@ -209,9 +209,9 @@ try {
   await phone.goto('http://localhost:5173/tests/browser/index.html?navigator=1');
   await phone.locator('.ib-release-panel').first().waitFor();
   const phoneCard = phone.locator('.ib-release-panel').first();
-  await phoneCard.locator('.ib-phone-column-table').waitFor();
-  assert.ok(await phoneCard.locator('.ib-phone-column-table .ib-family-header').isVisible());
-  assert.equal(await phoneCard.locator('.ib-phone-column-table .ib-config-field').count(), 3);
+  await phoneCard.locator('.ib-snap-slide[aria-hidden="false"] .ib-phone-column-table').waitFor();
+  assert.ok(await phoneCard.locator('.ib-snap-slide[aria-hidden="false"] .ib-phone-column-table .ib-family-header').isVisible());
+  assert.equal(await phoneCard.locator('.ib-snap-slide[aria-hidden="false"] .ib-phone-column-table .ib-config-field').count(), 3);
   const initialConfiguration = await phoneCard.getByLabel('Configuration', {exact:true}).inputValue();
   await phoneCard.getByRole('button', {name:'Next configuration',exact:true}).click();
   assert.notEqual(await phoneCard.getByLabel('Configuration', {exact:true}).inputValue(), initialConfiguration);
@@ -220,14 +220,13 @@ try {
   await phoneCard.getByRole('button', {name:'Compare configurations',exact:true}).click();
   assert.equal(await phoneCard.locator('.ib-phone-column-navigation').count(), 0);
   await phoneCard.getByRole('button', {name:'Single configuration',exact:true}).click();
-  await phoneCard.locator('.ib-phone-config-choice').evaluate(element => {
-    const start = new Event('touchstart', {bubbles:true});
-    Object.defineProperty(start, 'touches', {value:[{clientX:220, clientY:100}]});
-    element.dispatchEvent(start);
-    const end = new Event('touchend', {bubbles:true});
-    Object.defineProperty(end, 'changedTouches', {value:[{clientX:100, clientY:100}]});
-    element.dispatchEvent(end);
-  });
+  const drag = await phoneCard.locator('.ib-phone-choice-viewport').boundingBox();
+  await phone.mouse.move(drag.x + drag.width * .8, drag.y + drag.height / 2);
+  await phone.mouse.down();
+  await phone.mouse.move(drag.x + drag.width * .1, drag.y + drag.height / 2, {steps:12});
+  const progress = await phoneCard.locator('.ib-matrix-section').evaluate(el => Number(el.style.getPropertyValue('--ib-swipe-progress')));
+  assert.ok(progress < 0, 'drag follows the pointer before release');
+  await phone.mouse.up();
   assert.notEqual(await phoneCard.getByLabel('Configuration', {exact:true}).inputValue(), initialConfiguration);
   await phoneCard.getByRole('button', {name:'Previous configuration',exact:true}).click();
   assert.equal(await phoneCard.getByLabel('Configuration', {exact:true}).inputValue(), initialConfiguration);

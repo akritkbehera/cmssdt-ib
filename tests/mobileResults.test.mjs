@@ -45,7 +45,7 @@ test('phone view shows only the selected configuration with the same stage resul
     if (previousWindow === undefined) delete globalThis.window;
     else globalThis.window = previousWindow;
   }
-  const phone = html.slice(html.indexOf('<div class="ib-phone-results'), html.indexOf('<div class="ib-comparison-matrix'));
+  const phone = html.slice(html.indexOf('<div class="ib-phone-results'), html.indexOf('<div class="ib-comparison-matrix')).split('<div class="ib-snap-slide" aria-hidden="true"')[0];
   assert.equal((phone.match(/scope="row"/g) || []).length, 2);
   assert.match(phone, /ib-family-header/);
   assert.equal((phone.match(/class="ib-config-field"/g) || []).length, 3);

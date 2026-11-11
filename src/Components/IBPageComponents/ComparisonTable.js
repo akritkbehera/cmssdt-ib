@@ -2,6 +2,7 @@ import { flavourHistory, historyFlavours, selectHistoryBuilds } from '../../Util
 import { ibIdentity } from '../../Utils/ibComparison';
 import TogglesShowArchs from '../TogglesShowArchs';
 import useHistorySize from '../common/useHistorySize';
+import useSnapCarousel from '../common/useSnapCarousel';
 import OverflowLabel from '../common/OverflowLabel';
 import ResultFilter from '../common/ResultFilter';
 import ResultDeltaGutter from '../common/ResultDeltaGutter';
@@ -423,38 +424,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
   })));
   const selected = configurations.find(item => item.key === configuration) || configurations[0];
   const selectedIndex = configurations.indexOf(selected);
-  const phoneTouch = useRef(null);
-  const [phoneTransition, setPhoneTransition] = useState({id:0, direction:1});
   const selectedBuildState = selected ? configurationBuildState(data[selected.position], selected.arch) : {status:'unknown'};
-  const selectPhoneConfiguration = key => {
-    const index = configurations.findIndex(item => item.key === key);
-    if (index < 0 || key === selected?.key) return;
-    setPhoneTransition(previous => ({id:previous.id + 1, direction:index > selectedIndex ? 1 : -1}));
-    setConfiguration(key);
-  };
-  useEffect(() => {
-    if (!phoneTransition.id || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const animations = [...(sectionRef.current?.querySelectorAll('.ib-phone-config-choice, .ib-phone-column-table') || [])]
-      .map(element => element.animate([
-        {transform:`translateX(${phoneTransition.direction * 20}px)`, opacity:.45},
-        {transform:'translateX(0)', opacity:1}
-      ], {duration:200, easing:'ease-out'}));
-    return () => animations.forEach(animation => animation.cancel());
-  }, [phoneTransition]);
-  const phoneSwipe = {
-    onTouchStart: event => {
-      const touch = event.touches[0];
-      phoneTouch.current = {x:touch.clientX, y:touch.clientY};
-    },
-    onTouchEnd: event => {
-      const start = phoneTouch.current, touch = event.changedTouches[0];
-      phoneTouch.current = null;
-      if (!start || !touch || compareOnPhone) return;
-      const dx = touch.clientX - start.x, dy = touch.clientY - start.y;
-      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) selectNeighbour(dx < 0 ? 1 : -1);
-    },
-    onTouchCancel: () => { phoneTouch.current = null; }
-  };
   const [isPhone, setIsPhone] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767.98px)').matches);
   useEffect(() => {
     const query = window.matchMedia('(max-width: 767.98px)');
@@ -462,10 +432,12 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     query.addEventListener('change', update);
     return () => query.removeEventListener('change', update);
   }, []);
-  const selectNeighbour = offset => {
-    const next = configurations[selectedIndex + offset];
-    if (next) selectPhoneConfiguration(next.key);
-  };
+  const configurationVersion = configurations.map(item => item.key).join('|');
+  const settlePhone = useSnapCarousel(sectionRef, selectedIndex, configurations.length,
+    index => { if (configurations[index]) setConfiguration(configurations[index].key); },
+    isPhone && !compareOnPhone && !historyArchs, configurationVersion);
+  const selectPhoneConfiguration = key => settlePhone(configurations.findIndex(item => item.key === key));
+  const selectNeighbour = offset => settlePhone(selectedIndex + offset);
   useEffect(() => {
     const element = sectionRef.current?.closest('.ib-release-panel') || sectionRef.current;
     if (!element || typeof IntersectionObserver === 'undefined') return;
@@ -1265,8 +1237,16 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
         {!compareOnPhone && <div className="ib-phone-column-navigation">
           <button type="button" className="btn btn-light" aria-label="Previous configuration"
             hidden={configurations.length < 2} disabled={selectedIndex <= 0} onClick={() => selectNeighbour(-1)}>←</button>
-          <div {...phoneSwipe} className={`ib-phone-config-choice ib-config-${selectedBuildState.status}`}>
+          <div className={`ib-phone-config-choice ib-config-${selectedBuildState.status}`}
+            onClick={event => {
+              if (event.target.closest('select')) return;
+              const select = event.currentTarget.querySelector('select');
+              try { select?.showPicker?.(); } catch { select?.focus(); }
+            }}>
           <StatusDot status={{passed:'success',failed:'danger',warnings:'warning',running:'info'}[selectedBuildState.status] || 'secondary'} running={selectedBuildState.running} size={22} />
+          <div className="ib-phone-choice-viewport" aria-hidden="true"><div className="ib-snap-track">
+            {configurations.map(item => <span className="ib-snap-slide" key={item.key}>{formatFlavorLabel(item.flavor)} · {item.arch}</span>)}
+          </div></div>
           <select aria-label="Configuration" value={selected?.key || ''}
             onChange={event => selectPhoneConfiguration(event.target.value)}>
             {!configurations.length && <option value="">No configurations selected</option>}
@@ -1285,31 +1265,39 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
         </div>
       </div>}
       {!historyArchs && <div className={`ib-phone-results ${compareOnPhone ? 'is-hidden' : ''}`}
-        {...phoneSwipe}>
+        >
         {selected && isPhone ? <>
           <p className="ib-phone-column-position" aria-live="polite">Configuration {selectedIndex + 1} of {configurations.length}</p>
-          <Table className="ib-phone-column-table mb-0 align-middle" style={{width:'100%', tableLayout:'fixed'}}>
+          <div className="ib-phone-carousel-viewport" tabIndex={0} role="group"
+            aria-label="Configuration carousel. Use Left and Right arrow keys.">
+            <div className="ib-snap-track">
+              {configurations.map((item, index) => <div key={item.key} className="ib-snap-slide"
+                aria-hidden={index !== selectedIndex} inert={index !== selectedIndex}>
+                {Math.abs(index - selectedIndex) <= 1 && (<Table className="ib-phone-column-table mb-0 align-middle" style={{width:'100%', tableLayout:'fixed'}}>
             <colgroup><col style={{width:'34%'}} /><col style={{width:'66%'}} /></colgroup>
             <thead>
               <tr>
                 <th rowSpan={2} className="name-column"><span className="ib-stage-corner"><span>Stage</span><small>Config →</small></span></th>
-                <th className={`ib-family-header ib-config-${configurationBuildState(data[selected.position], selected.arch).status}`}>
+                <th className={`ib-family-header ib-config-${configurationBuildState(data[item.position], item.arch).status}`}>
                   <div className="flavor-card-wrapper"><span className="flavor-card">
-                    <span className="ib-family-dot" aria-hidden="true" />{formatFlavorLabel(selected.flavor)}
+                    <span className="ib-family-dot" aria-hidden="true" />{formatFlavorLabel(item.flavor)}
                   </span></div>
                 </th>
               </tr>
-              <tr><th className={`ib-config-header ib-config-${configurationBuildState(data[selected.position], selected.arch).status}`}>
-                <div className="ib-config-content"><ArchitectureHeader architecture={selected.arch}
-                  status={configurationBuildState(data[selected.position], selected.arch).status}
+              <tr><th className={`ib-config-header ib-config-${configurationBuildState(data[item.position], item.arch).status}`}>
+                <div className="ib-config-content"><ArchitectureHeader architecture={item.arch}
+                  status={configurationBuildState(data[item.position], item.arch).status}
                   colors={configurationColors} productionColor={config.colorCoding.prodColor} /></div>
               </th></tr>
             </thead>
             <tbody>
-              {mobileCells.filter(item => item.position === selected.position && item.arch === selected.arch && !hiddenStages.has(item.stage)).map(item =>
-                <tr key={item.key}><th className="name-column" scope="row">{rowLabelConfig[item.stage]?.text || item.stage}</th>{item.cell}</tr>)}
+              {mobileCells.filter(cell => cell.position === item.position && cell.arch === item.arch && !hiddenStages.has(cell.stage)).map(cell =>
+                <tr key={cell.key}><th className="name-column" scope="row">{rowLabelConfig[cell.stage]?.text || cell.stage}</th>{cell.cell}</tr>)}
             </tbody>
-          </Table>
+          </Table>)}
+              </div>)}
+            </div>
+          </div>
         </> : <p>Select architectures to see results.</p>}
       </div>}
       <div className={`ib-comparison-matrix ${historyArchs || compareOnPhone ? 'is-phone-visible' : ''}`}>{matrix}</div>

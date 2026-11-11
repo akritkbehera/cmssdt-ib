@@ -1097,3 +1097,18 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   background: var(--ui-surface); padding: 6px 12px; min-height: 44px;
 }
 .ib-phone-results, .ib-phone-column-navigation { overflow: hidden; }
+
+.ib-phone-carousel-viewport, .ib-phone-choice-viewport { overflow: hidden; touch-action: pan-y; min-width: 0; }
+.ib-phone-choice-viewport { flex: 1; }
+.ib-snap-track {
+  display: flex; width: 100%; align-items: flex-start;
+  transform: translateX(calc(var(--ib-swipe-progress, 0) * 100%));
+  will-change: transform;
+}
+.ib-snap-slide { flex: 0 0 100%; min-width: 0; width: 100%; }
+.ib-phone-choice-viewport .ib-snap-slide { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-block: 10px; }
+.ib-phone-controls .ib-phone-config-choice { position: relative; }
+.ib-phone-controls .ib-phone-config-choice select { flex: 0 0 32px; width: 32px; opacity: 0; }
+.ib-phone-config-choice::after { content: '▾'; position: absolute; right: 12px; pointer-events: none; }
+.ib-phone-carousel-viewport:focus-visible { outline: 2px solid var(--ui-primary); outline-offset: -2px; }
+.ib-phone-carousel-viewport .ib-snap-slide[aria-hidden="true"] { pointer-events: none; }
