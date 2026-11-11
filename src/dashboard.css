@@ -1112,3 +1112,16 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-phone-config-choice::after { content: '▾'; position: absolute; right: 12px; pointer-events: none; }
 .ib-phone-carousel-viewport:focus-visible { outline: 2px solid var(--ui-primary); outline-offset: -2px; }
 .ib-phone-carousel-viewport .ib-snap-slide[aria-hidden="true"] { pointer-events: none; }
+
+.ib-phone-matrix { display: grid; grid-template-columns: 34% minmax(0, 1fr); align-items: start; }
+.ib-phone-stage-rail { position: relative; z-index: 1; background: var(--ui-surface); }
+.ib-phone-stage-rail::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: var(--ui-info-tint); opacity: calc(var(--ib-swipe-activity, 0) * .18);
+}
+.ib-phone-results .ib-phone-stage-rail .ib-phone-rail-heading { height: 134px; vertical-align: middle; }
+.ib-phone-results .ib-phone-column-table tbody tr,
+.ib-phone-results .ib-phone-column-table tbody td,
+.ib-phone-results .ib-phone-column-table tbody th { height: 56px !important; padding-block: 0 !important; }
+.ib-phone-results .ib-phone-stage-rail .name-column { width: 100%; min-width: 0; }
+@media (prefers-reduced-motion: reduce) { .ib-phone-stage-rail::after { display: none; } }

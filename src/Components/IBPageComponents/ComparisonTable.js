@@ -424,6 +424,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
   })));
   const selected = configurations.find(item => item.key === configuration) || configurations[0];
   const selectedIndex = configurations.indexOf(selected);
+  const phoneRailId = React.useId();
   const selectedBuildState = selected ? configurationBuildState(data[selected.position], selected.arch) : {status:'unknown'};
   const [isPhone, setIsPhone] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767.98px)').matches);
   useEffect(() => {
@@ -1268,16 +1269,23 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
         >
         {selected && isPhone ? <>
           <p className="ib-phone-column-position" aria-live="polite">Configuration {selectedIndex + 1} of {configurations.length}</p>
+          <div className="ib-phone-matrix">
+            <Table className="ib-phone-stage-rail ib-phone-column-table mb-0 align-middle" style={{tableLayout:'fixed', width:'100%'}}>
+              <thead><tr><th className="name-column ib-phone-rail-heading">
+                <span className="ib-stage-corner"><span>Stage</span><small>Config →</small></span>
+              </th></tr></thead>
+              <tbody>{mobileCells.filter(cell => cell.position === selected.position && cell.arch === selected.arch && !hiddenStages.has(cell.stage)).map(cell =>
+                <tr key={cell.stage}><th id={`${phoneRailId}-${cell.stage}`} className="name-column" scope="row">{rowLabelConfig[cell.stage]?.text || cell.stage}</th></tr>)}</tbody>
+            </Table>
           <div className="ib-phone-carousel-viewport" tabIndex={0} role="group"
             aria-label="Configuration carousel. Use Left and Right arrow keys.">
             <div className="ib-snap-track">
               {configurations.map((item, index) => <div key={item.key} className="ib-snap-slide"
                 aria-hidden={index !== selectedIndex} inert={index !== selectedIndex}>
                 {Math.abs(index - selectedIndex) <= 1 && (<Table className="ib-phone-column-table mb-0 align-middle" style={{width:'100%', tableLayout:'fixed'}}>
-            <colgroup><col style={{width:'34%'}} /><col style={{width:'66%'}} /></colgroup>
+            <colgroup><col style={{width:'100%'}} /></colgroup>
             <thead>
               <tr>
-                <th rowSpan={2} className="name-column"><span className="ib-stage-corner"><span>Stage</span><small>Config →</small></span></th>
                 <th className={`ib-family-header ib-config-${configurationBuildState(data[item.position], item.arch).status}`}>
                   <div className="flavor-card-wrapper"><span className="flavor-card">
                     <span className="ib-family-dot" aria-hidden="true" />{formatFlavorLabel(item.flavor)}
@@ -1292,11 +1300,12 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
             </thead>
             <tbody>
               {mobileCells.filter(cell => cell.position === item.position && cell.arch === item.arch && !hiddenStages.has(cell.stage)).map(cell =>
-                <tr key={cell.key}><th className="name-column" scope="row">{rowLabelConfig[cell.stage]?.text || cell.stage}</th>{cell.cell}</tr>)}
+                <tr key={cell.key}>{React.cloneElement(cell.cell, {'aria-labelledby': `${phoneRailId}-${cell.stage}`})}</tr>)}
             </tbody>
           </Table>)}
               </div>)}
             </div>
+          </div>
           </div>
         </> : <p>Select architectures to see results.</p>}
       </div>}

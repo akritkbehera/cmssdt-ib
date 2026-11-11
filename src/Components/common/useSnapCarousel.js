@@ -14,7 +14,10 @@ export default function useSnapCarousel(rootRef, index, count, onChange, enabled
     let frame, gesture, wheel, wheelTimer, wheelUnlock, clickTimer, blockedWheel = false;
     const sign = getComputedStyle(root).direction === 'rtl' ? -1 : 1;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const paint = () => root.style.setProperty('--ib-swipe-progress', String(step ? offset / step * sign : 0));
+    const paint = () => {
+      root.style.setProperty('--ib-swipe-progress', String(step ? offset / step * sign : 0));
+      root.style.setProperty('--ib-swipe-activity', String(step ? Math.min(1, Math.abs(offset / step + active)) : 0));
+    };
     const cancel = () => { cancelAnimationFrame(frame); frame = undefined; };
     const settle = destination => {
       cancel(); clearTimeout(wheelTimer); wheel = null;
@@ -146,7 +149,7 @@ export default function useSnapCarousel(rootRef, index, count, onChange, enabled
       window.removeEventListener('pointerup', up); root.removeEventListener('pointercancel', cancelPointer);
       root.removeEventListener('lostpointercapture', lostCapture); root.removeEventListener('click', click, true);
       root.removeEventListener('wheel', onWheel); root.removeEventListener('keydown', key);
-      controller.current = null; root.style.removeProperty('--ib-swipe-progress');
+      controller.current = null; root.style.removeProperty('--ib-swipe-progress'); root.style.removeProperty('--ib-swipe-activity');
     };
   }, [rootRef, enabled, count, version]);
   useEffect(() => {
