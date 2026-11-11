@@ -20,6 +20,8 @@ jobs:
       - run: npm ci
       - run: node --test tests/*.test.mjs
       - run: npm install --no-save playwright@1.62.1
+      - name: Prepare browser session directory
+        run: chown "$(id -u):$(id -g)" "$HOME"
       - name: Check usable desktop viewport heights and state restoration
         run: |
           npx vite --config tests/browser/vite.config.mjs > /tmp/layout-vite.log 2>&1 &
