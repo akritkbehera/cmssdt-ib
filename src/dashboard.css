@@ -1128,7 +1128,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 
 /* Boundary resistance visibly stretches the active values while the labels stay anchored. */
 .ib-phone-carousel-viewport .ib-snap-slide[aria-hidden="false"] {
-  transform: scaleX(calc(1 + var(--ib-swipe-edge-stretch, 0) * .35));
+  transform: none;
   transform-origin: var(--ib-swipe-edge-origin, center);
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1165,3 +1165,9 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 @media (prefers-reduced-motion: reduce) {
   .ib-matrix-section .ib-scroll-morph .table .name-column { font-size: max(12px, var(--ib-compact-type, calc(14 * var(--ib-cell-unit)))); }
 }
+
+/* Copy actions appear only while interacting with the matrix. */
+.ib-matrix-section .table .flavor-card-wrapper > .flavor-copy-button { opacity: 0; }
+.ib-matrix-section .table .flavor-card-wrapper:hover > .flavor-copy-button,
+.ib-matrix-section .table .flavor-card-wrapper:focus-within > .flavor-copy-button,
+.ib-matrix-section .ib-scroll-interacting .flavor-card-wrapper > .flavor-copy-button { opacity: 1; }

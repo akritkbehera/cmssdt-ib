@@ -5,6 +5,12 @@ export default function useMatrixScroll(containerRef, version) {
     const container = containerRef.current;
     const table = container?.querySelector('table');
     if (!table) return;
+    let revealTimer;
+    const reveal = () => {
+      clearTimeout(revealTimer);
+      container.classList.add("ib-scroll-interacting");
+      revealTimer = setTimeout(() => container.classList.remove("ib-scroll-interacting"), 1400);
+    };
     let frame, idle, pointerDown = false, samples = [];
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     const rtl = getComputedStyle(container).direction === 'rtl';
@@ -52,6 +58,7 @@ export default function useMatrixScroll(containerRef, version) {
     };
     const schedule = () => { clearTimeout(idle); if (!pointerDown && frame === undefined) idle = setTimeout(settle, 180); };
     const scroll = () => {
+      reveal();
       paint();
       if (frame === undefined) {
         const now = performance.now();
@@ -59,7 +66,7 @@ export default function useMatrixScroll(containerRef, version) {
         schedule();
       }
     };
-    const down = () => { cancel(); pointerDown = true; samples = []; };
+    const down = () => { reveal(); cancel(); pointerDown = true; samples = []; };
     const up = () => { if (pointerDown) { pointerDown = false; schedule(); } };
     const wheel = () => { cancel(); schedule(); };
     const key = event => { if (['ArrowLeft','ArrowRight','Home','End','PageUp','PageDown'].includes(event.key)) wheel(); };
@@ -76,7 +83,7 @@ export default function useMatrixScroll(containerRef, version) {
     container.addEventListener('wheel', wheel, {passive:true});
     container.addEventListener('keydown', key);
     return () => {
-      cancel(); resize.disconnect(); mutations.disconnect();
+      cancel(); clearTimeout(revealTimer); container.classList.remove("ib-scroll-interacting"); resize.disconnect(); mutations.disconnect();
       container.removeEventListener('scroll', scroll); container.removeEventListener('pointerdown', down);
       window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
       container.removeEventListener('wheel', wheel); container.removeEventListener('keydown', key);
