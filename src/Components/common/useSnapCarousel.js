@@ -42,6 +42,7 @@ export default function useSnapCarousel(rootRef, index, count, onChange, enabled
       if (!event.isPrimary || event.button !== 0 || !surface(event.target) || interactive(event.target) || wheel) return;
       cancel(); suppressClick = false;
       gesture = { id:event.pointerId, x:event.clientX, y:event.clientY, offset, index:active,
+        width:(event.target.closest('.ib-phone-choice-viewport') || viewport).clientWidth,
         locked:false, samples:[{x:event.clientX, time:performance.now()}], target:event.target };
     };
     const move = event => {
@@ -57,7 +58,7 @@ export default function useSnapCarousel(rootRef, index, count, onChange, enabled
       gesture.samples.push({x:event.clientX, time:now});
       gesture.samples = gesture.samples.filter(sample => now - sample.time <= 120);
       // A single gesture can reveal its immediate neighbours only.
-      offset = resisted(clamp(gesture.offset + dx * sign, -(gesture.index + 1) * step, -(gesture.index - 1) * step));
+      offset = resisted(clamp(gesture.offset + dx * sign * step / Math.max(1, gesture.width), -(gesture.index + 1) * step, -(gesture.index - 1) * step));
       paint();
     };
     let suppressClick = false;
@@ -70,7 +71,7 @@ export default function useSnapCarousel(rootRef, index, count, onChange, enabled
       const samples = current.samples.filter(sample => now - sample.time <= 120);
       const sample = samples[0];
       const velocity = sample && now > sample.time ? (event.clientX - sample.x) * sign / (now - sample.time) : 0;
-      const commit = current.locked && !cancelled && (Math.abs(distance) >= step * .22 || Math.abs(distance) > 12 && Math.abs(velocity) >= .45);
+      const commit = current.locked && !cancelled && (Math.abs(distance) >= current.width * .22 || Math.abs(distance) > 12 && Math.abs(velocity) >= .45);
       if (current.locked) {
         suppressClick = true;
         clearTimeout(clickTimer);
