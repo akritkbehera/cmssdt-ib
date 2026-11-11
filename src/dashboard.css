@@ -1171,3 +1171,38 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-matrix-section .table .flavor-card-wrapper:hover > .flavor-copy-button,
 .ib-matrix-section .table .flavor-card-wrapper:focus-within > .flavor-copy-button,
 .ib-matrix-section .ib-scroll-interacting .flavor-card-wrapper > .flavor-copy-button { opacity: 1; }
+
+/* History dates browse independently from their configuration matrices. */
+.ib-history-card-browser { container-type: inline-size; min-width: 0; }
+.ib-history-date-controls, .ib-history-inner-controls {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  color: var(--ui-text-secondary); padding: 8px;
+}
+.ib-history-date-controls button, .ib-history-inner-controls button {
+  border: 1px solid var(--ui-border); border-radius: var(--ui-radius-control);
+  background: var(--ui-surface); color: var(--ui-text); min-height: 36px; min-width: 36px; padding: 4px 10px;
+}
+.ib-history-card-browser button:disabled { opacity: .4; }
+.ib-history-card-browser button:focus-visible { outline: var(--ui-focus-ring); }
+.ib-history-date-track {
+  position: relative; display: flex; gap: 12px; overflow-x: auto; align-items: flex-start;
+  scroll-snap-type: x mandatory; overscroll-behavior-x: contain; padding-bottom: 8px;
+}
+.ib-history-date-card {
+  flex: 0 0 100%; min-width: 0; overflow: hidden;
+  scroll-snap-align: start; border: 1px solid var(--ui-border); border-radius: var(--ui-radius-panel);
+  background: var(--ui-surface);
+}
+.ib-history-date-handle {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px; color: var(--ui-text); background: var(--ui-surface-muted);
+  border-bottom: 1px solid var(--ui-border); touch-action: pan-x pan-y;
+}
+.ib-history-date-handle small { font-size: 12px; color: var(--ui-text-secondary); }
+.ib-history-date-card .ib-table-responsive { overscroll-behavior-x: contain; }
+.ib-history-date-card .ib-history-day-row { display: none; }
+.ib-history-date-card .ib-history-day-start { border-left-width: 1px !important; }
+.ib-history-date-card .ib-history-inner-controls small { font-variant-numeric: tabular-nums; }
+@container (min-width: 1100px) {
+  .ib-history-date-card { flex-basis: calc((100% - 12px) / 2); }
+}

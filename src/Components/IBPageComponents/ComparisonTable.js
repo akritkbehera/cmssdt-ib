@@ -1,4 +1,5 @@
-import { flavourHistory, historyFlavours, selectHistoryBuilds } from '../../Utils/flavourHistory';
+import HistoryCards from '../common/HistoryCards';
+import { flavourHistory, historyFlavours, selectHistoryBuilds, historyCards } from '../../Utils/flavourHistory';
 import { ibIdentity } from '../../Utils/ibComparison';
 import TogglesShowArchs from '../TogglesShowArchs';
 import useHistorySize from '../common/useHistorySize';
@@ -360,6 +361,10 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
   const visibleHistoryBuilds = history ? history.builds.filter(ib => stages.some(stage =>
     (ib[stage] || []).some(result => selectedHistoryArchs.includes(result.arch)))) : [];
   const hasHistoryResults = visibleHistoryBuilds.length > 0;
+  const latestHistoryNames = useMemo(() => flavourOptions.map(ib => ib.release_name), [flavourOptions]);
+  const historyGroups = useMemo(() => historyCards(visibleHistoryBuilds, latestHistoryNames),
+    [history?.builds, selectedHistoryArchs, latestHistoryNames]);
+
   const missingFlavours = history ? [...new Set(history.builds.map(ib => ib.release_queue))]
     .filter(queue => !visibleHistoryBuilds.some(ib => ib.release_queue === queue)) : [];
   const [configuration, setConfiguration] = useState('');
@@ -1375,10 +1380,14 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
             Show all builds chronologically
           </label>
           </details>
-          {hasHistoryResults ? <ComparisonTable data={history.builds} comparisons={comparisons}
+          {hasHistoryResults ? (showAllHistory ? <ComparisonTable data={history.builds} comparisons={comparisons}
             historyArchs={selectedHistoryArchs} releaseQue={releaseQue}
-            historyLatest={flavourOptions.map(ib => ib.release_name)}
-            resultFilter={historyFilter} onCountsChange={setHistoryCounts} /> : <p>{selectedHistoryArchs.length ? "No results for the selected architectures." : "Select an architecture to see its results."}</p>}
+            historyLatest={latestHistoryNames}
+            resultFilter={historyFilter} onCountsChange={setHistoryCounts} /> :
+            <HistoryCards groups={historyGroups} onCountsChange={setHistoryCounts}
+              renderTable={(builds, reportCounts) => <ComparisonTable data={builds} comparisons={comparisons}
+                historyArchs={selectedHistoryArchs} releaseQue={releaseQue} historyLatest={latestHistoryNames}
+                resultFilter={historyFilter} onCountsChange={reportCounts} />} />) : <p>{selectedHistoryArchs.length ? "No results for the selected architectures." : "Select an architecture to see its results."}</p>}
         </Modal.Body>
       </Modal>}
     </section>

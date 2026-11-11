@@ -56,3 +56,28 @@ export function selectHistoryBuilds(selected, records, showAll = false) {
   return [...unique.values()].sort((a, b) => b.id.time - a.id.time ||
     b.id.sequence - a.id.sequence || a.id.series.localeCompare(b.id.series)).map(item => item.ib);
 }
+
+
+/** Presentation groups never imply a timestamp match merely because days agree. */
+export function historyCards(builds, latestNames = []) {
+  const valid = builds.filter(ib => ibIdentity(ib));
+  const queues = new Set(valid.map(ib => ib.release_queue));
+  const stamps = new Map();
+  for (const ib of valid) {
+    const id = ibIdentity(ib), key = JSON.stringify([id.time, id.sequence]);
+    if (!stamps.has(key)) stamps.set(key, new Set());
+    stamps.get(key).add(id.series);
+  }
+  const matched = queues.size > 1 && [...stamps.values()].some(set => set.size === queues.size);
+  if (queues.size > 1 && !matched) {
+    const latest = valid.filter(ib => latestNames.includes(ib.release_name));
+    return [{ key: 'latest', title: 'Latest comparison', differentTimes: true, builds: latest.length ? latest : valid }];
+  }
+  const days = new Map();
+  for (const ib of [...valid].sort((a,b) => ibIdentity(b).time - ibIdentity(a).time)) {
+    const day = new Date(ibIdentity(ib).time).toISOString().slice(0,10);
+    if (!days.has(day)) days.set(day, { key: day, title: day, builds: [] });
+    days.get(day).builds.push(ib);
+  }
+  return [...days.values()];
+}
