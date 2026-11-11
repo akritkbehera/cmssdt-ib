@@ -98,6 +98,18 @@
   --ui-focus-offset: 3px;
   --ui-dropdown-max-height: min(480px, 65vh);
   --ui-nav-mobile-max-height: 75vh;
+  --ui-pill-min-height: 30px;
+  --ib-actions-size: var(--ui-control-target);
+  --ib-actions-offset: var(--ui-space-4);
+  --ib-actions-gap: var(--ui-space-2);
+  /* Rail footprint plus its viewport offset and a breathing gap, so every
+     full-width row inside .ib-workspace ends clear of the rail. */
+  --ib-actions-gutter: calc(var(--ib-actions-size) + var(--ib-actions-offset) + var(--ib-actions-gap));
+}
+@media (hover: none), (pointer: coarse) {
+  :root {
+    --ui-pill-min-height: 44px;
+  }
 }
 @media (max-width: 767.98px) {
   :root {
@@ -105,5 +117,6 @@
     --ui-nav-inset: var(--ui-space-3);
     --ui-panel-header-padding: var(--ui-space-1) var(--ui-space-2);
     --ui-table-label-width: 80px;
+    --ui-pill-min-height: 44px;
   }
 }

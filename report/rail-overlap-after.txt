@@ -1,0 +1,5 @@
+320x800 {"rail":{"x":112,"y":748,"w":200,"h":44},"coveredInteractive":["button.ib-section-pill:\"RelVals\""],"workspacePadRight":"0px","workspacePadBottom":"60px","docOverflow":false}
+390x844 {"rail":{"x":182,"y":792,"w":200,"h":44},"coveredInteractive":["button.btn:\"Compare configurat\""],"workspacePadRight":"0px","workspacePadBottom":"60px","docOverflow":false}
+768x1024 {"rail":{"x":708,"y":804,"w":44,"h":200},"coveredInteractive":[],"workspacePadRight":"68px","workspacePadBottom":"0px","docOverflow":false}
+1024x768 {"rail":{"x":964,"y":548,"w":44,"h":200},"coveredInteractive":[],"workspacePadRight":"68px","workspacePadBottom":"0px","docOverflow":false}
+1440x900 {"rail":{"x":1380,"y":680,"w":44,"h":200},"coveredInteractive":[],"workspacePadRight":"68px","workspacePadBottom":"0px","docOverflow":false}

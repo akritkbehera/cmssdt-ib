@@ -392,7 +392,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-summary-empty { color: var(--ui-muted); font-size: var(--ui-type-caption); }
 .ib-result-filter.btn-group { margin: 0; padding: 3px; gap: 3px; border: 1px solid var(--ui-border); border-radius: 8px; background: var(--ui-surface); }
 .ib-result-filter .btn { flex: none; min-height: 30px; padding: 3px 10px; border-radius: 5px !important; font-size: 12px; line-height: 20px; display: inline-flex; align-items: center; gap: 7px; }
-.ib-result-filter .btn span { font: 500 10px/18px var(--ui-font-mono); padding: 0 5px; border-radius: 4px; background: color-mix(in srgb, currentColor 8%, transparent); }
+.ib-result-filter .btn span { font: 500 12px/18px var(--ui-font-mono); padding: 0 5px; border-radius: 4px; background: color-mix(in srgb, currentColor 8%, transparent); }
 .ib-result-filter .btn.active { background: var(--ui-info-tint); border-color: transparent; color: var(--ui-primary-dark); }
 .ib-filter-status { font-size: var(--ui-type-caption); color: var(--ui-text-secondary); margin: 0; padding: 8px 16px; }
 .ib-matrix-help { margin: 0; border-top: 1px solid var(--ui-border); padding: 6px 12px; }
@@ -489,6 +489,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   .ib-workspace[data-density="compact"] .ib-matrix-section td a { min-width: 44px; }
   .ib-section-controls .dropdown-item { min-height: 44px; }
   .ib-matrix-help summary { min-height: 44px; display: flex; align-items: center; }
+  .ib-comparison-context > details > summary { min-height: 44px; display: inline-flex; align-items: center; }
 }
 @media (max-width: 767.98px) {
   .ib-workspace, .ib-release-panel, .ib-matrix-section { min-width: 0; }
@@ -925,7 +926,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-history-body .table .ib-history-day-start { border-left: 3px solid #94a3b8 !important; }
 .ib-history-body .table .ib-history-time-start { border-left: 2px solid #cbd5e1 !important; }
 .ib-history-body .ib-history-time { font-size: 12px; font-weight: 500; color: #526176; }
-.ib-history-latest { font-size: 11px; font-weight: 600; color: #1d4ed8; line-height: 1.2; }
+.ib-history-latest { font-size: 12px; font-weight: 600; color: #1d4ed8; line-height: 1.2; }
 
 /* History follows viewport proportions; the content itself owns desktop resizing. */
 @media (min-width: 768px) {
@@ -993,4 +994,38 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   .ib-overflow-label.is-scrolling .ib-overflow-track { animation: none; }
   .ib-overflow-label.is-scrolling .ib-overflow-track > span { padding-right: 0; }
   .ib-overflow-label.is-scrolling .ib-overflow-track > span[aria-hidden] { display: none; }
+}
+
+/* Floating action rail (Hide releases / Go to top / Go to bottom / Show releases).
+   Desktop/tablet: vertical rail in a reserved right channel. Phone: horizontal
+   row pinned to the bottom so cards keep their full width. */
+.ib-floating-actions {
+  position: fixed;
+  inset-inline-end: var(--ib-actions-offset);
+  bottom: 20px;
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ib-actions-gap);
+}
+/* Reserve room for the rail so it never sits on top of card content (matrix
+   links, pills, filter chips, collapse controls). Scoped with :has() so
+   rail-less surfaces keep their historical metrics. */
+.ib-workspace:has(.ib-floating-actions) {
+  padding-right: var(--ib-actions-gutter);
+}
+@media (max-width: 767.98px) {
+  .ib-floating-actions {
+    inset-inline-end: var(--ui-space-2);
+    bottom: var(--ui-space-2);
+    flex-direction: row;
+    gap: var(--ui-space-2);
+  }
+  .ib-workspace:has(.ib-floating-actions) {
+    padding-right: 0;
+    padding-bottom: calc(var(--ib-actions-size) + 2 * var(--ui-space-2));
+  }
+}
+@media print {
+  .ib-floating-actions { display: none !important; }
 }

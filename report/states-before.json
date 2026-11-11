@@ -1,0 +1,95 @@
+{
+  "320x800": {
+    "filterIssuesRows": 3,
+    "filterAllRows": 5,
+    "collapsedHeight": 198,
+    "prVisible": "true",
+    "historyDialog": {
+      "x": 0,
+      "y": 0,
+      "w": 320,
+      "h": 800,
+      "fits": true
+    },
+    "multiColumns": 13,
+    "detailsDialog": {
+      "w": 320,
+      "h": 800,
+      "fits": true
+    },
+    "nav": {
+      "top": 64,
+      "bottom": 362,
+      "fits": true,
+      "overflow": 0
+    },
+    "errors": []
+  },
+  "390x844": {
+    "filterIssuesRows": 3,
+    "filterAllRows": 5,
+    "collapsedHeight": 179.5,
+    "prVisible": "true",
+    "historyDialog": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "fits": true
+    },
+    "multiColumns": 13,
+    "detailsDialog": {
+      "w": 390,
+      "h": 844,
+      "fits": true
+    },
+    "nav": {
+      "top": 64,
+      "bottom": 362,
+      "fits": true,
+      "overflow": 0
+    },
+    "errors": []
+  },
+  "768x1024": {
+    "filterIssuesRows": 3,
+    "filterAllRows": 5,
+    "collapsedHeight": 697.59375,
+    "collapseError": "TimeoutError: locator.click: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.ib-release-panel').nth(1).getByRole('button', ",
+    "prVisible": "true",
+    "historyDialog": {
+      "x": 0,
+      "y": 0,
+      "w": 768,
+      "h": 1024,
+      "fits": true
+    },
+    "multiColumns": 13,
+    "detailsError": "TimeoutError: locator.click: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.ib-release-panel').nth(1).locator('button.ib-s",
+    "nav": {
+      "top": 72,
+      "bottom": 370,
+      "fits": true,
+      "overflow": 0
+    },
+    "errors": [
+      "Failed to execute 'writeText' on 'Clipboard': Write permission denied."
+    ]
+  },
+  "1440x900": {
+    "filterIssuesRows": 3,
+    "filterAllRows": 5,
+    "collapsedHeight": 115.5,
+    "prVisible": "true",
+    "historyDialog": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "fits": true
+    },
+    "multiColumns": 13,
+    "detailsError": "no trigger",
+    "errors": []
+  }
+}

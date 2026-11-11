@@ -296,7 +296,7 @@ const styles = {
     padding: "0.32rem 0.65rem",
     fontWeight: 800,
     fontSize: "0.75rem",
-    minHeight: "30px",
+    minHeight: "var(--ui-pill-min-height)",
     display: "flex",
     alignItems: "center"
   }

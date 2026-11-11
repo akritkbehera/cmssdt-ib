@@ -118,8 +118,7 @@ class StatusLabels extends Component {
         lineHeight: 1.3,
         boxShadow: "none",
         transition: "all 0.2s ease",
-        whiteSpace: "nowrap",
-        minHeight: "30px"
+        whiteSpace: "nowrap"
       }
     };
   }

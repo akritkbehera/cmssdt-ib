@@ -429,15 +429,7 @@ class IBGroups extends Component {
 
         return (
             <div
-                style={{
-                    position: 'fixed',
-                    right: '16px',
-                    bottom: '20px',
-                    zIndex: 1050,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '10px'
-                }}
+                className="ib-floating-actions"
             >
                 <IconButton
                     onClick={this.toggleAllReleasePanels}
