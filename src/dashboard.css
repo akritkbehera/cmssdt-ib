@@ -1077,3 +1077,23 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-phone-results .ib-phone-column-table .ib-config-label { font-size: 14px; }
 
 .ib-phone-results { touch-action: pan-y; }
+
+.ib-phone-column-navigation .btn { border-radius: 50%; min-height: 44px; }
+.ib-phone-column-navigation .btn[hidden] { display: none; }
+.ib-phone-config-choice {
+  display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;
+  padding: 0 10px; border: 1px solid var(--ib-config-tone, var(--ui-border));
+  border-radius: 999px; background: var(--ib-config-bg, var(--ui-surface-muted));
+  touch-action: pan-y;
+}
+.ib-phone-controls .ib-phone-config-choice select {
+  border: 0; border-radius: 999px; background: transparent;
+  padding: 8px 2px; color: var(--ui-text); min-width: 0; width: 100%;
+}
+.ib-phone-view-actions { justify-content: flex-start; flex-wrap: wrap; }
+.ib-phone-view-actions .btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  flex: 0 1 auto; border: 1px solid var(--ui-border); border-radius: 999px;
+  background: var(--ui-surface); padding: 6px 12px; min-height: 44px;
+}
+.ib-phone-results, .ib-phone-column-navigation { overflow: hidden; }

@@ -424,6 +424,37 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
   const selected = configurations.find(item => item.key === configuration) || configurations[0];
   const selectedIndex = configurations.indexOf(selected);
   const phoneTouch = useRef(null);
+  const [phoneTransition, setPhoneTransition] = useState({id:0, direction:1});
+  const selectedBuildState = selected ? configurationBuildState(data[selected.position], selected.arch) : {status:'unknown'};
+  const selectPhoneConfiguration = key => {
+    const index = configurations.findIndex(item => item.key === key);
+    if (index < 0 || key === selected?.key) return;
+    setPhoneTransition(previous => ({id:previous.id + 1, direction:index > selectedIndex ? 1 : -1}));
+    setConfiguration(key);
+  };
+  useEffect(() => {
+    if (!phoneTransition.id || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const animations = [...(sectionRef.current?.querySelectorAll('.ib-phone-config-choice, .ib-phone-column-table') || [])]
+      .map(element => element.animate([
+        {transform:`translateX(${phoneTransition.direction * 20}px)`, opacity:.45},
+        {transform:'translateX(0)', opacity:1}
+      ], {duration:200, easing:'ease-out'}));
+    return () => animations.forEach(animation => animation.cancel());
+  }, [phoneTransition]);
+  const phoneSwipe = {
+    onTouchStart: event => {
+      const touch = event.touches[0];
+      phoneTouch.current = {x:touch.clientX, y:touch.clientY};
+    },
+    onTouchEnd: event => {
+      const start = phoneTouch.current, touch = event.changedTouches[0];
+      phoneTouch.current = null;
+      if (!start || !touch || compareOnPhone) return;
+      const dx = touch.clientX - start.x, dy = touch.clientY - start.y;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) selectNeighbour(dx < 0 ? 1 : -1);
+    },
+    onTouchCancel: () => { phoneTouch.current = null; }
+  };
   const [isPhone, setIsPhone] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767.98px)').matches);
   useEffect(() => {
     const query = window.matchMedia('(max-width: 767.98px)');
@@ -433,7 +464,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
   }, []);
   const selectNeighbour = offset => {
     const next = configurations[selectedIndex + offset];
-    if (next) setConfiguration(next.key);
+    if (next) selectPhoneConfiguration(next.key);
   };
   useEffect(() => {
     const element = sectionRef.current?.closest('.ib-release-panel') || sectionRef.current;
@@ -1231,38 +1262,30 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     <section ref={sectionRef} className="ib-matrix-section" data-in-view={inView} data-result-filter={resultFilter} aria-label="Build test matrix">
       {resultFilter !== 'all' && <p className="visually-hidden" role="status">{resultFilter === 'issues' ? 'Failures and warnings' : resultFilter === 'danger' ? 'Failures' : resultFilter === 'warning' ? 'Warnings' : 'Passed results'} highlighted. Fully passing stages are hidden.</p>}
       {!historyArchs && <div className="ib-phone-controls">
-        <div className="ib-phone-column-navigation">
+        {!compareOnPhone && <div className="ib-phone-column-navigation">
           <button type="button" className="btn btn-light" aria-label="Previous configuration"
-            disabled={selectedIndex <= 0} onClick={() => selectNeighbour(-1)}>←</button>
+            hidden={configurations.length < 2} disabled={selectedIndex <= 0} onClick={() => selectNeighbour(-1)}>←</button>
+          <div {...phoneSwipe} className={`ib-phone-config-choice ib-config-${selectedBuildState.status}`}>
+          <StatusDot status={{passed:'success',failed:'danger',warnings:'warning',running:'info'}[selectedBuildState.status] || 'secondary'} running={selectedBuildState.running} size={22} />
           <select aria-label="Configuration" value={selected?.key || ''}
-            onChange={event => setConfiguration(event.target.value)}>
+            onChange={event => selectPhoneConfiguration(event.target.value)}>
             {!configurations.length && <option value="">No configurations selected</option>}
             {configurations.map(item => <option key={item.key} value={item.key}>{formatFlavorLabel(item.flavor)} · {item.arch}</option>)}
           </select>
+          </div>
           <button type="button" className="btn btn-light" aria-label="Next configuration"
-            disabled={selectedIndex < 0 || selectedIndex >= configurations.length - 1}
+            hidden={configurations.length < 2} disabled={selectedIndex < 0 || selectedIndex >= configurations.length - 1}
             onClick={() => selectNeighbour(1)}>→</button>
-        </div>
+        </div>}
         <div className="ib-phone-view-actions">
           <button type="button" className="btn btn-light" aria-pressed={compareOnPhone}
-            onClick={() => setCompareOnPhone(value => !value)}>{compareOnPhone ? 'Single configuration' : 'Compare configurations'}</button>
+            onClick={() => setCompareOnPhone(value => !value)}><FaLayerGroup aria-hidden="true" />{compareOnPhone ? 'Single configuration' : 'Compare configurations'}</button>
           {selected && ibIdentity(data[selected.position]) && <button type="button" className="btn btn-light"
-            onClick={() => openHistory(selected.position)}>View {formatFlavorLabel(selected.flavor)} history</button>}
+            onClick={() => openHistory(selected.position)}><FaHistory aria-hidden="true" />View {formatFlavorLabel(selected.flavor)} history</button>}
         </div>
       </div>}
       {!historyArchs && <div className={`ib-phone-results ${compareOnPhone ? 'is-hidden' : ''}`}
-        onTouchStart={event => {
-          const touch = event.touches[0];
-          phoneTouch.current = {x:touch.clientX, y:touch.clientY};
-        }}
-        onTouchEnd={event => {
-          const start = phoneTouch.current, touch = event.changedTouches[0];
-          phoneTouch.current = null;
-          if (!start || !touch) return;
-          const dx = touch.clientX - start.x, dy = touch.clientY - start.y;
-          if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) selectNeighbour(dx < 0 ? 1 : -1);
-        }}
-        onTouchCancel={() => { phoneTouch.current = null; }}>
+        {...phoneSwipe}>
         {selected && isPhone ? <>
           <p className="ib-phone-column-position" aria-live="polite">Configuration {selectedIndex + 1} of {configurations.length}</p>
           <Table className="ib-phone-column-table mb-0 align-middle" style={{width:'100%', tableLayout:'fixed'}}>

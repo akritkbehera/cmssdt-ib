@@ -217,6 +217,20 @@ try {
   assert.notEqual(await phoneCard.getByLabel('Configuration', {exact:true}).inputValue(), initialConfiguration);
   await phoneCard.getByRole('button', {name:'Previous configuration',exact:true}).click();
   assert.equal(await phoneCard.getByLabel('Configuration', {exact:true}).inputValue(), initialConfiguration);
+  await phoneCard.getByRole('button', {name:'Compare configurations',exact:true}).click();
+  assert.equal(await phoneCard.locator('.ib-phone-column-navigation').count(), 0);
+  await phoneCard.getByRole('button', {name:'Single configuration',exact:true}).click();
+  await phoneCard.locator('.ib-phone-config-choice').evaluate(element => {
+    const start = new Event('touchstart', {bubbles:true});
+    Object.defineProperty(start, 'touches', {value:[{clientX:220, clientY:100}]});
+    element.dispatchEvent(start);
+    const end = new Event('touchend', {bubbles:true});
+    Object.defineProperty(end, 'changedTouches', {value:[{clientX:100, clientY:100}]});
+    element.dispatchEvent(end);
+  });
+  assert.notEqual(await phoneCard.getByLabel('Configuration', {exact:true}).inputValue(), initialConfiguration);
+  await phoneCard.getByRole('button', {name:'Previous configuration',exact:true}).click();
+  assert.equal(await phoneCard.getByLabel('Configuration', {exact:true}).inputValue(), initialConfiguration);
   await phone.locator('.navbar-toggler').click();
   await phone.locator('.navbar-collapse.show').waitFor();
   await phone.keyboard.press('Escape');
