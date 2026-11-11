@@ -77,7 +77,8 @@ export default function useSnapCarousel(rootRef, index, count, onChange, enabled
         clickTimer = setTimeout(() => { suppressClick = false; }, 50);
         if (root.hasPointerCapture(event.pointerId)) root.releasePointerCapture(event.pointerId);
       }
-      settle(commit ? current.index + (distance < 0 ? 1 : -1) : current.index);
+      settle(cancelled ? clamp(Math.round(-offset / step), current.index - 1, current.index + 1)
+        : commit ? current.index + (distance < 0 ? 1 : -1) : current.index);
     };
     const cancelPointer = event => up(event, true);
     const click = event => {
