@@ -17,7 +17,7 @@ export default function StatusDot({ status = 'secondary', running = false, size 
   return (
     <span className={`ib-state-dot ib-status-${status} ${running ? 'is-running' : ''} ${solid && !resultBadge ? 'is-solid' : ''} ${resultBadge ? 'ib-tint-badge' : ''} ${hasCount ? 'has-count' : ''}`}
       style={{ '--dot-size': `${size}px`, '--dot-stroke': size < 22 ? '1.5px' : '2px' }} aria-hidden="true">
-      {hasCount && <span className={`ib-badge-count ${countText.length >= 3 ? 'is-long' : ''}`}>{countText}</span>}
+      {hasCount && <span className={`ib-badge-count ib-status-count ${countText.length >= 3 ? 'is-long' : ''}`}>{countText}</span>}
       <span className="ib-dot-pulse" />
       <span className="ib-dot-sweep" />
       <span className="ib-dot-mark">
