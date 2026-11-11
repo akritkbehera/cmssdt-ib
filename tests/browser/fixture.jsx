@@ -1,5 +1,5 @@
 // Real production components, deterministic data, and no external API dependency.
-import React from 'react';
+import React, {useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {HashRouter} from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -37,11 +37,16 @@ for (const stage of ['builds', 'utests', 'relvals', 'addons', 'dupDict']) {
   groups.at(-1)[1][stage] = groups.at(-1)[1][stage].filter(result => result.arch !== 'el9_amd64_gcc15');
 }
 const comparisons = buildComparisonIndex(groups.flat());
+function FixtureCard({group}) {
+  const [collapsed, setCollapsed] = useState(false);
+  return <IBGroupFrame IBGroup={group} releaseQue="CMSSW_20_1_X" comparisons={comparisons}
+    isCollapsed={collapsed} onToggleCollapse={() => setCollapsed(value => !value)} />;
+}
 export const fixture = <HashRouter>
   <Navigation toLinks={[]} flaworControl={<span>Build variants</span>} archControl={<span>Architectures</span>}/>
   <DashboardDensity release="CMSSW_20_1_X">
     <div className="ib-card-list" style={{position:'relative'}}>
-      {groups.map((group,i)=><div key={i}><IBGroupFrame IBGroup={group} releaseQue="CMSSW_20_1_X" comparisons={comparisons} isCollapsed={false} onToggleCollapse={()=>{}}/></div>)}
+      {groups.map((group,i)=><div key={i}><FixtureCard group={group}/></div>)}
     </div>
   </DashboardDensity>
 </HashRouter>;
