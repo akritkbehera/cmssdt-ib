@@ -16,6 +16,9 @@ export default function useSnapCarousel(rootRef, index, count, onChange, enabled
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     const paint = () => {
       root.style.setProperty('--ib-swipe-progress', String(step ? offset / step * sign : 0));
+      const overshoot = offset > 0 ? offset : Math.max(0, -(count - 1) * step - offset);
+      root.style.setProperty('--ib-swipe-edge-stretch', String(step ? Math.min(.18, overshoot / step) : 0));
+      root.style.setProperty('--ib-swipe-edge-origin', offset > 0 ? 'left center' : 'right center');
       root.style.setProperty('--ib-swipe-activity', String(step ? Math.min(1, Math.abs(offset / step + active)) : 0));
     };
     const cancel = () => { cancelAnimationFrame(frame); frame = undefined; };
@@ -149,7 +152,7 @@ export default function useSnapCarousel(rootRef, index, count, onChange, enabled
       window.removeEventListener('pointerup', up); root.removeEventListener('pointercancel', cancelPointer);
       root.removeEventListener('lostpointercapture', lostCapture); root.removeEventListener('click', click, true);
       root.removeEventListener('wheel', onWheel); root.removeEventListener('keydown', key);
-      controller.current = null; root.style.removeProperty('--ib-swipe-progress'); root.style.removeProperty('--ib-swipe-activity');
+      controller.current = null; root.style.removeProperty('--ib-swipe-progress'); root.style.removeProperty('--ib-swipe-activity'); root.style.removeProperty('--ib-swipe-edge-stretch'); root.style.removeProperty('--ib-swipe-edge-origin');
     };
   }, [rootRef, enabled, count, version]);
   useEffect(() => {

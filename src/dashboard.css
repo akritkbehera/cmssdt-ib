@@ -1125,3 +1125,12 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-phone-results .ib-phone-column-table tbody th { height: 56px !important; padding-block: 0 !important; }
 .ib-phone-results .ib-phone-stage-rail .name-column { width: 100%; min-width: 0; }
 @media (prefers-reduced-motion: reduce) { .ib-phone-stage-rail::after { display: none; } }
+
+/* Boundary resistance visibly stretches the active values while the labels stay anchored. */
+.ib-phone-carousel-viewport .ib-snap-slide[aria-hidden="false"] {
+  transform: scaleX(calc(1 + var(--ib-swipe-edge-stretch, 0) * .35));
+  transform-origin: var(--ib-swipe-edge-origin, center);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ib-phone-carousel-viewport .ib-snap-slide[aria-hidden="false"] { transform: none; }
+}
