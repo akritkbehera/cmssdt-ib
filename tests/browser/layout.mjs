@@ -230,6 +230,32 @@ try {
   assert.notEqual(await phoneCard.getByLabel('Configuration', {exact:true}).inputValue(), initialConfiguration);
   await phoneCard.getByRole('button', {name:'Previous configuration',exact:true}).click();
   assert.equal(await phoneCard.getByLabel('Configuration', {exact:true}).inputValue(), initialConfiguration);
+  const carousel = phoneCard.locator('.ib-phone-carousel-viewport');
+  await phone.waitForTimeout(450);
+  const box = await carousel.boundingBox();
+  const dragX = box.x + box.width / 2, dragY = box.y + 12;
+  await phone.mouse.move(dragX, dragY);
+  await phone.mouse.down();
+  await phone.mouse.move(dragX - 20, dragY, {steps:5});
+  await phone.waitForTimeout(160);
+  await phone.mouse.up();
+  await phone.waitForTimeout(450);
+  assert.equal(await phoneCard.getByLabel('Configuration', {exact:true}).inputValue(), initialConfiguration,
+    'short slow drag returns to its starting item');
+  await carousel.focus();
+  await phone.keyboard.press('ArrowRight');
+  assert.notEqual(await phoneCard.getByLabel('Configuration', {exact:true}).inputValue(), initialConfiguration);
+  await phone.keyboard.press('ArrowLeft');
+  assert.equal(await phoneCard.getByLabel('Configuration', {exact:true}).inputValue(), initialConfiguration);
+  await phone.waitForTimeout(450);
+  await phone.mouse.move(dragX, dragY);
+  await phone.mouse.wheel(600, 0);
+  for (let i=0; i<5; i++) { await phone.waitForTimeout(30); await phone.mouse.wheel(40, 0); }
+  await phone.waitForTimeout(500);
+  const wheelValue = await phoneCard.getByLabel('Configuration', {exact:true}).inputValue();
+  const secondValue = await phoneCard.getByLabel('Configuration', {exact:true}).locator('option').nth(1).getAttribute('value');
+  assert.equal(wheelValue, secondValue, 'trackpad momentum advances only one configuration');
+  await phoneCard.getByRole('button', {name:'Previous configuration',exact:true}).click();
   await phone.locator('.navbar-toggler').click();
   await phone.locator('.navbar-collapse.show').waitFor();
   await phone.keyboard.press('Escape');
