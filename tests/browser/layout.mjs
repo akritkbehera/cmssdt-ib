@@ -208,6 +208,15 @@ try {
   const phone = await browser.newPage({viewport:{width:375,height:812}});
   await phone.goto('http://localhost:5173/tests/browser/index.html?navigator=1');
   await phone.locator('.ib-release-panel').first().waitFor();
+  const phoneCard = phone.locator('.ib-release-panel').first();
+  await phoneCard.locator('.ib-phone-column-table').waitFor();
+  assert.ok(await phoneCard.locator('.ib-phone-column-table .ib-family-header').isVisible());
+  assert.equal(await phoneCard.locator('.ib-phone-column-table .ib-config-field').count(), 3);
+  const initialConfiguration = await phoneCard.getByLabel('Configuration', {exact:true}).inputValue();
+  await phoneCard.getByRole('button', {name:'Next configuration',exact:true}).click();
+  assert.notEqual(await phoneCard.getByLabel('Configuration', {exact:true}).inputValue(), initialConfiguration);
+  await phoneCard.getByRole('button', {name:'Previous configuration',exact:true}).click();
+  assert.equal(await phoneCard.getByLabel('Configuration', {exact:true}).inputValue(), initialConfiguration);
   await phone.locator('.navbar-toggler').click();
   await phone.locator('.navbar-collapse.show').waitFor();
   await phone.keyboard.press('Escape');

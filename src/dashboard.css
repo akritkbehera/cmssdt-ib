@@ -1059,3 +1059,19 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
     font-size: 12px !important; min-height: 24px; padding: 0 4px;
   }
 }
+
+.ib-phone-column-navigation { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.ib-phone-column-navigation select { flex: 1; min-width: 0; }
+.ib-phone-column-navigation .btn { flex: 0 0 44px; padding-inline: 0; }
+.ib-phone-view-actions { display: flex; gap: 6px; }
+.ib-phone-view-actions .btn { flex: 1; min-width: 0; font-size: 12px; padding-inline: 6px; }
+.ib-phone-column-position { margin: 0; padding: 4px 0 8px; font-size: 12px; color: var(--ui-text-secondary); }
+.ib-phone-results .ib-phone-column-table .name-column { white-space: normal; overflow-wrap: break-word; }
+.ib-phone-results .ib-phone-column-table .ib-family-header { height: 38px !important; }
+.ib-phone-results .ib-phone-column-table .ib-config-header { height: 96px !important; }
+.ib-phone-results .ib-phone-column-table .ib-config-content { height: 84px; }
+.ib-phone-results .ib-phone-column-table tbody tr { height: 48px; }
+.ib-phone-results .ib-phone-column-table tbody th { padding: 8px; font-size: 14px; vertical-align: middle; }
+.ib-phone-results .ib-phone-column-table .ib-stage-corner { font-size: 12px; text-transform: uppercase; }
+.ib-phone-results .ib-phone-column-table .ib-stage-corner small { display: block; margin-top: 8px; text-transform: none; }
+.ib-phone-results .ib-phone-column-table .ib-config-label { font-size: 14px; }
