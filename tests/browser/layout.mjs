@@ -206,7 +206,6 @@ try {
   }
   assert.ok(rows.at(-1).cardHeight > rows[0].cardHeight * 1.7, 'tall screens use Comfortable spacing proportions instead of the laptop compression floor');
   const phone = await browser.newPage({viewport:{width:375,height:812}});
-  await phone.route(/https?:\\/\\/(?!localhost:5173)/, route=>route.fulfill({json:[]}));
   await phone.goto('http://localhost:5173/tests/browser/index.html?navigator=1');
   await phone.locator('.ib-release-panel').first().waitFor();
   await phone.locator('.navbar-toggler').click();
