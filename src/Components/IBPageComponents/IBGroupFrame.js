@@ -166,17 +166,6 @@ class IBGroupFrame extends PureComponent {
                 <Card.Header
                     className="ib-release-panel-header"
                     onClick={onToggleCollapse}
-                    onKeyDown={(e) => {
-                        if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
-                            e.preventDefault();
-                            onToggleCollapse();
-                        }
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    title={isCollapsed ? `Show ${panelHeader}` : `Hide ${panelHeader}`}
-                    aria-expanded={!isCollapsed}
-                    aria-label={isCollapsed ? `Expand ${panelHeader}` : `Collapse ${panelHeader}`}
                 >
                     {isNextIB ? (
                             <div
@@ -269,7 +258,10 @@ class IBGroupFrame extends PureComponent {
                                 <ResultFilter filter={this.state.resultFilter} counts={this.state.resultCounts} onChange={this.setResultFilter} />
                             </div>}
 
-                            <span className="ib-collapse-toggle"
+                            <button type="button" className="ib-collapse-toggle"
+                                onClick={event => { event.stopPropagation(); onToggleCollapse(); }}
+                                aria-expanded={!isCollapsed}
+                                aria-label={isCollapsed ? `Expand ${panelHeader}` : `Collapse ${panelHeader}`}
                                 style={{
                                     display: 'inline-flex',
                                     alignItems: 'center',
@@ -280,9 +272,14 @@ class IBGroupFrame extends PureComponent {
                                 }}
                             >
                                 {isCollapsed ? <FaEyeSlash /> : <FaEye />}<span className="ib-collapse-label">{isCollapsed ? 'Expand' : 'Collapse'}</span>
-                            </span>
+                            </button>
                         </>
                     )}
+                    {isNextIB && <button type="button" className="ib-collapse-toggle"
+                      aria-expanded={!isCollapsed} aria-label={isCollapsed ? `Expand ${panelHeader}` : `Collapse ${panelHeader}`}
+                      onClick={event => { event.stopPropagation(); onToggleCollapse(); }}>
+                      {isCollapsed ? 'Expand' : 'Collapse'}
+                    </button>}
                 </Card.Header>
                 <ComparisonContext builds={IBGroup} comparisons={this.props.comparisons || new Map()} />
 

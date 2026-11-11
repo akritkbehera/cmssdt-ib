@@ -231,9 +231,10 @@ const toggleStyle = {
         )} */}
       </Dropdown.Toggle>
 
-      <Dropdown.Menu
+      <Dropdown.Menu className="ib-test-dropdown"
         style={{
-          minWidth: "340px",
+          minWidth: "min(340px, calc(100vw - 24px))",
+          maxWidth: "calc(100vw - 24px)",
           maxHeight: "420px",
           padding: "8px 0",
           overflowY: "auto"

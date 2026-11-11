@@ -14,6 +14,6 @@ export default function ComparisonContext({ builds, comparisons, compact = false
   </details>;
   return <div className="ib-comparison-context" onClick={event => event.stopPropagation()}>
     {comparisonLine(latest[0])}
-    {latest.length > 1 && <details><summary>Comparison baselines for {latest.length - 1} more variants</summary>{latest.slice(1).map(comparisonLine)}</details>}
+    {latest.length > 1 && <details><summary>Comparison baselines for {latest.length - 1} more {latest.length === 2 ? 'variant' : 'variants'}</summary>{latest.slice(1).map(comparisonLine)}</details>}
   </div>;
 }

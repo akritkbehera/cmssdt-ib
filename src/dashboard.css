@@ -1026,3 +1026,29 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 @media print {
   .ib-floating-actions { display: none !important; }
 }
+
+.ib-test-dropdown .dropdown-item { white-space: normal; overflow-wrap: anywhere; }
+.ib-test-dropdown .dropdown-item .d-flex { min-width: 0; flex-wrap: wrap; gap: 4px; }
+.ib-test-dropdown .dropdown-item .fw-bold { min-width: 0; overflow-wrap: anywhere; }
+.ib-comparison-context > details > summary { min-height: 24px; padding-block: 3px; }
+.ib-collapse-toggle { border: 0; background: transparent; padding: 2px 6px; min-height: 24px; }
+.ib-release-navigator.modal-dialog { margin: 88px 16px 16px auto; width: min(280px, calc(100vw - 24px)); }
+.ib-release-navigator-content { display: flex; flex-direction: column; max-height: 70dvh; overflow: hidden; }
+.ib-release-navigator-content > div:last-child { min-height: 0; flex-shrink: 1; }
+.ib-page-actions { display: flex; flex-direction: column; gap: var(--ib-actions-gap); }
+.ib-mobile-actions-toggle { display: none; }
+@media (max-width: 767.98px), (pointer: coarse) {
+  .ib-history-window .ib-result-filter .btn,
+  .ib-history-window .btn-close,
+  .ib-history-window .ib-history-resize-options .btn { min-height: 44px; }
+  .ib-history-window .btn-close { min-width: 44px; padding: 0; }
+  .ib-release-panel .dropdown-menu .dropdown-item { min-height: 44px; display: flex; align-items: center; }
+}
+@media (max-width: 767.98px) {
+  .ib-floating-actions { flex-direction: column; align-items: flex-end; pointer-events: none; }
+  .ib-floating-actions button { pointer-events: auto; }
+  .ib-floating-actions .ib-mobile-actions-toggle { display: block; order: 2; min-height: 44px; border: 1px solid var(--ui-border); }
+  .ib-floating-actions .ib-page-actions { display: none; flex-direction: row; }
+  .ib-floating-actions.is-open .ib-page-actions { display: flex; }
+  .ib-collapse-toggle { min-height: 44px; }
+}

@@ -94,6 +94,13 @@ try {
       return {before, after};
     });
     assert.equal(railSpace.after, railSpace.before, 'floating actions do not reserve a blank side gutter');
+    assert.equal(await page.locator('.ib-release-panel-header[role="button"]').count(), 0,
+      'card headers do not nest controls inside a button role');
+    const collapseButton = page.locator('.ib-release-panel').first().getByRole('button', {name:/^Collapse CMSSW/});
+    await collapseButton.click();
+    assert.equal(await page.locator('.ib-release-panel').first().locator('table').count(), 0);
+    await page.locator('.ib-release-panel').first().getByRole('button', {name:/^Expand CMSSW/}).click();
+    await page.waitForTimeout(250);
     const compact=await metrics();
     console.log(JSON.stringify({width,height,...compact}));
     assert.deepEqual(errors,[], 'fixture must render without errors');

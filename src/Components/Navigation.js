@@ -287,6 +287,14 @@ const Navigation = ({ toLinks, flaworControl, archControl, showAllPullRequests =
         expand="lg"
         id="navigation"
         expanded={expanded}
+        onKeyDown={event => {
+          if (event.key === 'Escape' && !event.defaultPrevented && !event.currentTarget.querySelector('.dropdown-menu.show')) {
+            event.stopPropagation();
+            setExpanded(false);
+            setShowFilters(false);
+            event.currentTarget.querySelector('.navbar-toggler')?.focus();
+          }
+        }
         onToggle={handleNavbarToggle}
         className="py-2 nav-shell"
       >

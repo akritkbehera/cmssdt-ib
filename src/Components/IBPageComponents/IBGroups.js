@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import IBGroupFrame from './IBGroupFrame';
 import { groupAndTransformIBDataList } from '../../Utils/processing';
 import PropTypes from 'prop-types';
-import { Spinner } from 'react-bootstrap';
+import { Spinner, Modal } from 'react-bootstrap';
 import {
     FaCodeBranch,
     FaThumbtack,
@@ -90,6 +90,7 @@ class IBGroups extends Component {
         activeArchs: props.activeArchs || { os: [], cpu: [], compiler: [] },
         activeArchsSignature: getArchStateSignature(props.activeArchs || { os: [], cpu: [], compiler: [] }),
         showNavigator: false,
+        mobileActionsOpen: false,
         collapsedGroups: {},
         prSearchQuery: '',
         prSearchError: '',
@@ -429,8 +430,24 @@ class IBGroups extends Component {
 
         return (
             <div
-                className="ib-floating-actions"
+                className={`ib-floating-actions ${this.state.mobileActionsOpen ? 'is-open' : ''}`}
+                onKeyDown={event => {
+                    if (event.key === 'Escape') {
+                        event.stopPropagation();
+                        this.setState({ mobileActionsOpen: false });
+                        event.currentTarget.querySelector('.ib-mobile-actions-toggle')?.focus();
+                    }
+                }}
             >
+                <button type="button" className="ib-mobile-actions-toggle btn btn-light"
+                  aria-expanded={this.state.mobileActionsOpen} aria-controls="ib-page-actions"
+                  onClick={() => this.setState(previous => ({ mobileActionsOpen: !previous.mobileActionsOpen }))}>
+                  Page controls
+                </button>
+                <div id="ib-page-actions" className="ib-page-actions"
+                  onClick={event => {
+                    if (event.target.closest('button')) this.setState({ mobileActionsOpen: false });
+                  }}>
                 <IconButton
                     onClick={this.toggleAllReleasePanels}
                     title={allCollapsed ? 'Show all releases' : 'Hide all releases'}
@@ -450,6 +467,7 @@ class IBGroups extends Component {
                 <IconButton onClick={this.toggleNavigator} title="Show releases" >
                     <FaThumbtack size={12} />
                 </IconButton>
+                </div>
             </div>
         );
     }
@@ -460,10 +478,8 @@ class IBGroups extends Component {
         if (!showNavigator) return null;
 
         return (
-            <>
-                <div onClick={this.toggleNavigator} style={navigatorBackdropStyle} />
-
-                <div style={navigatorOverlayStyle}>
+            <Modal show onHide={this.toggleNavigator} dialogClassName="ib-release-navigator" aria-label="Jump to release">
+                <div className="ib-release-navigator-content">
                     <div style={navigatorHeaderStyle}>
                         <strong style={{ fontSize: "var(--ui-type-body)", color: '#334155' }}>
                             Jump to release
@@ -532,7 +548,7 @@ class IBGroups extends Component {
                         })}
                     </div>
                 </div>
-            </>
+            </Modal>
         );
     }
 
@@ -648,29 +664,6 @@ class IBGroups extends Component {
     }
 }
 
-const navigatorBackdropStyle = {
-    position: 'fixed',
-    inset: 0,
-    background: 'rgba(15, 23, 42, 0.18)',
-    zIndex: 1090
-};
-
-const navigatorOverlayStyle = {
-    position: 'fixed',
-    top: '88px',
-    right: '16px',
-    width: '280px',
-    maxHeight: '70vh',
-    overflow: 'hidden',
-    background: 'var(--ui-surface)',
-    border: '1px solid var(--ui-border)',
-    borderRadius: '14px',
-    boxShadow: 'var(--ui-shadow-menu)',
-    display: 'flex',
-    flexDirection: 'column',
-    zIndex: 1100
-};
-
 const navigatorHeaderStyle = {
     display: 'flex',
     justifyContent: 'space-between',
@@ -681,6 +674,7 @@ const navigatorHeaderStyle = {
 };
 
 const closeNavigatorButtonStyle = {
+    width: '44px', height: '44px',
     border: 'none',
     background: 'transparent',
     color: '#64748b',
@@ -698,7 +692,7 @@ const navigatorSearchWrapStyle = {
 
 const navigatorSearchInputStyle = {
     width: '100%',
-    height: '34px',
+    height: '44px',
     border: '1px solid #cbd5e1',
     borderRadius: '8px',
     padding: '0 10px',
@@ -709,7 +703,7 @@ const navigatorSearchInputStyle = {
 
 const navigatorSearchButtonStyle = {
     width: '100%',
-    height: '32px',
+    height: '44px',
     border: '1px solid #2563eb',
     borderRadius: '8px',
     background: '#2563eb',
@@ -733,6 +727,7 @@ const navigatorListStyle = {
 };
 
 const navigatorItemStyle = {
+    minHeight: '44px',
     width: '100%',
     textAlign: 'left',
     padding: '10px 12px',
