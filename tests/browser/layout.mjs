@@ -275,6 +275,7 @@ try {
     await choice.waitFor();
     await touch.waitForTimeout(300);
     const initial = await card.getByLabel('Configuration', {exact:true}).inputValue();
+    await choice.scrollIntoViewIfNeeded();
     const bounds = await choice.boundingBox();
     const session = await touch.context().newCDPSession(touch);
     const y = bounds.y + bounds.height / 2, x = bounds.x + bounds.width * .9;
