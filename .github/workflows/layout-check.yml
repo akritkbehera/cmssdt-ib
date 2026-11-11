@@ -17,7 +17,7 @@ jobs:
       - run: npm ci
       - run: node --test tests/*.test.mjs
       - run: npm install --no-save playwright@1.62.1
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium firefox
       - name: Check usable desktop viewport heights and state restoration
         run: |
           npx vite --config tests/browser/vite.config.mjs > /tmp/layout-vite.log 2>&1 &
@@ -27,3 +27,4 @@ jobs:
             sleep 1
           done
           node tests/browser/layout.mjs
+          IB_BROWSER=firefox node tests/browser/layout.mjs

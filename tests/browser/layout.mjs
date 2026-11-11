@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import {chromium} from 'playwright';
-const browser = await chromium.launch();
+import {chromium, firefox} from 'playwright';
+const browser = await (process.env.IB_BROWSER === 'firefox' ? firefox : chromium).launch();
 const targets = [[1366,620],[1440,780],[1536,700],[1920,950],[2560,1300]];
 const rows=[];
 try {
@@ -76,6 +76,13 @@ try {
       assert.ok(cell.slots.every(s=>s.contained&&s.height<=11.5),'11px corner slots fit without touching the status: '+JSON.stringify(cell));
       if(cell.slots.length===2) assert.ok(cell.slots[0].bottom<=cell.slots[1].top+.5,'corner lines do not overlap');
     }
+    const headerBounds = await page.locator('th.ib-config-header > .ib-config-content').evaluateAll(elements =>
+      elements.map(el => {
+        const content = el.getBoundingClientRect(), cell = el.closest('th').getBoundingClientRect();
+        return {left:content.left, right:content.right, cellLeft:cell.left, cellRight:cell.right};
+      }));
+    assert.ok(headerBounds.every(r => r.left >= r.cellLeft - 1 && r.right <= r.cellRight + 1),
+      'configuration headers stay inside their own architecture columns');
     const compact=await metrics();
     console.log(JSON.stringify({width,height,...compact}));
     assert.deepEqual(errors,[], 'fixture must render without errors');
