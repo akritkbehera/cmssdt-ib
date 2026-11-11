@@ -8,6 +8,7 @@ import '../../src/index.css';
 import '../../src/dashboard.css';
 import Navigation from '../../src/Components/Navigation';
 import DashboardDensity from '../../src/Components/common/DashboardDensity';
+import IBGroups from '../../src/Components/IBPageComponents/IBGroups';
 import IBGroupFrame from '../../src/Components/IBPageComponents/IBGroupFrame';
 import {STATUS_ENUM} from '../../src/config';
 import {buildComparisonIndex} from '../../src/Utils/ibComparison';
@@ -50,4 +51,13 @@ export const fixture = <HashRouter>
     </div>
   </DashboardDensity>
 </HashRouter>;
-if (typeof document !== 'undefined') createRoot(document.getElementById('root')).render(fixture);
+const navigatorFixture = <HashRouter>
+  <Navigation toLinks={[]} flaworControl={<span>Build variants</span>} archControl={<span>Architectures</span>}/>
+  <DashboardDensity release="CMSSW_20_1_X">
+    <IBGroups data={groups.map(comparisons => ({comparisons}))} releaseQue="CMSSW_20_1_X"
+      activeArchs={{os:['el8','el9'],cpu:['amd64','aarch64'],compiler:['gcc14','gcc15']}}
+      showAllPullRequests={false} />
+  </DashboardDensity>
+</HashRouter>;
+if (typeof document !== 'undefined') createRoot(document.getElementById('root')).render(
+  new URLSearchParams(location.search).has('navigator') ? navigatorFixture : fixture);

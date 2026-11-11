@@ -205,5 +205,20 @@ try {
     await page.close();
   }
   assert.ok(rows.at(-1).cardHeight > rows[0].cardHeight * 1.7, 'tall screens use Comfortable spacing proportions instead of the laptop compression floor');
+  const phone = await browser.newPage({viewport:{width:375,height:812}});
+  await phone.route(/https?:\\/\\/(?!localhost:5173)/, route=>route.fulfill({json:[]}));
+  await phone.goto('http://localhost:5173/tests/browser/index.html?navigator=1');
+  await phone.locator('.ib-release-panel').first().waitFor();
+  await phone.locator('.navbar-toggler').click();
+  assert.equal(await phone.locator('.navbar-collapse.show').count(), 1);
+  await phone.keyboard.press('Escape');
+  assert.equal(await phone.locator('.navbar-collapse.show').count(), 0);
+  assert.equal(await phone.locator('.ib-page-actions:visible').count(), 0);
+  await phone.getByRole('button',{name:'Page controls',exact:true}).click();
+  await phone.getByRole('button',{name:'Show releases',exact:true}).click();
+  await phone.getByRole('dialog',{name:'Jump to release',exact:true}).waitFor();
+  await phone.keyboard.press('Escape');
+  await phone.getByRole('dialog',{name:'Jump to release',exact:true}).waitFor({state:'hidden'});
+  await phone.close();
   console.log('LAYOUT_REPORT '+JSON.stringify(rows));
 } finally {await browser.close();}
