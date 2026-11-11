@@ -1075,3 +1075,5 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-phone-results .ib-phone-column-table .ib-stage-corner { font-size: 12px; text-transform: uppercase; }
 .ib-phone-results .ib-phone-column-table .ib-stage-corner small { display: block; margin-top: 8px; text-transform: none; }
 .ib-phone-results .ib-phone-column-table .ib-config-label { font-size: 14px; }
+
+.ib-phone-results { touch-action: pan-y; }
