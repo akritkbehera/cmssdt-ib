@@ -155,6 +155,19 @@ try {
       await trigger.click();
       const restoredSize = await dialog.locator('.modal-content').boundingBox();
       assert.ok(Math.abs(restoredSize.width - width * .8) < 3, 'history remembers its chosen width');
+      assert.ok(await dialog.locator('.ib-history-date-card').count() > 0, 'comparison history uses date cards');
+      const historyTrack = dialog.locator('.ib-history-date-track');
+      assert.ok(await historyTrack.isVisible());
+      const inner = dialog.locator('.ib-history-date-card').first().locator('.ib-table-responsive');
+      const railBefore = await inner.locator('tbody .name-column').first().boundingBox();
+      await inner.evaluate(el => {el.scrollLeft = 150;});
+      await page.waitForTimeout(1000);
+      const railAfter = await inner.locator('tbody .name-column').first().boundingBox();
+      assert.ok(Math.abs(railBefore.x - railAfter.x) <= 1, 'history inner rail stays pinned');
+      await dialog.locator('details.ib-history-flavours summary').click();
+      await dialog.getByRole('checkbox', {name:'Show all builds chronologically'}).check();
+      await dialog.locator('details.ib-history-flavours summary').click();
+      assert.equal(await dialog.locator('.ib-history-date-card').count(), 0, 'show all restores the continuous matrix');
       const dateBand = await dialog.locator('.ib-history-day-row').boundingBox();
       assert.ok(dateBand.height <= 41, 'date header stays compact');
       const heightStyles = await dialog.locator('.modal-content').evaluate(el => ({
