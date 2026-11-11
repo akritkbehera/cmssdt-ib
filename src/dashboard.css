@@ -1052,3 +1052,10 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   .ib-floating-actions.is-open .ib-page-actions { display: flex; }
   .ib-collapse-toggle { min-height: 44px; }
 }
+
+.ib-collapse-toggle { line-height: 1; }
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  .ib-workspace[data-density="compact"] .ib-collapse-toggle {
+    font-size: 12px !important; min-height: 24px; padding: 0 4px;
+  }
+}
