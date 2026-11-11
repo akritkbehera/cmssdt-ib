@@ -219,6 +219,21 @@ try {
   assert.equal(await phoneCard.getByLabel('Configuration', {exact:true}).inputValue(), initialConfiguration);
   await phoneCard.getByRole('button', {name:'Compare configurations',exact:true}).click();
   assert.equal(await phoneCard.locator('.ib-phone-column-navigation').count(), 0);
+  const continuous = phoneCard.locator('.ib-comparison-matrix .ib-table-responsive');
+  const stageBefore = await continuous.locator('tbody .name-column').first().boundingBox();
+  await continuous.evaluate(el => { el.scrollLeft = 145; });
+  await phone.waitForTimeout(1000);
+  const stageAfter = await continuous.locator('tbody .name-column').first().boundingBox();
+  assert.ok(stageAfter.width < stageBefore.width && stageAfter.width >= 67, 'scroll compresses the visible stage rail');
+  assert.ok(Math.abs(stageBefore.x - stageAfter.x) <= 1, 'compressed stage rail stays pinned');
+  const snapDistance = await continuous.evaluate(el => {
+    const rail = el.querySelector('.name-column').getBoundingClientRect().width;
+    const left = el.getBoundingClientRect().left;
+    return Math.min(...[...el.querySelectorAll('th.ib-config-header')].map(th =>
+      Math.abs(th.getBoundingClientRect().left - left - rail)));
+  });
+  assert.ok(snapDistance < 2, 'continuous scrolling settles at an architecture boundary');
+
   await phoneCard.getByRole('button', {name:'Single configuration',exact:true}).click();
   const railBefore = await phoneCard.locator('.ib-phone-stage-rail').boundingBox();
   const drag = await phoneCard.locator('.ib-phone-choice-viewport').boundingBox();

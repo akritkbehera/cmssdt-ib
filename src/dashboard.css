@@ -1145,3 +1145,23 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 @container (max-width: 240px) {
   .ib-phone-view-actions .btn span { display: none; }
 }
+
+/* Scrolling keeps the stage rail visible while continuously reclaiming width. */
+.ib-matrix-section .ib-scroll-morph .table {
+  width: calc(var(--ib-fit-width, calc(var(--ib-stage-width) + var(--ib-column-count, 0) * var(--ib-column-width))) - var(--ib-rail-shrink, 0px));
+  overflow-anchor: none;
+}
+.ib-matrix-section .ib-scroll-morph .table .ib-stage-column,
+.ib-matrix-section .ib-scroll-morph .table .name-column {
+  width: calc(var(--ib-stage-width) - var(--ib-rail-shrink, 0px));
+  min-width: 0 !important;
+}
+.ib-matrix-section .ib-scroll-morph .table .name-column {
+  position: sticky; left: auto; right: auto; inset-inline-start: 0; z-index: 3;
+  padding-inline: calc(8px - var(--ib-rail-progress, 0) * 4px);
+  font-size: clamp(12px, calc(var(--ib-compact-type, calc(14 * var(--ib-cell-unit))) - var(--ib-rail-progress, 0) * 3px), 18px);
+  overflow-wrap: anywhere;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ib-matrix-section .ib-scroll-morph .table .name-column { font-size: max(12px, var(--ib-compact-type, calc(14 * var(--ib-cell-unit)))); }
+}

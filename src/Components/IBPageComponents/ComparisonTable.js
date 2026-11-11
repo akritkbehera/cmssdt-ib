@@ -7,6 +7,7 @@ import OverflowLabel from '../common/OverflowLabel';
 import ResultFilter from '../common/ResultFilter';
 import ResultDeltaGutter from '../common/ResultDeltaGutter';
 import MatrixHelp from '../common/MatrixHelp';
+import useMatrixScroll from '../common/useMatrixScroll';
 import useMatrixFit from "../common/useMatrixFit";
 import { stages } from "../../Utils/resultDelta";
 import { compareCell, comparableCellResults } from "../../Utils/ibComparison";
@@ -456,6 +457,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
 
   const matrixLayout = useMemo(() => [archsByIb, resultFilter], [archsByIb, resultFilter]);
   useMatrixFit(tableContainer, configurations.length, matrixLayout, setHasOverflow);
+  useMatrixScroll(tableContainer, matrixLayout);
 
   const mobileCells = [];
   function renderCell(cellInfo, key) {
