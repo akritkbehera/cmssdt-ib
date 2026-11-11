@@ -1,10 +1,7 @@
 import React from 'react';
 
 /** Stationary state mark illuminated by the same rotating sweep as the rim. */
-export default function StatusDot({ status = 'secondary', running = false, size = 24, solid = false, count, resultBadge = false }) {
-  const numericCount = Number(count);
-  const hasCount = resultBadge && Number.isFinite(numericCount) && numericCount > 0 && ['warning', 'danger'].includes(status);
-  const countText = numericCount >= 1000 ? '1k+' : String(count);
+export default function StatusDot({ status = 'secondary', running = false, size = 24, solid = false }) {
   const paths = {
     success: 'M3.5 8.4l3 3 6-6.4',
     danger: 'M4.5 4.5l7 7M11.5 4.5l-7 7',
@@ -15,9 +12,8 @@ export default function StatusDot({ status = 'secondary', running = false, size 
     : `<path d="${paths[status] || paths.secondary}" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>`;
   const glyphMask = `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">${shape}</svg>`)}")`;
   return (
-    <span className={`ib-state-dot ib-status-${status} ${running ? 'is-running' : ''} ${solid && !resultBadge ? 'is-solid' : ''} ${resultBadge ? 'ib-tint-badge' : ''} ${hasCount ? 'has-count' : ''}`}
+    <span className={`ib-state-dot ib-status-${status} ${running ? 'is-running' : ''} ${solid ? 'is-solid' : ''}`}
       style={{ '--dot-size': `${size}px`, '--dot-stroke': size < 22 ? '1.5px' : '2px' }} aria-hidden="true">
-      {hasCount && <span className={`ib-badge-count ib-status-count ${countText.length >= 3 ? 'is-long' : ''}`}>{countText}</span>}
       <span className="ib-dot-pulse" />
       <span className="ib-dot-sweep" />
       <span className="ib-dot-mark">
