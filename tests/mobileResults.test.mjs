@@ -36,11 +36,21 @@ function render(active = true, resultFilter = 'all') {
   } }, React.createElement(ComparisonTable, { data: [build], resultFilter, releaseQue: 'CMSSW_20_1_X' })));
 }
 test('phone view shows only the selected configuration with the same stage results', () => {
-  const html = render();
+  const previousWindow = globalThis.window;
+  let html;
+  try {
+    globalThis.window = { matchMedia: () => ({ matches: true }) };
+    html = render();
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
   const phone = html.slice(html.indexOf('<div class="ib-phone-results'), html.indexOf('<div class="ib-comparison-matrix'));
-  assert.equal((phone.match(/class="ib-phone-stage"/g) || []).length, 2);
-  assert.match(phone, /Build<\/dt>/);
-  assert.match(phone, /Unit tests<\/dt>/);
+  assert.equal((phone.match(/scope="row"/g) || []).length, 2);
+  assert.match(phone, /ib-family-header/);
+  assert.equal((phone.match(/class="ib-config-field"/g) || []).length, 3);
+  assert.match(phone, /Build<\/th>/);
+  assert.match(phone, /Unit tests<\/th>/);
   assert.doesNotMatch(phone, /aarch64|Build or tests failed/);
   assert.match(html, /Compare configurations/);
   assert.equal((html.match(/<option /g) || []).length, 2);
