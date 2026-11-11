@@ -211,7 +211,19 @@ try {
       await dialog.waitFor({state:'hidden'});
       await page.setViewportSize({width:390, height:844});
       await card.getByRole('button', {name:'View DEFAULT history', exact:true}).click();
-      assert.ok(await dialog.locator('table').isVisible());
+      assert.ok(await dialog.locator('table').first().isVisible());
+      const dateCards = dialog.locator('.ib-history-date-card');
+      const firstDate = await dateCards.first().boundingBox();
+      assert.ok(firstDate.width <= 390, 'phone shows one date at a readable width');
+      await dialog.getByRole('button', {name:'Older →', exact:true}).click();
+      await page.waitForTimeout(700);
+      const dateScroll = await dialog.locator('.ib-history-date-track').evaluate(el => el.scrollLeft);
+      assert.ok(dateScroll > 0, 'outer arrows navigate dates on phones');
+      const innerMatrix = dateCards.nth(1).locator('.ib-table-responsive');
+      await innerMatrix.evaluate(el => {el.scrollLeft = 160;});
+      await page.waitForTimeout(900);
+      assert.ok(Math.abs(await dialog.locator('.ib-history-date-track').evaluate(el => el.scrollLeft) - dateScroll) < 2,
+        'configuration scrolling does not advance the date');
       assert.equal(await dialog.getByRole('group', {name:'CPU', exact:true}).getByRole('button').count(), 2);
       assert.deepEqual(errors, []);
     }
