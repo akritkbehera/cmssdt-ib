@@ -1171,3 +1171,28 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-matrix-section .table .flavor-card-wrapper:hover > .flavor-copy-button,
 .ib-matrix-section .table .flavor-card-wrapper:focus-within > .flavor-copy-button,
 .ib-matrix-section .ib-scroll-interacting .flavor-card-wrapper > .flavor-copy-button { opacity: 1; }
+
+/* Tint-and-rim result circles use the established status palette and density sizing. */
+.ib-status-marker .ib-tint-badge {
+  background: var(--dot-soft) !important; color: var(--dot-ink);
+}
+.ib-tint-badge .ib-badge-count {
+  display: grid; place-items: center; width: 100%; height: 100%;
+  font-family: var(--ui-font-mono, ui-monospace, monospace);
+  font-weight: 700; font-size: calc(var(--dot-size, 24px) * .46); line-height: 1;
+  font-variant-numeric: tabular-nums; letter-spacing: -.04em;
+}
+.ib-tint-badge .ib-badge-count.is-long { font-size: calc(var(--dot-size, 24px) * .36); }
+.ib-tint-badge.has-count .ib-dot-mark {
+  position: absolute; top: -3px; right: -3px;
+  width: 44%; height: 44%; min-width: 9px; min-height: 9px;
+  box-sizing: content-box; border: 2px solid var(--ui-surface);
+  border-radius: 50%; background: var(--dot-tone); color: var(--ui-surface);
+}
+.ib-tint-badge.has-count .ib-dot-mark svg { width: 80%; height: 80%; }
+.ib-tint-badge.is-running .ib-dot-mark,
+.ib-tint-badge.is-running .ib-dot-mark > svg { opacity: 1; }
+.ib-tint-badge.is-running .ib-dot-glyph-light { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .ib-tint-badge.is-running { border-style: dashed; }
+}
