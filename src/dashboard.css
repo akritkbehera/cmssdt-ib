@@ -1000,7 +1000,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 }
 
 /* Floating action rail (Hide releases / Go to top / Go to bottom / Show releases).
-   Desktop/tablet: vertical rail in a reserved right channel. Phone: horizontal
+   Desktop/tablet: vertical overlay. Phone: horizontal
    row pinned to the bottom so cards keep their full width. */
 .ib-floating-actions {
   position: fixed;

@@ -83,6 +83,17 @@ try {
       }));
     assert.ok(headerBounds.every(r => r.left >= r.cellLeft - 1 && r.right <= r.cellRight + 1),
       'configuration headers stay inside their own architecture columns');
+    const railSpace = await page.evaluate(() => {
+      const workspace = document.querySelector('.ib-workspace');
+      const before = getComputedStyle(workspace).paddingRight;
+      const rail = document.createElement('div');
+      rail.className = 'ib-floating-actions';
+      workspace.append(rail);
+      const after = getComputedStyle(workspace).paddingRight;
+      rail.remove();
+      return {before, after};
+    });
+    assert.equal(railSpace.after, railSpace.before, 'floating actions do not reserve a blank side gutter');
     const compact=await metrics();
     console.log(JSON.stringify({width,height,...compact}));
     assert.deepEqual(errors,[], 'fixture must render without errors');
