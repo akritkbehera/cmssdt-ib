@@ -209,9 +209,9 @@ try {
   await phone.goto('http://localhost:5173/tests/browser/index.html?navigator=1');
   await phone.locator('.ib-release-panel').first().waitFor();
   await phone.locator('.navbar-toggler').click();
-  assert.equal(await phone.locator('.navbar-collapse.show').count(), 1);
+  await phone.locator('.navbar-collapse.show').waitFor();
   await phone.keyboard.press('Escape');
-  assert.equal(await phone.locator('.navbar-collapse.show').count(), 0);
+  await phone.locator('.navbar-collapse.show').waitFor({state:'detached'});
   assert.equal(await phone.locator('.ib-page-actions:visible').count(), 0);
   await phone.getByRole('button',{name:'Page controls',exact:true}).click();
   await phone.getByRole('button',{name:'Show releases',exact:true}).click();
