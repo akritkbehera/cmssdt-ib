@@ -294,7 +294,7 @@ const Navigation = ({ toLinks, flaworControl, archControl, showAllPullRequests =
             setShowFilters(false);
             event.currentTarget.querySelector('.navbar-toggler')?.focus();
           }
-        }
+        }}
         onToggle={handleNavbarToggle}
         className="py-2 nav-shell"
       >
