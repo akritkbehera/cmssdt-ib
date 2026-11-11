@@ -1260,9 +1260,14 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
         </div>}
         <div className="ib-phone-view-actions">
           <button type="button" className="btn btn-light" aria-pressed={compareOnPhone}
-            onClick={() => setCompareOnPhone(value => !value)}><FaLayerGroup aria-hidden="true" />{compareOnPhone ? 'Single configuration' : 'Compare configurations'}</button>
-          {selected && ibIdentity(data[selected.position]) && <button type="button" className="btn btn-light"
-            onClick={() => openHistory(selected.position)}><FaHistory aria-hidden="true" />View {formatFlavorLabel(selected.flavor)} history</button>}
+            aria-label={compareOnPhone ? 'Single configuration' : 'Compare configurations'}
+            title={compareOnPhone ? 'Show one configuration' : 'Show all configurations'}
+            onClick={() => setCompareOnPhone(value => !value)}><FaLayerGroup aria-hidden="true" /><span>{compareOnPhone ? 'Show one' : 'Show all'}</span></button>
+          {selected && ibIdentity(data[selected.position]) && <button type="button"
+            className={`btn btn-light ib-phone-history-action ${formatFlavorLabel(selected.flavor).length > 8 ? 'has-long-flavour' : ''}`}
+            aria-label={`View ${formatFlavorLabel(selected.flavor)} history`}
+            title={`View ${formatFlavorLabel(selected.flavor)} history`}
+            onClick={() => openHistory(selected.position)}><FaHistory aria-hidden="true" /><span>{formatFlavorLabel(selected.flavor)} history</span></button>}
         </div>
       </div>}
       {!historyArchs && <div className={`ib-phone-results ${compareOnPhone ? 'is-hidden' : ''}`}

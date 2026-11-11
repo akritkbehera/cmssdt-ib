@@ -1134,3 +1134,14 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 @media (prefers-reduced-motion: reduce) {
   .ib-phone-carousel-viewport .ib-snap-slide[aria-hidden="false"] { transform: none; }
 }
+
+.ib-phone-view-actions { container-type: inline-size; flex-wrap: nowrap; width: 100%; }
+.ib-phone-view-actions .btn { flex: 0 1 auto; min-width: 44px; white-space: nowrap; }
+.ib-phone-view-actions .btn svg { flex: none; }
+.ib-phone-view-actions .btn span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@container (max-width: 320px) {
+  .ib-phone-view-actions .has-long-flavour span { display: none; }
+}
+@container (max-width: 240px) {
+  .ib-phone-view-actions .btn span { display: none; }
+}
