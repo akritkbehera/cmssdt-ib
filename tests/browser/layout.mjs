@@ -267,5 +267,32 @@ try {
   await phone.keyboard.press('Escape');
   await phone.getByRole('dialog',{name:'Jump to release',exact:true}).waitFor({state:'hidden'});
   await phone.close();
+  if (process.env.IB_BROWSER !== 'firefox') {
+    const touch = await browser.newPage({viewport:{width:390,height:844}, hasTouch:true, isMobile:true});
+    await touch.goto('http://localhost:5173/tests/browser/index.html?navigator=1');
+    const card = touch.locator('.ib-release-panel').first();
+    const choice = card.locator('.ib-phone-choice-viewport');
+    await choice.waitFor();
+    await touch.waitForTimeout(300);
+    const initial = await card.getByLabel('Configuration', {exact:true}).inputValue();
+    const bounds = await choice.boundingBox();
+    const session = await touch.context().newCDPSession(touch);
+    const y = bounds.y + bounds.height / 2, x = bounds.x + bounds.width * .9;
+    await session.send('Input.dispatchTouchEvent', {type:'touchStart', touchPoints:[{x,y,id:1}]});
+    for (const fraction of [.2,.4,.65]) {
+      await touch.waitForTimeout(40);
+      await session.send('Input.dispatchTouchEvent', {type:'touchMove', touchPoints:[{x:x-bounds.width*fraction,y,id:1}]});
+    }
+    const moving = await card.locator('.ib-matrix-section').evaluate(el => Number(el.style.getPropertyValue('--ib-swipe-progress')));
+    assert.ok(moving < -.2, 'real touch keeps dragging after implicit capture transfers');
+    assert.equal(await card.getByLabel('Configuration', {exact:true}).inputValue(), initial, 'touch does not commit before release');
+    await session.send('Input.dispatchTouchEvent', {type:'touchEnd', touchPoints:[]});
+    await touch.waitForTimeout(450);
+    assert.notEqual(await card.getByLabel('Configuration', {exact:true}).inputValue(), initial, 'real touch release advances');
+    await card.getByRole('button', {name:'Previous configuration',exact:true}).click();
+    await touch.waitForTimeout(450);
+    assert.equal(await card.getByLabel('Configuration', {exact:true}).inputValue(), initial, 'arrow navigation stays synchronized after touch');
+    await touch.close();
+  }
   console.log('LAYOUT_REPORT '+JSON.stringify(rows));
 } finally {await browser.close();}

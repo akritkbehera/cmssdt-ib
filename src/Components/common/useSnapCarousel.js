@@ -82,6 +82,11 @@ export default function useSnapCarousel(rootRef, index, count, onChange, enabled
         : commit ? current.index + (distance < 0 ? 1 : -1) : current.index);
     };
     const cancelPointer = event => up(event, true);
+    // Touch starts with implicit capture on the touched child. Moving capture
+    // to the carousel emits lostpointercapture on that child; dragging continues.
+    const lostCapture = event => {
+      if (event.target === root && !root.hasPointerCapture(event.pointerId)) up(event, true);
+    };
     const click = event => {
       if (suppressClick) { event.preventDefault(); event.stopPropagation(); suppressClick = false; }
     };
@@ -131,7 +136,7 @@ export default function useSnapCarousel(rootRef, index, count, onChange, enabled
     root.addEventListener('pointermove', move);
     window.addEventListener('pointerup', up);
     root.addEventListener('pointercancel', cancelPointer);
-    root.addEventListener('lostpointercapture', cancelPointer);
+    root.addEventListener('lostpointercapture', lostCapture);
     root.addEventListener('click', click, true);
     root.addEventListener('wheel', onWheel, {passive:false});
     root.addEventListener('keydown', key);
@@ -139,7 +144,7 @@ export default function useSnapCarousel(rootRef, index, count, onChange, enabled
       cancel(); clearTimeout(wheelTimer); clearTimeout(wheelUnlock); clearTimeout(clickTimer); resize.disconnect();
       root.removeEventListener('pointerdown', down); root.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', up); root.removeEventListener('pointercancel', cancelPointer);
-      root.removeEventListener('lostpointercapture', cancelPointer); root.removeEventListener('click', click, true);
+      root.removeEventListener('lostpointercapture', lostCapture); root.removeEventListener('click', click, true);
       root.removeEventListener('wheel', onWheel); root.removeEventListener('keydown', key);
       controller.current = null; root.style.removeProperty('--ib-swipe-progress');
     };
