@@ -1380,7 +1380,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
             Show all builds chronologically
           </label>
           </details>
-          {hasHistoryResults ? (showAllHistory ? <ComparisonTable data={history.builds} comparisons={comparisons}
+          {hasHistoryResults ? (showAllHistory || !isPhone ? <ComparisonTable data={history.builds} comparisons={comparisons}
             historyArchs={selectedHistoryArchs} releaseQue={releaseQue}
             historyLatest={latestHistoryNames}
             resultFilter={historyFilter} onCountsChange={setHistoryCounts} /> :
