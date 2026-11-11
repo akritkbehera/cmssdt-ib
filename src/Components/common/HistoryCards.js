@@ -1,3 +1,4 @@
+import useHistoryNavigation from './useHistoryNavigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 function DateCard({ group, renderTable, report }) {
@@ -39,9 +40,7 @@ function DateCard({ group, renderTable, report }) {
 }
 
 export default function HistoryCards({groups, renderTable, onCountsChange}) {
-  const track = useRef(null);
-  const [active, setActive] = useState(0);
-  const [atEnd, setAtEnd] = useState(false);
+  const {track, active, atEnd, move} = useHistoryNavigation(groups.map(group=>group.key).join('|'));
   const [totals, setTotals] = useState({});
   const report = useCallback((key, value) => setTotals(previous =>
     JSON.stringify(previous[key]) === JSON.stringify(value) ? previous : {...previous, [key]:value}), []);
@@ -50,25 +49,13 @@ export default function HistoryCards({groups, renderTable, onCountsChange}) {
     for (const group of groups) for (const key of Object.keys(total)) total[key] += totals[group.key]?.[key] || 0;
     onCountsChange(total);
   }, [groups, totals, onCountsChange]);
-  const move = step => {
-    const cards = [...track.current.children], next = Math.max(0, Math.min(cards.length - 1, active + step));
-    track.current.scrollTo({left:cards[next].offsetLeft - cards[0].offsetLeft,
-      behavior:matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
-  };
   return <div className="ib-history-card-browser">
     <nav className="ib-history-date-controls" aria-label="Date navigation">
       <button type="button" disabled={!active} onClick={() => move(-1)}>← Newer</button>
       <span aria-live="polite">{active + 1} / {groups.length} · Newest → oldest</span>
       <button type="button" disabled={groups.length < 2 || atEnd} onClick={() => move(1)}>Older →</button>
     </nav>
-    <div ref={track} className="ib-history-date-track" onScroll={() => {
-      const cards = [...track.current.children], origin = cards[0]?.offsetLeft || 0;
-      let nearest = 0;
-      cards.forEach((card,index) => {if (Math.abs(card.offsetLeft-origin-track.current.scrollLeft) <
-        Math.abs(cards[nearest].offsetLeft-origin-track.current.scrollLeft)) nearest=index;});
-      setActive(nearest);
-      setAtEnd(track.current.scrollLeft + track.current.clientWidth >= track.current.scrollWidth - 2);
-    }}>
+    <div ref={track} className="ib-history-date-track">
       {groups.map(group => <DateCard key={group.key} group={group} renderTable={renderTable} report={report} />)}
     </div>
   </div>;

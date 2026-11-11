@@ -338,6 +338,28 @@ try {
     await card.getByRole('button', {name:'Previous configuration',exact:true}).click();
     await touch.waitForTimeout(450);
     assert.equal(await card.getByLabel('Configuration', {exact:true}).inputValue(), initial, 'arrow navigation stays synchronized after touch');
+    await touch.goto('http://localhost:5173/tests/browser/index.html');
+    await touch.locator('.ib-release-panel').first().getByRole('button', {name:'View DEFAULT history',exact:true}).tap();
+    const historyDialog = touch.getByRole('dialog');
+    const datesTrack = historyDialog.locator('.ib-history-date-track');
+    await historyDialog.getByRole('button', {name:'Older →',exact:true}).tap();
+    await touch.waitForTimeout(500);
+    assert.ok(await datesTrack.evaluate(el=>el.scrollLeft)>0, 'touch tap advances history date');
+    await historyDialog.getByRole('button', {name:'← Newer',exact:true}).tap();
+    await touch.waitForTimeout(500);
+    assert.ok(await datesTrack.evaluate(el=>el.scrollLeft)<2, 'touch tap restores newest date');
+    const handle = historyDialog.locator('.ib-history-date-handle').first();
+    await handle.scrollIntoViewIfNeeded();
+    const hb = await handle.boundingBox(), hx=hb.x+hb.width*.9, hy=hb.y+hb.height/2;
+    await session.send('Input.dispatchTouchEvent', {type:'touchStart',touchPoints:[{x:hx,y:hy,id:2}]});
+    for(const fraction of [.15,.35,.6,.8]){
+      await touch.waitForTimeout(35);
+      await session.send('Input.dispatchTouchEvent', {type:'touchMove',touchPoints:[{x:hx-hb.width*fraction,y:hy,id:2}]});
+    }
+    assert.ok(await datesTrack.evaluate(el=>el.scrollLeft)>hb.width*.3, 'history moves with the finger before release');
+    await session.send('Input.dispatchTouchEvent', {type:'touchEnd',touchPoints:[]});
+    await touch.waitForTimeout(500);
+    assert.ok(await datesTrack.evaluate(el=>el.scrollLeft)>hb.width*.8, 'touch swipe settles at next date');
     await touch.close();
   }
   console.log('LAYOUT_REPORT '+JSON.stringify(rows));

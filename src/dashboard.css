@@ -1206,3 +1206,9 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 @container (min-width: 1100px) {
   .ib-history-date-card { flex-basis: calc((100% - 12px) / 2); }
 }
+
+/* Header drag owns horizontal pointers; vertical page scrolling stays native. */
+.ib-history-date-handle { touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab; }
+.ib-history-date-handle:active { cursor: grabbing; }
+.ib-history-date-track { -webkit-overflow-scrolling: touch; }
+.ib-history-date-controls button, .ib-history-inner-controls button { touch-action: manipulation; }
