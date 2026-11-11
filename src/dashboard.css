@@ -1200,7 +1200,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 }
 .ib-history-date-handle small { font-size: 12px; color: var(--ui-text-secondary); }
 .ib-history-date-card .ib-table-responsive { overscroll-behavior-x: contain; }
-.ib-history-date-card .ib-history-day-row { display: none; }
+.ib-history-date-card:not(.is-latest-fallback) .ib-history-day-row { display: none; }
 .ib-history-date-card .ib-history-day-start { border-left-width: 1px !important; }
 .ib-history-date-card .ib-history-inner-controls small { font-variant-numeric: tabular-nums; }
 @container (min-width: 1100px) {

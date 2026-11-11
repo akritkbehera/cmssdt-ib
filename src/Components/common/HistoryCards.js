@@ -24,7 +24,7 @@ function DateCard({ group, renderTable, report }) {
     const width = box?.querySelector('th.ib-config-header')?.getBoundingClientRect().width || 120;
     box?.scrollBy({left: direction * width, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
   };
-  return <article ref={root} className="ib-history-date-card" aria-label={group.title}>
+  return <article ref={root} className={`ib-history-date-card ${group.differentTimes ? 'is-latest-fallback' : ''}`} aria-label={group.title}>
     <header className="ib-history-date-handle">
       <strong>{group.title}</strong>
       <small>{group.differentTimes ? 'Different timestamps · latest of each flavour' : 'Swipe this header to browse dates'}</small>
