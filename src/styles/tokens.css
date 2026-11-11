@@ -102,9 +102,6 @@
   --ib-actions-size: var(--ui-control-target);
   --ib-actions-offset: var(--ui-space-4);
   --ib-actions-gap: var(--ui-space-2);
-  /* Rail footprint plus its viewport offset and a breathing gap, so every
-     full-width row inside .ib-workspace ends clear of the rail. */
-  --ib-actions-gutter: calc(var(--ib-actions-size) + var(--ib-actions-offset) + var(--ib-actions-gap));
 }
 @media (hover: none), (pointer: coarse) {
   :root {

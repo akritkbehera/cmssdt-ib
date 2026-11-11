@@ -1011,12 +1011,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   flex-direction: column;
   gap: var(--ib-actions-gap);
 }
-/* Reserve room for the rail so it never sits on top of card content (matrix
-   links, pills, filter chips, collapse controls). Scoped with :has() so
-   rail-less surfaces keep their historical metrics. */
-.ib-workspace:has(.ib-floating-actions) {
-  padding-right: var(--ib-actions-gutter);
-}
+/* Floating actions overlay the page without narrowing the build cards. */
 @media (max-width: 767.98px) {
   .ib-floating-actions {
     inset-inline-end: var(--ui-space-2);
@@ -1025,7 +1020,6 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
     gap: var(--ui-space-2);
   }
   .ib-workspace:has(.ib-floating-actions) {
-    padding-right: 0;
     padding-bottom: calc(var(--ib-actions-size) + 2 * var(--ui-space-2));
   }
 }
