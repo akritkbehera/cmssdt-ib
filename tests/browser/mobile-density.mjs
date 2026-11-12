@@ -79,7 +79,7 @@ try {
       const rail=cell.getBoundingClientRect(),rect=icon.getBoundingClientRect();
       return Math.abs(rect.left+rect.width/2-rail.left-rail.width/2);
     }));
-    assert.ok(centers.every(error=>error<=1),'all stage icons, including linked RelVal, are centered');
+    assert.ok(centers.every(error=>error<=1),'all stage icons, including linked RelVal, are centered: '+JSON.stringify(centers));
     await scrollViewport.scrollIntoViewIfNeeded();
     await scrollViewport.evaluate(el=>{el.scrollLeft=0;});
     await page.waitForTimeout(900);

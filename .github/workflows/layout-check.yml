@@ -32,9 +32,6 @@ jobs:
           done
           node tests/browser/layout.mjs
           IB_BROWSER=firefox node tests/browser/layout.mjs
-          node tests/browser/mobile-density.mjs
-          IB_BROWSER=firefox node tests/browser/mobile-density.mjs
-          IB_BROWSER=webkit node tests/browser/mobile-density.mjs
           npm run build:pages
           npx vite preview --host 0.0.0.0 --port 5174 > /tmp/app-preview.log 2>&1 &
           for attempt in $(seq 1 30); do
@@ -42,6 +39,31 @@ jobs:
             sleep 1
           done
           node tests/browser/app-smoke.mjs
+  mobile:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save playwright@1.62.1
+      - run: chown "$(id -u):$(id -g)" "$HOME"
+      - name: Check phone density, native swipes and narrow desktop trackpads
+        run: |
+          npx vite --config tests/browser/vite.config.mjs > /tmp/mobile-vite.log 2>&1 &
+          trap 'cat /tmp/mobile-vite.log' EXIT
+          for attempt in $(seq 1 30); do
+            curl -fsS http://localhost:5173/tests/browser/index.html > /dev/null && break
+            sleep 1
+          done
+          node tests/browser/mobile-density.mjs
+          IB_BROWSER=firefox node tests/browser/mobile-density.mjs
+          IB_BROWSER=webkit node tests/browser/mobile-density.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

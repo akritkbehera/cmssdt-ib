@@ -1442,6 +1442,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 @media (max-width: 767.98px) {
   .ib-matrix-section .ib-comparison-matrix .name-column > a.ib-row-label-link {
     justify-content: center !important;
+    min-width: 0 !important; max-width: 100%; padding-inline: 0;
   }
   .ib-matrix-section .ib-comparison-matrix .name-column .type-label-mobile {
     width: 100%; justify-content: center;
