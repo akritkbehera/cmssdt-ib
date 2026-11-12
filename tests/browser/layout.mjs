@@ -81,9 +81,14 @@ try {
       const number=count?.getBoundingClientRect();
       return {state:el.dataset.resultStatus, row:el.closest('tr')?.dataset.stage, hasCount:!!count,
         hasOldDot:!!el.querySelector('.ib-state-dot'),
+        fill:getComputedStyle(el).backgroundColor, ink:getComputedStyle(count || el).color,
         fits:!number || (number.left>=bounds.left-.5 && number.right<=bounds.right+.5 && number.top>=bounds.top-.5 && number.bottom<=bounds.bottom+.5)};
     }));
     assert.ok(pills.length>0 && pills.every(p=>p.fits&&!p.hasOldDot), 'solid pills contain readable counts without rim glyph chips');
+    assert.ok(pills.every(p=>/^rgb\\(\\d+, \\d+, \\d+\\)$/.test(p.fill) && p.fill!=='rgb(255, 255, 255)'), 'pills render opaque coloured fills, never transparent or white');
+    assert.ok(pills.filter(p=>p.state==='danger'||p.state==='success').every(p=>p.ink==='rgb(255, 255, 255)'), 'red and green pills have white foregrounds');
+    assert.ok(pills.filter(p=>p.state==='warning').every(p=>p.ink!=='rgb(255, 255, 255)' && p.ink!==p.fill), 'amber digits stay dark against the solid fill');
+
     assert.ok(pills.filter(p=>p.state==='success'&&p.hasCount).every(p=>p.row==='relvals'), 'green counts are exclusive to RelVal');
     assert.equal(await page.locator('.ib-section-controls .ib-table-result-pill').count(),0,'section controls retain their existing icons');
     const headerBounds = await page.locator('th.ib-config-header > .ib-config-content').evaluateAll(elements =>

@@ -364,7 +364,7 @@ body { font-family: var(--ui-font-sans); -webkit-font-smoothing: antialiased; }
   display: inline-grid; grid-template-columns: var(--ui-status-size) minmax(var(--ui-status-count-width), max-content);
   align-items: center; gap: 6px; padding: 0; border-radius: 0; line-height: 1.5;
   font-family: var(--ui-font-mono); font-variant-numeric: tabular-nums;
-  background: transparent !important;
+  background: transparent;
 }
 .ib-status-count { font: 600 14px/1.5 var(--ui-font-sans); font-variant-numeric: tabular-nums; text-align: left; color: inherit; white-space: nowrap; }
 .ib-matrix-section .ib-table-frame { padding: 0; }
@@ -1223,7 +1223,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   box-shadow: 0 1px 3px color-mix(in srgb, var(--ib-pill-tone) 35%, transparent);
 }
 .ib-matrix-section .ib-table-result-pill.ib-status-warning {
-  --ib-pill-tone: var(--ui-warning); --ib-pill-ink: var(--ui-warning-text);
+  --ib-pill-tone: var(--ui-warning-light); --ib-pill-ink: var(--ui-result-warning-ink, #2b1a00);
 }
 .ib-matrix-section .ib-table-result-pill.ib-status-success { --ib-pill-tone: var(--ui-success); }
 .ib-matrix-section .ib-table-result-pill .ib-status-count {
