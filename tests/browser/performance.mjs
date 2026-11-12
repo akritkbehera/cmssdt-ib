@@ -47,16 +47,23 @@ try {
   const scroll=await measure(async()=>{
     await page.locator('.ib-release-panel .ib-comparison-matrix .ib-table-responsive').first().evaluate(async el=>{
       el.dispatchEvent(new PointerEvent('pointerdown',{pointerId:1,isPrimary:true}));
-      el.scrollLeft=200;await new Promise(r=>setTimeout(r,60));
+      el.scrollLeft=0;await new Promise(r=>setTimeout(r,60));
+      const start=el.scrollLeft,max=el.scrollWidth-el.clientWidth;
       let writes=0;const observer=new MutationObserver(rows=>writes+=rows.length);
       observer.observe(el,{attributes:true,attributeFilter:['style']});
-      for(let i=0;i<40;i++){await new Promise(requestAnimationFrame);el.scrollLeft=200+i*5;}
-      observer.disconnect();window.__ibRailWrites=writes;
+      const frames=[];
+      for(let i=0;i<40;i++){await new Promise(requestAnimationFrame);frames.push(performance.now());el.scrollLeft=max*i/39;}
+      const gaps=frames.slice(1).map((time,i)=>time-frames[i]).sort((a,b)=>a-b);
+      window.__ibScrollFrames={p95Ms:gaps[Math.floor(gaps.length*.95)],over32ms:gaps.filter(ms=>ms>32).length};
+      observer.disconnect();window.__ibRailWrites=writes;window.__ibScrollRange={start,end:el.scrollLeft,max};
       window.dispatchEvent(new PointerEvent('pointerup',{pointerId:1,isPrimary:true}));
     });
     await page.waitForTimeout(950);
   });
   scroll.railStyleWrites=await page.evaluate(()=>window.__ibRailWrites);
+  scroll.range=await page.evaluate(()=>window.__ibScrollRange);
+  scroll.frames=await page.evaluate(()=>window.__ibScrollFrames);
+  assert.ok(scroll.range.max>40 && scroll.range.end>scroll.range.start+Math.min(100,scroll.range.max*.5),'scroll benchmark must actually move the matrix');
   const search=await measure(async()=>{
     await page.locator('#gpu-relvals-toggle').first().click();
     const input=page.locator('.ib-test-dropdown.show input');
