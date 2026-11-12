@@ -15,7 +15,7 @@ function Vendor({name, type}) {
   const Icon=vendor==='nvidia'?SiNvidia:vendor==='amd'?SiAmd:type==='gpu'?BsGpuCard:FaMicrochip;
   const {model,path}=testDeviceLabel(name,type);
   return <span className="ib-dropdown-device" title={name}>
-    <Icon aria-hidden="true" />
+    <Icon aria-hidden="true" data-vendor={vendor || undefined} />
     <span className="ib-dropdown-device-label" aria-label={model+(path?'/'+path:'')}>
       <strong>{model}</strong>{path&&<span className="ib-dropdown-device-path">/{path}</span>}
     </span>

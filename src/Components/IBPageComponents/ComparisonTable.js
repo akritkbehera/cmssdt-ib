@@ -881,7 +881,7 @@ const ComparisonTable = ({ data = EMPTY_LIST, comparisons = EMPTY_COMPARISONS, r
                 <th className="name-column" rowSpan={2} style={{ verticalAlign: 'middle' }}>
                   <div className="d-flex align-items-center justify-content-center h-100">
                     <span className="type-header-desktop ib-stage-corner"><span>Stage</span><small>Config →</small></span>
-                    <span className="type-header-mobile fw-bold text-uppercase" style={{ fontSize: "var(--ui-type-caption)" }} />
+                    <span className="type-header-mobile" title="Stage / configuration"><FaTools aria-hidden="true" /><span className="visually-hidden">Stage / configuration</span></span>
                   </div>
                 </th>
 

@@ -40,6 +40,20 @@ try {
     assert.equal(await card.locator('.ib-phone-history-action').count(),1,'single view offers its history shortcut');
     await card.getByRole('button',{name:'Compare configurations',exact:true}).click();
     assert.equal(await card.locator('.ib-phone-history-action').count(),0,'show all removes the redundant history shortcut');
+    const expanded=card.locator('.ib-comparison-matrix');
+    assert.equal(await expanded.locator('.type-header-desktop:visible').count(),0,'phone stage heading uses an icon');
+    assert.equal(await expanded.locator('.type-header-mobile > svg').count(),1);
+    const collisions=await expanded.locator('.ib-family-header .flavor-card-wrapper').evaluateAll(wrappers=>wrappers.flatMap(wrapper=>{
+      const label=wrapper.querySelector(':scope > a, :scope > .flavor-card');
+      if(!label)return [];
+      const text=label.getBoundingClientRect();
+      return [...wrapper.querySelectorAll(':scope > button')].filter(button=>{
+        const action=button.getBoundingClientRect();
+        return action.width && action.left<text.right-0.5 && action.right>text.left+0.5;
+      }).map(button=>button.className);
+    }));
+    assert.deepEqual(collisions,[],'header actions reserve space without covering flavour labels');
+
     const historyIcon=card.locator('.ib-comparison-matrix .ib-history-trigger').first();
     assert.ok(await historyIcon.isVisible(),'show all retains the flavour header history icon');
     await historyIcon.click();
