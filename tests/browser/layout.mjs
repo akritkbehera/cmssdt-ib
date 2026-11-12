@@ -368,6 +368,33 @@ try {
     await touch.close();
   }
 
+
+  const ringPage=await browser.newPage({viewport:{width:1440,height:900}});
+  await ringPage.goto('http://localhost:5173/tests/browser/index.html');
+  const runningPill=ringPage.locator('tr[data-stage="relvals"] .ib-table-result-pill.is-running.ib-status-danger').first();
+  await runningPill.waitFor({state:'attached'});
+  const ringSample=()=>runningPill.evaluate(el=>{
+    const svg=el.querySelector('.ib-running-badge-ring'),base=svg.querySelector('.ib-running-ring-base'),streak=svg.querySelector('.ib-running-ring-streak');
+    const r=el.getBoundingClientRect(),b=base.getBoundingClientRect();
+    return {badge:[r.width,r.height],ring:[b.width,b.height],fill:getComputedStyle(el).backgroundColor,
+      offset:parseFloat(getComputedStyle(streak).strokeDashoffset),animation:getComputedStyle(streak).animationName,count:el.querySelector('.ib-status-count')?.textContent};
+  });
+  const firstRing=await ringSample();
+  await ringPage.waitForTimeout(150);
+  const nextRing=await ringSample();
+  assert.ok(Math.abs(nextRing.offset-firstRing.offset)>1,'running RelVal stroke advances continuously');
+  assert.deepEqual(nextRing.badge,firstRing.badge,'badge geometry remains stationary during motion');
+  assert.deepEqual(nextRing.ring,firstRing.ring,'ring geometry remains stationary during motion');
+  assert.equal(nextRing.fill,firstRing.fill,'fill remains steady');
+  assert.equal(nextRing.count,firstRing.count,'count remains steady');
+  await runningPill.locator('.ib-status-count').evaluate(el=>{el.textContent='430';});
+  const wideRing=await ringSample();
+  assert.ok(wideRing.badge[0]>wideRing.badge[1] && wideRing.ring[0]>wideRing.ring[1],'ring follows a wide count pill');
+  await ringPage.emulateMedia({reducedMotion:'reduce'});
+  const reduced=await runningPill.locator('.ib-running-ring-streak').evaluate(el=>getComputedStyle(el).display);
+  assert.equal(reduced,'none','reduced motion leaves only the stationary outline');
+  await ringPage.close();
+
   for (const width of [390,1440]) {
     const menuPage=await browser.newPage({viewport:{width,height:900}});
     await menuPage.goto('http://localhost:5173/tests/browser/index.html?dropdowns=1');

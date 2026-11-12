@@ -1,3 +1,4 @@
+import RunningBadgeRing from './RunningBadgeRing';
 import React, {useState} from 'react';
 import {Dropdown, Form} from 'react-bootstrap';
 import {FaDatabase, FaMicrochip, FaSearch} from 'react-icons/fa';
@@ -69,6 +70,7 @@ export default function TestResultDropdown({tests={}, type, kind, ib, comparison
             <span className="ib-dropdown-status">
               {['danger','warning','success'].includes(status)?<span className={'ib-status-marker ib-table-result-pill ib-status-'+status+(running?' is-running':'')}
                 data-result-status={status} data-running={running||undefined} role="img" aria-label={label}>
+                <RunningBadgeRing />
                 {count!==null?<span className="ib-status-count">{count}</span>:status==='success'
                   ?<svg className="ib-table-pass-tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
                   :<span aria-hidden="true">{status==='warning'?'!':'−'}</span>}

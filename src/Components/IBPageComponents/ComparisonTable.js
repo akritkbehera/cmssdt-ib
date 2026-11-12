@@ -1,3 +1,4 @@
+import RunningBadgeRing from '../common/RunningBadgeRing';
 import HistoryCards from '../common/HistoryCards';
 import { flavourHistory, historyFlavours, selectHistoryBuilds, historyCards } from '../../Utils/flavourHistory';
 import { ibIdentity } from '../../Utils/ibComparison';
@@ -257,6 +258,7 @@ function renderStatusMarker({ status = "secondary", value, icon, link, tooltipCo
   const sphereContent = (
     <span className={`ib-status-marker ib-status-${status} ${pill ? 'ib-table-result-pill' : ''} ${status === "success" ? "is-pass" : status === "danger" ? "is-fail" : ""} ${running ? "is-running" : ""}`}
       role="img" data-result-status={status} data-running={running || undefined} data-result-count={hasNumericValue ? Number.parseFloat(displayValue) : undefined} title={`${displayValue} ${metric}`} aria-label={`${running ? "Running — partial result. " : ""}${type || 'Test'}: ${statusStyles[status]?.description || 'Unknown'}${hasNumericValue ? ` (${displayValue} ${metric})` : ''}`}>
+      {pill && <RunningBadgeRing />}
       {pill ? (hasNumericValue && (status !== 'success' || greenCount)
         ? <span className="ib-status-count">{badgeCount}</span>
         : status === 'success'

@@ -1239,32 +1239,29 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   min-width: 24px; padding-inline: 5px;
 }
 .ib-workspace[data-density="compact"] .ib-matrix-section .ib-table-result-pill .ib-status-count { font-size: 12px; line-height: 1; }
-@property --ib-pill-angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
-:is(.ib-matrix-section, .ib-test-dropdown) .ib-table-result-pill.is-running::after,
-:is(.ib-matrix-section, .ib-test-dropdown) .ib-table-result-pill.is-running::before {
-  content: ''; position: absolute; inset: -3px; border-radius: inherit; box-sizing: border-box; pointer-events: none;
+
+/* Stroke motion keeps the perimeter stable on both circles and wide pills. */
+.ib-running-badge-ring { display: none; pointer-events: none; }
+:is(.ib-matrix-section, .ib-test-dropdown) .ib-table-result-pill.is-running > .ib-running-badge-ring {
+  display: block; position: absolute; inset: -5px;
+  width: calc(100% + 10px); height: calc(100% + 10px); overflow: visible;
+  color: var(--ib-pill-tone);
+  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--ib-pill-tone) 60%, transparent));
 }
-:is(.ib-matrix-section, .ib-test-dropdown) .ib-table-result-pill.is-running::after {
-  border: 2px solid color-mix(in srgb, var(--ib-pill-tone) 55%, transparent);
-  animation: ib-pill-breathe 1.8s ease-in-out infinite;
+.ib-running-badge-ring rect {
+  width: calc(100% - 6px); height: calc(100% - 6px); fill: none;
+  stroke: currentColor; stroke-width: 2px;
 }
-:is(.ib-matrix-section, .ib-test-dropdown) .ib-table-result-pill.is-running::before {
-  padding: 2px;
-  background: conic-gradient(from var(--ib-pill-angle), transparent 0 40%, var(--ib-pill-tone) 100%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor; mask-composite: exclude;
-  filter: drop-shadow(0 0 3px var(--ib-pill-tone)); animation: ib-pill-sweep 1.4s linear infinite;
+.ib-running-ring-base { opacity: .55; }
+.ib-running-badge-ring .ib-running-ring-streak {
+  stroke: color-mix(in srgb, var(--ib-pill-tone) 55%, white);
+  stroke-linecap: round; stroke-dasharray: 18 82;
+  animation: ib-pill-perimeter 1.8s linear infinite;
+  animation-play-state: var(--ib-motion-state, running);
 }
-@keyframes ib-pill-sweep { to { --ib-pill-angle: 360deg; } }
-@keyframes ib-pill-breathe {
-  0%,100% { box-shadow: 0 0 4px 1px color-mix(in srgb, var(--ib-pill-tone) 40%, transparent); }
-  50% { box-shadow: 0 0 7px 2px color-mix(in srgb, var(--ib-pill-tone) 75%, transparent); }
-}
+@keyframes ib-pill-perimeter { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .ib-matrix-section .ib-table-result-pill.is-running::before { display: none; animation: none; }
-  .ib-matrix-section .ib-table-result-pill.is-running::after {
-    animation: none; box-shadow: 0 0 4px 1px color-mix(in srgb, var(--ib-pill-tone) 60%, transparent);
-  }
+  .ib-running-badge-ring .ib-running-ring-streak { display: none; animation: none; }
 }
 
 /* Menus share result pills while the closed section toggles keep their icons. */
