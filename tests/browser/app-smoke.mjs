@@ -6,7 +6,7 @@ const page=await browser.newPage({viewport:{width:1440,height:900}});
 const normal='el9_amd64_gcc14',queue='CMSSW_20_1_X',asan='CMSSW_20_1_ASAN_X',requests=[];
 const structure={all_prefixes:[queue],all_release_queues:[queue,asan],default_release:queue,[queue]:[queue,asan]};
 const summary={prod_archs:{[queue]:normal},[queue]:{[normal]:{}},[asan]:{[normal]:{}}};
-const record=q=>({isIB:true,next_ib:false,release_queue:q,release_name:q+'_2026-11-09-2300',ib_date:'2026-11-09-2300',tests_archs:[normal],merged_prs:[],
+const record=q=>({isIB:true,next_ib:false,release_queue:q,release_name:q+'_2026-11-09-2300',ib_date:'2026-11-09-2300',tests_archs:[normal],merged_prs:[],compared_tags:'previous-->current',
   builds:[{arch:normal,passed:'warning',done:true,details:{compWarning:4}}],
   utests:[{arch:normal,passed:false,done:true,details:{num_failed:1,num_passed:12}}],
   relvals:[{arch:normal,passed:false,done:true,details:{num_failed:3,num_passed:12}}]});
@@ -38,4 +38,7 @@ try{
   assert.equal(requests.filter(name=>name==='RelvalsAvailableResults.json').length,1,'RelVal provider initializes on demand once');
   assert.deepEqual(errors,[]);
   console.log('APP_SMOKE_PASS '+JSON.stringify(requests));
+}catch(error){
+  console.error('APP_SMOKE_DIAGNOSTICS '+JSON.stringify({errors,requests,body:(await page.locator('body').innerText()).slice(0,3000)}));
+  throw error;
 }finally{releaseSecond();await browser.close();}
