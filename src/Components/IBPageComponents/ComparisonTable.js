@@ -1286,7 +1286,7 @@ const ComparisonTable = ({ data = EMPTY_LIST, comparisons = EMPTY_COMPARISONS, r
             aria-label={compareOnPhone ? 'Single configuration' : 'Compare configurations'}
             title={compareOnPhone ? 'Show one configuration' : 'Show all configurations'}
             onClick={() => setCompareOnPhone(value => !value)}><FaLayerGroup aria-hidden="true" /><span>{compareOnPhone ? 'Show one' : 'Show all'}</span></button>
-          {selected && ibIdentity(data[selected.position]) && <button type="button"
+          {!compareOnPhone && selected && ibIdentity(data[selected.position]) && <button type="button"
             className={`btn btn-light ib-phone-history-action ${formatFlavorLabel(selected.flavor).length > 8 ? 'has-long-flavour' : ''}`}
             aria-label={`View ${formatFlavorLabel(selected.flavor)} history`}
             title={`View ${formatFlavorLabel(selected.flavor)} history`}

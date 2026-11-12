@@ -37,7 +37,16 @@ try {
     const restored=await geometry();
     assert.deepEqual(restored.rows,comfortable.rows,'comfortable restores original row heights');
     assert.equal(restored.header,comfortable.header);
+    assert.equal(await card.locator('.ib-phone-history-action').count(),1,'single view offers its history shortcut');
     await card.getByRole('button',{name:'Compare configurations',exact:true}).click();
+    assert.equal(await card.locator('.ib-phone-history-action').count(),0,'show all removes the redundant history shortcut');
+    const historyIcon=card.locator('.ib-comparison-matrix .ib-history-trigger').first();
+    assert.ok(await historyIcon.isVisible(),'show all retains the flavour header history icon');
+    await historyIcon.click();
+    const historyDialog=page.getByRole('dialog',{name:'Build history',exact:true});
+    await historyDialog.waitFor({state:'visible'});
+    await historyDialog.getByRole('button',{name:'Close',exact:true}).click();
+    await historyDialog.waitFor({state:'hidden'});
     assert.ok(await card.locator('.ib-comparison-matrix').isVisible(),'expanded matrix remains available');
     assert.equal(await card.locator('.ib-comparison-matrix tbody .type-label-desktop:visible').count(),0,'expanded phone table uses icons');
     await page.setViewportSize({width:900,height:600});
