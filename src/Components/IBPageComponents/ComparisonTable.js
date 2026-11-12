@@ -253,7 +253,7 @@ function renderStatusMarker({ status = "secondary", value, icon, link, tooltipCo
 
   const pill = ['danger', 'warning', 'success'].includes(status);
   const greenCount = status === 'success' && type === 'RelVal' && hasNumericValue;
-  const badgeCount = Number.parseFloat(displayValue) >= 1000 ? '1k+' : displayValue;
+  const badgeCount = displayValue;
   const metric = type?.toLowerCase().includes('build') ? (status === 'warning' ? 'compiler warnings' : 'build errors') : type === 'Q/A' ? 'duplicate-check outcome' : 'test results';
   const sphereContent = (
     <span className={`ib-status-marker ib-status-${status} ${pill ? 'ib-table-result-pill' : ''} ${status === "success" ? "is-pass" : status === "danger" ? "is-fail" : ""} ${running ? "is-running" : ""}`}

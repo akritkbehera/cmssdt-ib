@@ -67,7 +67,7 @@ export default function TestResultDropdown({tests={}, type, kind, ib, comparison
           const failed=Number(item.details?.[failureKey]);
           const warnings=Number(item.details?.known_failed || item.details?.num_warnings || 0);
           const numeric=status==='danger'?failed:status==='warning'?warnings:isRelval&&status==='success'?Number(item.details?.num_passed):null;
-          const count=Number.isFinite(numeric)&&numeric>0 ? (numeric>=1000?'1k+':numeric) : null;
+          const count=Number.isFinite(numeric)&&numeric>0 ? numeric : null;
           const delta=dropdownComparison(ib,context,type==='gpu'?'gpu_data':'other_data',kind,key,tests);
           const label=(running?'Running, ':'')+(status==='danger'?'Failed':status==='warning'?'Warnings':status==='success'?'Passed':'Unknown')+(count!==null?', '+numeric:'');
           return <Dropdown.Item key={key} href={getUrl(item)} target="_blank" rel="noopener noreferrer" className="ib-dropdown-result"
