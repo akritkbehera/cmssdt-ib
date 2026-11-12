@@ -1287,3 +1287,27 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-dropdown-counts { grid-column: 1 / -1; color: var(--ui-text-secondary); font-size: 12px; white-space: normal; }
 .ib-dropdown-group { padding: 6px 16px; background: var(--ui-surface-muted); color: var(--ui-text-secondary); font-size: 12px; font-weight: 600; }
 .ib-dropdown-baseline { margin: 0; padding: 6px 12px; color: var(--ui-text-secondary); font-size: 11px; overflow-wrap: anywhere; }
+
+/* Test menus follow the workspace density, including when opened above cards. */
+.ib-test-dropdown {
+  --ib-menu-row-padding: 12px; --ib-menu-gap: 8px; --ib-menu-type: 14px;
+  --ib-menu-badge-size: 30px; --ib-menu-count-type: 15px; --ib-menu-icon-size: 20px;
+}
+.ib-workspace[data-density="compact"] .ib-test-dropdown {
+  --ib-menu-row-padding: 8px; --ib-menu-gap: 4px; --ib-menu-type: 12px;
+  --ib-menu-badge-size: 24px; --ib-menu-count-type: 12px; --ib-menu-icon-size: 18px;
+  padding-block: 6px; max-height: min(380px, 70dvh);
+}
+.ib-test-dropdown .ib-dropdown-result {
+  padding-block: var(--ib-menu-row-padding); gap: var(--ib-menu-gap) 12px;
+  font-size: var(--ib-menu-type); line-height: 1.35; min-height: 44px;
+}
+.ib-test-dropdown .ib-status-marker.ib-table-result-pill {
+  height: var(--ib-menu-badge-size); min-height: var(--ib-menu-badge-size); min-width: var(--ib-menu-badge-size);
+}
+.ib-test-dropdown .ib-table-result-pill .ib-status-count { font-size: var(--ib-menu-count-type); }
+.ib-test-dropdown .ib-dropdown-device { gap: var(--ib-menu-gap); }
+.ib-test-dropdown .ib-dropdown-device > svg { width: var(--ib-menu-icon-size); height: var(--ib-menu-icon-size); }
+.ib-workspace[data-density="compact"] .ib-test-dropdown .ib-dropdown-group { padding-block: 4px; }
+.ib-workspace[data-density="compact"] .ib-test-dropdown .ib-dropdown-baseline { padding-block: 4px; }
+.ib-workspace[data-density="compact"] .ib-test-dropdown .form-control { font-size: 12px; padding-block: 3px; }

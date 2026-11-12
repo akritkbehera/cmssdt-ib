@@ -385,6 +385,21 @@ try {
       assert.ok(bounds.x>=-1 && bounds.x+bounds.width<=width+1,'dropdown stays within viewport');
       if(id==='gpu-qa-toggle') assert.equal(await marker.locator('.ib-status-count').innerText(),'3');
       if(id==='rntuple-relvals-toggle') assert.equal(await marker.locator('.ib-status-count').innerText(),'12');
+      const dimensions=()=>menu.locator('.ib-dropdown-result').first().evaluate(el=>{
+        const badge=el.querySelector('.ib-table-result-pill'),count=badge.querySelector('.ib-status-count');
+        return {row:el.getBoundingClientRect().height, badge:badge.getBoundingClientRect().height,
+          font:parseFloat(getComputedStyle(el).fontSize), count:parseFloat(getComputedStyle(count).fontSize)};
+      });
+      const comfortable=await dimensions();
+      await menuPage.getByRole('button',{name:'Compact',exact:true}).click();
+      if(!await menu.isVisible())await latestCard.locator('#'+id).click();
+      const compact=await dimensions();
+      assert.ok(compact.row<comfortable.row && compact.badge<comfortable.badge && compact.font<comfortable.font && compact.count<comfortable.count,
+        'compact density reduces dropdown row, badge, label and count size');
+      assert.ok(compact.font>=12 && compact.count>=12 && compact.row>=44,'compact menus stay readable and touchable');
+      await menuPage.getByRole('button',{name:'Comfortable',exact:true}).click();
+      if(!await menu.isVisible())await latestCard.locator('#'+id).click();
+      assert.deepEqual(await dimensions(),comfortable,'comfortable restores the dropdown geometry');
       await menu.getByRole('textbox').fill('not-a-device');
       assert.ok(await menu.getByText('No matching tests').isVisible());
       await latestCard.locator('#'+id).click();
