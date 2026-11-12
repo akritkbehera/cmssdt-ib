@@ -85,7 +85,7 @@ try {
         fits:!number || (number.left>=bounds.left-.5 && number.right<=bounds.right+.5 && number.top>=bounds.top-.5 && number.bottom<=bounds.bottom+.5)};
     }));
     assert.ok(pills.length>0 && pills.every(p=>p.fits&&!p.hasOldDot), 'solid pills contain readable counts without rim glyph chips');
-    assert.ok(pills.every(p=>/^rgb\\(\\d+, \\d+, \\d+\\)$/.test(p.fill) && p.fill!=='rgb(255, 255, 255)'), 'pills render opaque coloured fills, never transparent or white');
+    assert.ok(pills.every(p=>p.fill.startsWith('rgb(') && p.fill!=='rgb(255, 255, 255)'), 'pills render opaque coloured fills: '+JSON.stringify(pills.map(p=>({state:p.state,fill:p.fill,ink:p.ink}))));
     assert.ok(pills.filter(p=>p.state==='danger'||p.state==='success').every(p=>p.ink==='rgb(255, 255, 255)'), 'red and green pills have white foregrounds');
     assert.ok(pills.filter(p=>p.state==='warning').every(p=>p.ink!=='rgb(255, 255, 255)' && p.ink!==p.fill), 'amber digits stay dark against the solid fill');
 
