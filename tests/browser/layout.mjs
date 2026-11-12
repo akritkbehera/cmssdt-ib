@@ -76,6 +76,16 @@ try {
       assert.ok(cell.slots.every(s=>s.contained&&s.height<=11.5),'11px corner slots fit without touching the status: '+JSON.stringify(cell));
       if(cell.slots.length===2) assert.ok(cell.slots[0].bottom<=cell.slots[1].top+.5,'corner lines do not overlap');
     }
+    const pills = await page.locator('table .ib-table-result-pill').evaluateAll(elements => elements.map(el => {
+      const count = el.querySelector('.ib-status-count'), bounds=el.getBoundingClientRect();
+      const number=count?.getBoundingClientRect();
+      return {state:el.dataset.resultStatus, row:el.closest('tr')?.dataset.stage, hasCount:!!count,
+        hasOldDot:!!el.querySelector('.ib-state-dot'),
+        fits:!number || (number.left>=bounds.left-.5 && number.right<=bounds.right+.5 && number.top>=bounds.top-.5 && number.bottom<=bounds.bottom+.5)};
+    }));
+    assert.ok(pills.length>0 && pills.every(p=>p.fits&&!p.hasOldDot), 'solid pills contain readable counts without rim glyph chips');
+    assert.ok(pills.filter(p=>p.state==='success'&&p.hasCount).every(p=>p.row==='relvals'), 'green counts are exclusive to RelVal');
+    assert.equal(await page.locator('.ib-section-controls .ib-table-result-pill').count(),0,'section controls retain their existing icons');
     const headerBounds = await page.locator('th.ib-config-header > .ib-config-content').evaluateAll(elements =>
       elements.map(el => {
         const content = el.getBoundingClientRect(), cell = el.closest('th').getBoundingClientRect();

@@ -250,12 +250,20 @@ function renderStatusMarker({ status = "secondary", value, icon, link, tooltipCo
     typeof displayValue === 'number' ||
     (typeof displayValue === 'string' && /\d/.test(displayValue));
 
+  const pill = ['danger', 'warning', 'success'].includes(status);
+  const greenCount = status === 'success' && type === 'RelVal' && hasNumericValue;
+  const badgeCount = Number.parseFloat(displayValue) >= 1000 ? '1k+' : displayValue;
   const metric = type?.toLowerCase().includes('build') ? (status === 'warning' ? 'compiler warnings' : 'build errors') : type === 'Q/A' ? 'duplicate-check outcome' : 'test results';
   const sphereContent = (
-    <span className={`ib-status-marker ib-status-${status} ${status === "success" ? "is-pass" : status === "danger" ? "is-fail" : ""} ${running ? "is-running" : ""}`}
+    <span className={`ib-status-marker ib-status-${status} ${pill ? 'ib-table-result-pill' : ''} ${status === "success" ? "is-pass" : status === "danger" ? "is-fail" : ""} ${running ? "is-running" : ""}`}
       role="img" data-result-status={status} data-running={running || undefined} data-result-count={hasNumericValue ? Number.parseFloat(displayValue) : undefined} title={`${displayValue} ${metric}`} aria-label={`${running ? "Running — partial result. " : ""}${type || 'Test'}: ${statusStyles[status]?.description || 'Unknown'}${hasNumericValue ? ` (${displayValue} ${metric})` : ''}`}>
-      <StatusDot status={status} running={running} solid={!running} />
-      {hasNumericValue && status !== 'success' && <span className="ib-status-count">{displayValue}</span>}
+      {pill ? (hasNumericValue && (status !== 'success' || greenCount)
+        ? <span className="ib-status-count">{badgeCount}</span>
+        : status === 'success'
+          ? <svg className="ib-table-pass-tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+          : <span aria-hidden="true">{status === 'warning' ? '!' : '×'}</span>)
+        : <><StatusDot status={status} running={running} solid={!running} />
+          {hasNumericValue && status !== 'success' && <span className="ib-status-count">{displayValue}</span>}</>}
     </span>
   );
 
