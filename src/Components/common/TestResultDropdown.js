@@ -28,6 +28,7 @@ export default function TestResultDropdown({tests={}, type, kind, ib, comparison
     ['Other results',entries.filter(([,item])=>!(Number(item.details?.[failureKey])>0)&&!(Number(item.details?.known_failed)>0||Number(item.details?.num_warnings)>0||item.passed==='warning'))]
   ];
   const context=comparisons?.get(ib);
+  const hasBaseline = Object.keys(tests).some(key => dropdownComparison(ib,context,type==='gpu'?'gpu_data':'other_data',kind,key,tests));
   if(!Object.keys(tests).length)return null;
   const getUrl=item=>{
     if(isRelval){
@@ -51,7 +52,7 @@ export default function TestResultDropdown({tests={}, type, kind, ib, comparison
             onChange={event=>setSearch(event.target.value)} className="border-0 shadow-none"/>
         </div>
       </Form>
-      {context?.latest && context.previous && <p className="ib-dropdown-baseline">Compared with {context.previous.release_name}</p>}
+      {hasBaseline && <p className="ib-dropdown-baseline">Compared with {context.previous.release_name}</p>}
       {groups.map(([label,items])=>items.length>0 && <React.Fragment key={label}>
         <div className="ib-dropdown-group">{label} ({items.length})</div>
         {items.map(([key,item])=>{
