@@ -1372,3 +1372,6 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   .ib-workspace[data-density="compact"] .ib-phone-results .ib-phone-column-table .ib-family-header { padding-block: 2px !important; }
   .ib-workspace[data-density="compact"] .ib-phone-column-table .ib-family-header .flavor-card-wrapper { min-height: 0; }
 }
+@media (max-width: 767.98px) {
+  .ib-workspace[data-density="compact"] .ib-phone-stage-rail .name-column { width: 100%; min-width: 0 !important; }
+}
