@@ -1375,3 +1375,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 @media (max-width: 767.98px) {
   .ib-workspace[data-density="compact"] .ib-phone-stage-rail .name-column { width: 100%; min-width: 0 !important; }
 }
+@media (max-width: 767.98px) {
+  .ib-workspace[data-density="compact"] .ib-phone-results .ib-phone-column-table .ib-config-content { height: 62px; }
+  .ib-workspace[data-density="compact"] .ib-phone-stage-icon { height: 40px; }
+}

@@ -30,7 +30,7 @@ try {
     assert.ok(compact.card<comfortable.card-70,'compact removes substantial vertical whitespace');
     assert.ok(compact.rail<=56 && comfortable.rail<=60,'stage icons do not reserve a third of the screen');
     assert.ok(compact.rows.every(height=>height<=45 && height>=44),'compact keeps 44px result rows');
-    assert.ok(compact.aligned.every(error=>error<=1),'pinned icons and results remain vertically aligned');
+    assert.ok(compact.aligned.every(error=>error<=1),'pinned icons and results remain vertically aligned: '+JSON.stringify({width,comfortable,compact}));
     assert.ok(!compact.overflow&&compact.readable,'compact has readable counts and no document overflow');
     await page.screenshot({path:`mobile-review/${engine}-${width}-compact.png`,fullPage:false});
     await page.getByRole('button',{name:'Comfortable',exact:true}).click();
