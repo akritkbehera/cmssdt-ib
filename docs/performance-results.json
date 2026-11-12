@@ -1,0 +1,113 @@
+{
+  "baselineCommit": "fdefd1e58ea4ce50575a622f9257ffe1114fc5e8",
+  "candidateCommit": "20e27ca4369b53a7550dd26094dd0b4dcbb7abcd",
+  "workflow": "https://github.com/akritkbehera/cmssdt-ib/actions/runs/43258165532",
+  "reports": [
+    {
+      "label": "baseline",
+      "fixture": "20 cards, 80 GPU results per dropdown, Chromium, 4x CPU slowdown, Vite development mode",
+      "mount": {
+        "scriptMs": 13322.689,
+        "layoutMs": 2232.1169999999997,
+        "nodes": 69415,
+        "cards": 20,
+        "matrices": 20
+      },
+      "navigation": {
+        "scriptMs": 22592.602000000003,
+        "layoutMs": 3852.214,
+        "styleMs": 8746.083999999999,
+        "taskMs": 41646.242,
+        "layouts": 496,
+        "reactRenderMs": 10669.499999999665
+      },
+      "scroll": {
+        "scriptMs": 79.81500000000352,
+        "layoutMs": 26.43899999999988,
+        "styleMs": 482.6739999999994,
+        "taskMs": 6856.542999999995,
+        "layouts": 9,
+        "reactRenderMs": 0,
+        "railStyleWrites": 18,
+        "range": {
+          "start": 0,
+          "end": 558,
+          "max": 578
+        },
+        "frames": {
+          "p95Ms": 207.29999999998836,
+          "over32ms": 39
+        }
+      },
+      "search": {
+        "scriptMs": 2331.1179999999963,
+        "layoutMs": 47.14200000000002,
+        "styleMs": 339.9049999999999,
+        "taskMs": 9399.267000000009,
+        "layouts": 15,
+        "reactRenderMs": 1668.799999999901
+      },
+      "density": {
+        "scriptMs": 1109.250000000003,
+        "layoutMs": 4779.588000000001,
+        "styleMs": 5092.7480000000005,
+        "taskMs": 22178.100000000002,
+        "layouts": 256,
+        "reactRenderMs": 31.800000000017462
+      }
+    },
+    {
+      "label": "candidate",
+      "fixture": "20 cards, 80 GPU results per dropdown, Chromium, 4x CPU slowdown, Vite development mode",
+      "mount": {
+        "scriptMs": 4068.47,
+        "layoutMs": 360.79499999999996,
+        "nodes": 6659,
+        "cards": 20,
+        "matrices": 3
+      },
+      "navigation": {
+        "scriptMs": 266.3510000000002,
+        "layoutMs": 8.420000000000039,
+        "styleMs": 303.764,
+        "taskMs": 2009.346999999999,
+        "layouts": 9,
+        "reactRenderMs": 108.59999999991851
+      },
+      "scroll": {
+        "scriptMs": 33.55599999999992,
+        "layoutMs": 23.111999999999966,
+        "styleMs": 306.1170000000001,
+        "taskMs": 2662.787,
+        "layouts": 8,
+        "reactRenderMs": 0,
+        "railStyleWrites": 16,
+        "range": {
+          "start": 0,
+          "end": 558,
+          "max": 578
+        },
+        "frames": {
+          "p95Ms": 75.89999999999418,
+          "over32ms": 13
+        }
+      },
+      "search": {
+        "scriptMs": 919.8719999999998,
+        "layoutMs": 59.42800000000004,
+        "styleMs": 140.52999999999983,
+        "taskMs": 2916.616999999999,
+        "layouts": 15,
+        "reactRenderMs": 609.5999999999185
+      },
+      "density": {
+        "scriptMs": 175.10199999999986,
+        "layoutMs": 627.973,
+        "styleMs": 989.371,
+        "taskMs": 4880.453999999999,
+        "layouts": 34,
+        "reactRenderMs": 15.299999999959255
+      }
+    }
+  ]
+}

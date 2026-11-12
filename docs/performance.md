@@ -26,6 +26,27 @@ The implementation preserves result semantics, latest/baseline matching, density
 Built with the lockfile's Vite 8.0.16:
 
 - Baseline: one JavaScript bundle, 912.96 kB minified / 281.87 kB gzip.
-- Candidate: shell 439.15 kB / 142.23 kB gzip; shared chunk 110.22 kB / 37.24 kB gzip; IB route 267.57 kB / 78.65 kB gzip; RelVal route 105.07 kB / 29.94 kB gzip.
+- Candidate: shell 439.15 kB / 142.24 kB gzip; shared chunk 110.22 kB / 37.24 kB gzip; IB route 267.81 kB / 78.76 kB gzip; RelVal route 105.07 kB / 29.94 kB gzip.
 
 The shell's reduction is not the full IB-page reduction: its shared and route chunks must also load to display that page. No authenticated CERN response-time claim is made from fixture measurements.
+
+## Measured result
+
+All 61 unit tests, Chromium/Firefox layout and touch regressions, and the built-app progressive-loading/lazy-route smoke test passed in [the verification run](https://github.com/akritkbehera/cmssdt-ib/actions/runs/43258165532).
+
+Same fixture and runner, Chromium with 4x CPU slowdown, Vite development mode. One complete scenario run per revision; these are observations, not statistically established field estimates. Raw metrics and commit identifiers are in [performance-results.json](performance-results.json).
+
+| Metric | Baseline | Optimized |
+|---|---:|---:|
+| Initially mounted matrices (20 cards) | 20 | 3 |
+| Browser DOM node counter after mount | 69,415 | 6,659 |
+| Initial mount script time | 13,323 ms | 4,068 ms |
+| React render work: three navigation open/close cycles | 10,670 ms | 109 ms |
+| Dropdown open/search script time | 2,331 ms | 920 ms |
+| Layout time: four density switches | 4,780 ms | 628 ms |
+| Horizontal scroll p95 frame interval | 207 ms | 76 ms |
+| Scroll frames exceeding 32 ms, out of 39 intervals | 39 | 13 |
+
+Both revisions traversed the same actual scroll range, from 0 to 558 px. The p95 interval still exceeds a 16.7 ms frame budget in this deliberately stressed development fixture. The work removes the identified repeated-rendering/layout/data-loading costs; it does not establish a 60 FPS guarantee or measure authenticated CERN server latency.
+
+The production shell is about 49.5% smaller gzipped. Loading the complete IB route also requires the shared and IB chunks: approximately 258.2 kB gzip versus 281.9 kB before (about 8.4% smaller). Total application code across all routes is not reduced by the same percentage.
