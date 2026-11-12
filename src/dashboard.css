@@ -1267,7 +1267,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 
 /* Menus share result pills while the closed section toggles keep their icons. */
 .ib-test-dropdown {
-  min-width: min(360px, calc(100vw - 24px)); max-width: calc(100vw - 24px);
+  min-width: min(470px, calc(100vw - 24px)); max-width: calc(100vw - 24px);
   max-height: min(460px, 70dvh); overflow-y: auto; overflow-x: hidden; padding: 8px 0;
 }
 .ib-test-dropdown .ib-dropdown-result {
@@ -1309,3 +1309,28 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-workspace[data-density="compact"] .ib-test-dropdown .ib-dropdown-group { padding-block: 4px; }
 .ib-workspace[data-density="compact"] .ib-test-dropdown .ib-dropdown-baseline { padding-block: 4px; }
 .ib-workspace[data-density="compact"] .ib-test-dropdown .form-control { font-size: 12px; padding-block: 3px; }
+
+/* Reference proportions: single-line device rows and quiet configuration paths. */
+.ib-test-dropdown { border-radius: 16px; padding-block: 0; }
+.ib-test-dropdown .ib-dropdown-search { padding: 12px; margin: 0; }
+.ib-dropdown-search > div { border-radius: 12px !important; min-height: 42px; padding-inline: 12px !important; gap: 8px; }
+.ib-test-dropdown .ib-dropdown-search .form-control { padding-inline: 0; font-size: 14px; }
+.ib-test-dropdown .ib-dropdown-group {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 16px; line-height: 16px; text-transform: uppercase; letter-spacing: .04em;
+  font-size: 11px; border-block: 1px solid var(--ui-border);
+}
+.ib-test-dropdown .ib-dropdown-group > span:last-child { color: var(--ui-text); font-variant-numeric: tabular-nums; }
+.ib-test-dropdown .ib-dropdown-result { gap: 0 12px; }
+.ib-test-dropdown .ib-dropdown-device { min-width: 0; }
+.ib-test-dropdown .ib-dropdown-device-label {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-family: var(--ui-font-mono, ui-monospace, monospace);
+  font-size: var(--ib-menu-type); letter-spacing: -.02em; line-height: 1.35;
+}
+.ib-dropdown-device-label strong { font-weight: 700; color: var(--ui-text); }
+.ib-dropdown-device-path { font-weight: 500; color: var(--ui-text-secondary); }
+.ib-workspace[data-density="compact"] .ib-test-dropdown { padding-block: 0; }
+.ib-workspace[data-density="compact"] .ib-test-dropdown .ib-dropdown-search { padding: 10px; }
+.ib-workspace[data-density="compact"] .ib-dropdown-search > div { min-height: 34px; }
+.ib-workspace[data-density="compact"] .ib-test-dropdown .ib-dropdown-group { padding-block: 6px; line-height: 14px; }

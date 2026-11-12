@@ -1,7 +1,8 @@
+import {testDeviceLabel} from '../../Utils/testDeviceLabel';
 import RunningBadgeRing from './RunningBadgeRing';
 import React, {useState} from 'react';
 import {Dropdown, Form} from 'react-bootstrap';
-import {FaDatabase, FaMicrochip, FaSearch} from 'react-icons/fa';
+import {FaMicrochip, FaSearch} from 'react-icons/fa';
 import {SiNvidia, SiAmd} from 'react-icons/si';
 import {BsGpuCard} from 'react-icons/bs';
 import StatusDot from './StatusDot';
@@ -12,9 +13,13 @@ import {config} from '../../config';
 function Vendor({name, type}) {
   const vendor=type==='gpu' && (/nvidia/i.test(name)?'nvidia':/amd/i.test(name)?'amd':null);
   const Icon=vendor==='nvidia'?SiNvidia:vendor==='amd'?SiAmd:type==='gpu'?BsGpuCard:FaMicrochip;
-  // Strip only a vendor prefix when a meaningful device label remains.
-  const shortened=vendor ? name.replace(new RegExp('^'+vendor+'[ /:_-]*','i'),'').trim() : name;
-  return <span className="ib-dropdown-device"><Icon aria-hidden="true" /><span aria-label={name}>{shortened || name}</span></span>;
+  const {model,path}=testDeviceLabel(name,type);
+  return <span className="ib-dropdown-device" title={name}>
+    <Icon aria-hidden="true" />
+    <span className="ib-dropdown-device-label" aria-label={model+(path?'/'+path:'')}>
+      <strong>{model}</strong>{path&&<span className="ib-dropdown-device-path">/{path}</span>}
+    </span>
+  </span>;
 }
 
 export default function TestResultDropdown({tests={}, type, kind, ib, comparisons}) {
@@ -22,7 +27,7 @@ export default function TestResultDropdown({tests={}, type, kind, ib, comparison
   const isRelval=kind==='relvals', failureKey=isRelval?'num_failed':'num_fails';
   const state=testGroupState(tests,failureKey);
   const title=type==='rntuple'?'RNTuple':isRelval?'RelVals':'Test';
-  const entries=Object.entries(tests).filter(([key])=>key.toLowerCase().includes(search.toLowerCase()));
+  const entries=Object.entries(tests).filter(([key])=>[key, Object.values(testDeviceLabel(key,type)).join('/')].some(value=>value.toLowerCase().includes(search.toLowerCase())));
   const groups=[
     ['Failures',entries.filter(([,item])=>Number(item.details?.[failureKey])>0)],
     ['Warnings',entries.filter(([,item])=>!(Number(item.details?.[failureKey])>0)&&(Number(item.details?.known_failed)>0||Number(item.details?.num_warnings)>0||item.passed==='warning'))],
@@ -47,15 +52,15 @@ export default function TestResultDropdown({tests={}, type, kind, ib, comparison
       <StatusDot {...state} size={22}/><span>{title}</span>
     </Dropdown.Toggle>
     <Dropdown.Menu className="ib-test-dropdown">
-      <Form className="px-2 mb-2" onSubmit={event=>event.preventDefault()}>
+      <Form className="ib-dropdown-search" onSubmit={event=>event.preventDefault()}>
         <div className="d-flex align-items-center border rounded px-2"><FaSearch aria-hidden="true"/>
           <Form.Control size="sm" aria-label={'Search '+title+' results'} placeholder="Search tests..." value={search}
             onChange={event=>setSearch(event.target.value)} className="border-0 shadow-none"/>
         </div>
       </Form>
-      {hasBaseline && <p className="ib-dropdown-baseline">Compared with {context.previous.release_name}</p>}
+      {hasBaseline && <span className="visually-hidden">Compared with {context.previous.release_name}</span>}
       {groups.map(([label,items])=>items.length>0 && <React.Fragment key={label}>
-        <div className="ib-dropdown-group">{label} ({items.length})</div>
+        <div className="ib-dropdown-group"><span>{label}</span><span>{items.length}</span></div>
         {items.map(([key,item])=>{
           const resultState=testGroupState({item},failureKey);
           const status=resultState.status, running=resultState.running;
@@ -65,7 +70,9 @@ export default function TestResultDropdown({tests={}, type, kind, ib, comparison
           const count=Number.isFinite(numeric)&&numeric>0 ? (numeric>=1000?'1k+':numeric) : null;
           const delta=dropdownComparison(ib,context,type==='gpu'?'gpu_data':'other_data',kind,key,tests);
           const label=(running?'Running, ':'')+(status==='danger'?'Failed':status==='warning'?'Warnings':status==='success'?'Passed':'Unknown')+(count!==null?', '+numeric:'');
-          return <Dropdown.Item key={key} href={getUrl(item)} target="_blank" rel="noopener noreferrer" className="ib-dropdown-result">
+          return <Dropdown.Item key={key} href={getUrl(item)} target="_blank" rel="noopener noreferrer" className="ib-dropdown-result"
+            title={key+' — '+label+'. '+Object.entries(item.details||{}).filter(([name])=>['num_total','num_passed','num_failed','num_fails'].includes(name))
+              .map(([name,value])=>name.replace('num_','')+': '+value).join(' · ')+(delta?' · '+delta.detail+'. Previous IB: '+delta.baseline:'')}>
             <Vendor name={key} type={type}/>
             <span className="ib-dropdown-status">
               {['danger','warning','success'].includes(status)?<span className={'ib-status-marker ib-table-result-pill ib-status-'+status+(running?' is-running':'')}
@@ -80,8 +87,7 @@ export default function TestResultDropdown({tests={}, type, kind, ib, comparison
                   aria-label={Math.abs(metric.delta)+(metric.delta<0?' fewer failures':' more failures')+' than '+delta.baseline}>{metric.label}</span>)}
               </span>
             </span>
-            <small className="ib-dropdown-counts">{Object.entries(item.details||{}).filter(([name])=>['num_total','num_passed','num_failed','num_fails'].includes(name))
-              .map(([name,value])=>name.replace('num_','')+': '+value).join(' · ')}</small>
+
           </Dropdown.Item>;
         })}
       </React.Fragment>)}

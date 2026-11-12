@@ -413,6 +413,11 @@ try {
       const bounds=await menu.boundingBox();
       assert.ok(bounds.x>=-1 && bounds.x+bounds.width<=width+1,'dropdown stays within viewport');
       if(id==='gpu-qa-toggle') assert.equal(await marker.locator('.ib-status-count').innerText(),'3');
+      if(id==='gpu-relvals-toggle') assert.equal(await menu.locator('.ib-dropdown-device-label strong').first().innerText(),'NVIDIA_T4');
+      if(id==='gpu-qa-toggle') assert.equal(await menu.locator('.ib-dropdown-device-label strong').first().innerText(),'AMD_MI250');
+      assert.equal(await menu.locator('.ib-dropdown-counts').count(),0,'secondary totals stay out of the single-line rows');
+      assert.equal(await menu.locator('.ib-dropdown-device > svg').count(),1,'existing device logo remains visible');
+
       if(id==='rntuple-relvals-toggle') assert.equal(await marker.locator('.ib-status-count').innerText(),'12');
       const dimensions=()=>menu.locator('.ib-dropdown-result').first().evaluate(el=>{
         const badge=el.querySelector('.ib-table-result-pill'),count=badge.querySelector('.ib-status-count');
