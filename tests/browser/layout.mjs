@@ -258,13 +258,21 @@ try {
   const stageAfter = await continuous.locator('tbody .name-column').first().boundingBox();
   assert.ok(stageAfter.width < stageBefore.width && stageAfter.width >= 31 && stageAfter.width <= 34, 'scroll compresses the visible stage rail');
   assert.ok(Math.abs(stageBefore.x - stageAfter.x) <= 1, 'compressed stage rail stays pinned');
+  await continuous.evaluate(el=>{
+    const rail=el.querySelector('.name-column').getBoundingClientRect().width;
+    const left=el.getBoundingClientRect().left,current=el.scrollLeft;
+    const target=[...el.querySelectorAll('th.ib-config-header')].map(th=>current+th.getBoundingClientRect().left-left-rail)
+      .filter(x=>x>20&&x<el.scrollWidth-el.clientWidth-10).sort((a,b)=>Math.abs(a-current)-Math.abs(b-current))[0];
+    el.scrollLeft=target+4;
+  });
+  await phone.waitForTimeout(1000);
   const snapDistance = await continuous.evaluate(el => {
     const rail = el.querySelector('.name-column').getBoundingClientRect().width;
     const left = el.getBoundingClientRect().left;
     return Math.min(...[...el.querySelectorAll('th.ib-config-header')].map(th =>
       Math.abs(th.getBoundingClientRect().left - left - rail)));
   });
-  assert.ok(snapDistance < 2, 'continuous scrolling settles at an architecture boundary');
+  assert.ok(snapDistance < 2, 'continuous scrolling assists only when already near an architecture boundary');
 
   await phoneCard.getByRole('button', {name:'Single configuration',exact:true}).click();
   const railBefore = await phoneCard.locator('.ib-phone-stage-rail').boundingBox();

@@ -74,6 +74,23 @@ try {
     const scrollViewport=expanded.locator('.ib-table-responsive');
     const stage=scrollViewport.locator('tbody .name-column').first();
     const initialStage=await stage.boundingBox();
+    const centers=await expanded.locator('tbody .name-column').evaluateAll(cells=>cells.map(cell=>{
+      const icon=cell.querySelector('.type-label-mobile svg');
+      const rail=cell.getBoundingClientRect(),rect=icon.getBoundingClientRect();
+      return Math.abs(rect.left+rect.width/2-rail.left-rail.width/2);
+    }));
+    assert.ok(centers.every(error=>error<=1),'all stage icons, including linked RelVal, are centered');
+    await scrollViewport.scrollIntoViewIfNeeded();
+    await scrollViewport.evaluate(el=>{el.scrollLeft=0;});
+    await page.waitForTimeout(900);
+    const wheelRect=await scrollViewport.boundingBox();
+    await page.mouse.move(wheelRect.x+wheelRect.width-35,Math.min(wheelRect.y+75,800));
+    await page.mouse.wheel(24,0);
+    await page.waitForTimeout(1000);
+    assert.ok(await scrollViewport.evaluate(el=>el.scrollLeft)>=18,'a small trackpad gesture is retained rather than snapping back');
+    await scrollViewport.evaluate(el=>{el.scrollLeft=0;});
+    await page.waitForTimeout(900);
+
     // Exercise actual native touch input, not only scrollLeft assignment.
     if(engine==='chromium'){
       await scrollViewport.scrollIntoViewIfNeeded();

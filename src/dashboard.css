@@ -1438,3 +1438,15 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   .ib-section-controls .ib-section-pill { font-size: 11px !important; gap: 3px; padding-inline-end: 4px !important; }
   .ib-section-controls .ib-section-pill .ib-state-dot { --dot-size: 16px !important; }
 }
+
+@media (max-width: 767.98px) {
+  .ib-matrix-section .ib-comparison-matrix .name-column > a.ib-row-label-link {
+    justify-content: center !important;
+  }
+  .ib-matrix-section .ib-comparison-matrix .name-column .type-label-mobile {
+    width: 100%; justify-content: center;
+  }
+  .ib-matrix-section .ib-comparison-matrix .name-column .type-label-mobile > svg {
+    width: 17px; height: 17px; flex: none;
+  }
+}

@@ -56,7 +56,9 @@ export default function useMatrixScroll(containerRef, version) {
       const velocity=first&&last&&last.time>first.time?(last.x-first.x)/(last.time-first.time):0;
       const projected=start+Math.max(-36,Math.min(36,velocity*80));
       const end=stops.reduce((best,x)=>Math.abs(x-projected)<Math.abs(best-projected)?x:best,stops[0]);
-      if(Math.abs(end-start)<.75)return;
+      // Continuous mode only assists an already-near boundary. Forcing every
+      // small trackpad delta to the nearest column can undo the whole gesture.
+      if(Math.abs(end-start)<.75 || Math.abs(end-start)>12)return;
       if(reduced.matches){write(end);paint(end);return;}
       const began=performance.now(),duration=Math.min(700,420+Math.abs(end-start)*3);
       cancelAnimationFrame(paintFrame);paintFrame=undefined;
