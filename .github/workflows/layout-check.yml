@@ -32,3 +32,58 @@ jobs:
           done
           node tests/browser/layout.mjs
           IB_BROWSER=firefox node tests/browser/layout.mjs
+          npm run build:pages
+          npx vite preview --host 0.0.0.0 --port 5174 > /tmp/app-preview.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            curl -fsS http://localhost:5174/ > /dev/null && break
+            sleep 1
+          done
+          node tests/browser/app-smoke.mjs
+  performance:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Compare identical stress scenarios against the previous implementation
+        env:
+          PERF_BASELINE: fdefd1e58ea4ce50575a622f9257ffe1114fc5e8
+        run: |
+          npm ci
+          npm install --no-save --package-lock=false playwright@1.62.1
+          chown "$(id -u):$(id -g)" "$HOME"
+          git worktree add --detach /tmp/cmssdt-perf-baseline "$PERF_BASELINE"
+          cp tests/browser/fixture.jsx tests/browser/performance.mjs tests/browser/context.js /tmp/cmssdt-perf-baseline/tests/browser/
+          ln -s "$PWD/node_modules" /tmp/cmssdt-perf-baseline/node_modules
+          PERF_RESULTS="$PWD/performance-results"
+          cd /tmp/cmssdt-perf-baseline
+          npx vite --config tests/browser/vite.config.mjs > /tmp/perf-before.log 2>&1 &
+          PERF_SERVER_PID=$!
+          for attempt in $(seq 1 30); do
+            curl -fsS http://localhost:5173/tests/browser/index.html > /dev/null && break
+            sleep 1
+          done
+          PERF_LABEL=baseline PERF_OUTPUT="$PERF_RESULTS" node tests/browser/performance.mjs
+          kill "$PERF_SERVER_PID"
+          wait "$PERF_SERVER_PID" || true
+          cd "$GITHUB_WORKSPACE"
+          npx vite --config tests/browser/vite.config.mjs > /tmp/perf-after.log 2>&1 &
+          PERF_SERVER_PID=$!
+          trap 'kill "$PERF_SERVER_PID"; cat /tmp/perf-before.log /tmp/perf-after.log' EXIT
+          for attempt in $(seq 1 30); do
+            curl -fsS http://localhost:5173/tests/browser/index.html > /dev/null && break
+            sleep 1
+          done
+          PERF_LABEL=candidate PERF_OUTPUT="$PERF_RESULTS" node tests/browser/performance.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-results
+          path: performance-results

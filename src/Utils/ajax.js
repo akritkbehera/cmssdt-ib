@@ -1,3 +1,4 @@
+import {fetchBatch} from './fetchBatch.js';
 import axios from "axios";
 import wrapper from 'axios-cache-plugin';
 
@@ -42,8 +43,7 @@ function handleHttpError(error, onErrorCallback) {
 }
 
 export function getSingleFile({ fileUrl, onSuccessCallback, onErrorCallback }) {
-    return httpWrapper
-        .get(fileUrl)
+    return requestFile(fileUrl)
         .then((response) => {
             if (typeof onSuccessCallback === "function") {
                 onSuccessCallback(response);
@@ -53,70 +53,22 @@ export function getSingleFile({ fileUrl, onSuccessCallback, onErrorCallback }) {
         .catch((error) => handleHttpError(error, onErrorCallback));
 }
 
-// Helper to add a delay
-function sleepMS(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+// Concurrent consumers share the same in-flight request, including structure loads.
+const inFlight = new Map();
+function requestFile(url) {
+    if (!inFlight.has(url)) {
+        const request = httpWrapper.get(url).finally(() => inFlight.delete(url));
+        inFlight.set(url, request);
+    }
+    return inFlight.get(url);
 }
 
-export function getMultipleFiles({
-    fileUrlList,
-    onSuccessCallback = () => {},
-    onErrorCallback = () => {}
-}) {
-    fileUrlList = Array.isArray(fileUrlList) ? fileUrlList : [];
-
-    if (fileUrlList.length === 0) {
-        onSuccessCallback([]);
-        return Promise.resolve([]);
-    }
-
-    const concurrencyLimit = 2;
-    const delayMs = 100;
-
-    let index = 0;
-    let active = 0;
-    let completed = 0;
-    let hasFatalError = false;
-
-    const results = new Array(fileUrlList.length);
-
-    return new Promise((resolve, reject) => {
-        async function next() {
-            if (hasFatalError) return;
-
-            if (completed === fileUrlList.length && active === 0) {
-                onSuccessCallback(results);
-                resolve(results);
-                return;
-            }
-
-            while (active < concurrencyLimit && index < fileUrlList.length && !hasFatalError) {
-                const currentIndex = index++;
-                active++;
-
-                (async (i) => {
-                    await sleepMS(delayMs);
-
-                    try {
-                        const response = await httpWrapper.get(fileUrlList[i]);
-                        results[i] = response;
-                    } catch (error) {
-                        hasFatalError = true;
-                        handleHttpError(error, onErrorCallback);
-                        reject(error);
-                        return;
-                    } finally {
-                        active--;
-                        completed++;
-
-                        if (!hasFatalError) {
-                            next();
-                        }
-                    }
-                })(currentIndex);
-            }
-        }
-
-        next();
-    });
+export function getMultipleFiles({fileUrlList = [], onSuccessCallback = () => {}, onErrorCallback, onProgress, concurrency = 4, signal}) {
+    const urls = Array.isArray(fileUrlList) ? fileUrlList : [];
+    return fetchBatch(urls, requestFile, {concurrency, onProgress, signal})
+        .then(results => { onSuccessCallback(results); return results; })
+        .catch(error => {
+            if (error?.name === 'AbortError') throw error;
+            return handleHttpError(error, onErrorCallback);
+        });
 }

@@ -67,7 +67,7 @@ const STATIC_ANALYSIS_GROUP_NAMES = new Set([
 ]);
 const RUNTIME_ANALYSIS_GROUP_NAMES = new Set([ "Vtune", "RECO event loop", "Resources Piecharts"]);
 
-class StatusLabels extends Component {
+class StatusLabels extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {

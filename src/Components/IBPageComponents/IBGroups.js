@@ -1,3 +1,4 @@
+import {memoizeLast} from '../../Utils/memoizeLast';
 import { buildComparisonIndex } from "../../Utils/ibComparison";
 import IconButton from "../common/IconButton";
 import React, { Component } from 'react';
@@ -50,7 +51,7 @@ const getArchStateSignature = (activeArchs = {}) =>
         compiler: Array.isArray(activeArchs.compiler) ? [...activeArchs.compiler].sort() : []
     });
 
-class IBGroups extends Component {
+class IBGroups extends React.PureComponent {
     static propTypes = {
         data: PropTypes.array,
         releaseQue: PropTypes.string.isRequired,
@@ -139,7 +140,7 @@ class IBGroups extends Component {
             nextProps.releaseQue !== prevState.releaseQue ||
             nextArchsSignature !== prevState.activeArchsSignature
         ) {
-            const transformedData = groupAndTransformIBDataList(nextProps.data || []);
+            const transformedData = nextProps.data !== prevState.originalData ? groupAndTransformIBDataList(nextProps.data || []) : prevState.transformedData;
 
             return {
                 originalData: nextProps.data || [],
@@ -172,9 +173,11 @@ class IBGroups extends Component {
         const el = this.groupRefs[groupKey];
 
         if (el) {
-            const yOffset = -70;
-            const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
-            window.scrollTo({ top: y, behavior: 'smooth' });
+            el.querySelectorAll('.ib-deferred-matrix').forEach(matrix => matrix.dispatchEvent(new Event('ib:reveal')));
+            requestAnimationFrame(() => {
+                const y = el.getBoundingClientRect().top + window.pageYOffset - 70;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            });
             this.setState({ showNavigator: false });
         }
     };
@@ -263,7 +266,17 @@ class IBGroups extends Component {
 
     filterIBGroup = (group) => {
         if (!group || !Array.isArray(group)) return [];
-        return group.filter((item) => this.filterIBItem(item));
+        const filtered = group.filter((item) => this.filterIBItem(item));
+        return filtered.length === group.length ? group : filtered;
+    };
+
+    filteredCache = memoizeLast((transformedData, signature) => transformedData
+        .map(group => this.filterIBGroup(group)).filter(group => group.length > 0));
+    comparisonsCache = memoizeLast(data => buildComparisonIndex(data.flatMap(item => item.comparisons || [])));
+    collapseHandlers = new Map();
+    getCollapseHandler = key => {
+        if (!this.collapseHandlers.has(key)) this.collapseHandlers.set(key, () => this.toggleGroupCollapse(key));
+        return this.collapseHandlers.get(key);
     };
 
     getFilteredData = () => {
@@ -273,9 +286,7 @@ class IBGroups extends Component {
             return [];
         }
 
-        return transformedData
-            .map((group) => this.filterIBGroup(group))
-            .filter((group) => group && group.length > 0);
+        return this.filteredCache(transformedData, this.state.activeArchsSignature);
     };
 
     getGroupKey = (group, index) => {
@@ -392,6 +403,11 @@ class IBGroups extends Component {
             </div>
         );
     };
+
+    componentDidUpdate() {
+        const keys = new Set(this.getFilteredData().map((group,index) => this.getGroupKey(group,index)));
+        for (const key of this.collapseHandlers.keys()) if (!keys.has(key)) this.collapseHandlers.delete(key);
+    }
 
     renderPageLoader() {
         const { loadingText } = this.props;
@@ -564,14 +580,14 @@ class IBGroups extends Component {
         } = this.props;
 
         const filteredData = this.getFilteredData();
-        const comparisons = buildComparisonIndex((this.props.comparisonData || this.props.data || []).flatMap(item => item.comparisons || []));
+        const comparisons = this.comparisonsCache(this.props.comparisonData || this.props.data);
 
         const hasFilters =
             activeArchs.os?.length > 0 ||
             activeArchs.cpu?.length > 0 ||
             activeArchs.compiler?.length > 0;
 
-        if (loading) {
+        if (loading && !filteredData.length) {
             return this.renderPageLoader();
         }
 
@@ -620,6 +636,7 @@ class IBGroups extends Component {
 
         return (
             <div className="ib-card-list" style={{ position: 'relative' }}>
+                {loading && <p role="status" className="ib-progressive-loading">{this.props.loadingText} · showing available results</p>}
                 {this.renderCornerButtons()}
                 {this.renderNavigator(filteredData)}
 
@@ -654,7 +671,7 @@ class IBGroups extends Component {
                                         : ''
                                 }
                                 isCollapsed={isCollapsed}
-                                onToggleCollapse={() => this.toggleGroupCollapse(groupKey)}
+                                onToggleCollapse={this.getCollapseHandler(groupKey)}
                             />
                         </div>
                     );

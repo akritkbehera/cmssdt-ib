@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { fitMatrix } from '../../Utils/matrixFit';
 import { matrixFitConfig } from '../../config';
 
@@ -34,22 +34,35 @@ function measureBase(table, density, stageWidth, columnWidth, columnCount, twoCa
 }
 
 export default function useMatrixFit(containerRef, columnCount, contentVersion, onOverflow, options = matrixFitConfig) {
+  const measurements = useRef({version:null, bases:new Map()});
   useEffect(() => {
     const container = containerRef.current, table = container?.querySelector('table');
     if (!table || !columnCount) return;
     const workspace = container.closest('.ib-workspace');
     const card = container.closest('.ib-release-panel');
-    let frame, base, baseKey, lastKey, disposed = false;
+    let frame, base, baseKey, lastKey, disposed = false, nearby = true;
+    const cache=measurements.current;
+    if(cache.version!==contentVersion){cache.version=contentVersion;cache.bases.clear();}
+    const rect=container.getBoundingClientRect();
+    nearby=rect.top<window.innerHeight+700 && rect.bottom>-700 && rect.left<window.innerWidth+400 && rect.right>-400;
     const measure = () => {
       frame = undefined;
-      if (disposed || !container.clientWidth || !table.getClientRects().length) return;
+      if (disposed || !nearby || !container.clientWidth || !table.getClientRects().length) return;
       const styles = getComputedStyle(container.closest('.ib-matrix-section'));
       const columnWidth = Number(styles.getPropertyValue('--ib-column-units')) || 104;
       const stageWidth = Number(styles.getPropertyValue('--ib-stage-units')) || 88;
       const density = workspace?.dataset.density || 'comfortable';
       const twoCards = density === 'compact' && card?.dataset.prVisible === 'false' && window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)').matches;
       const nextBaseKey = `${density}:${columnWidth}:${stageWidth}:${twoCards}:${twoCards ? window.innerHeight + ':' + getComputedStyle(workspace).getPropertyValue('--ib-card-list-top') : ''}`;
-      if (!base || baseKey !== nextBaseKey) { base = measureBase(table, density, stageWidth, columnWidth, columnCount, twoCards); baseKey = nextBaseKey; }
+      if (!base || baseKey !== nextBaseKey) {
+        base=cache.bases.get(nextBaseKey);
+        if(!base){
+          base=measureBase(table,density,stageWidth,columnWidth,columnCount,twoCards);
+          if(cache.bases.size>=4)cache.bases.delete(cache.bases.keys().next().value);
+          cache.bases.set(nextBaseKey,base);
+        }
+        baseKey=nextBaseKey;
+      }
       if (!(base.height > 0)) return;
       const heightBudget = options.maxHeightPx ?? window.innerHeight * options.viewportHeightRatio;
       // Small screens retain readable base text inside a contained scroll viewport.
@@ -71,6 +84,12 @@ export default function useMatrixFit(containerRef, columnCount, contentVersion, 
     };
     const schedule = () => { if (!disposed && frame === undefined) frame = requestAnimationFrame(measure); };
     const invalidate = () => { base = undefined; lastKey = undefined; schedule(); };
+    const invalidateFonts = () => { cache.bases.clear(); invalidate(); };
+    const visibility=typeof IntersectionObserver==='undefined'?null:new IntersectionObserver(entries=>{
+      nearby=entries.some(entry=>entry.isIntersecting);
+      if(nearby)schedule();
+    },{rootMargin:'700px 400px'});
+    visibility?.observe(container);
     const observer = new ResizeObserver(schedule);
     observer.observe(container);
     const mutation = new MutationObserver(invalidate);
@@ -78,15 +97,15 @@ export default function useMatrixFit(containerRef, columnCount, contentVersion, 
     if (card) mutation.observe(card, { attributes: true, attributeFilter: ['data-pr-visible'] });
     const deviceQuery = window.matchMedia('(hover: none), (pointer: coarse)');
     deviceQuery.addEventListener('change', invalidate);
-    document.fonts?.addEventListener('loadingdone', invalidate);
+    document.fonts?.addEventListener('loadingdone', invalidateFonts);
     window.addEventListener('resize', schedule);
     document.fonts?.ready.then(() => { if (!disposed) invalidate(); });
     schedule();
     return () => {
       disposed = true; if (frame !== undefined) cancelAnimationFrame(frame);
-      observer.disconnect(); mutation.disconnect(); window.removeEventListener('resize', schedule);
+      observer.disconnect(); mutation.disconnect(); visibility?.disconnect(); window.removeEventListener('resize', schedule);
       deviceQuery.removeEventListener('change', invalidate);
-      document.fonts?.removeEventListener('loadingdone', invalidate);
+      document.fonts?.removeEventListener('loadingdone', invalidateFonts);
       properties.forEach(property => table.style.removeProperty(property));
       [...table.rows].forEach(row => { row.style.height = ''; });
       container.style.maxHeight = ''; delete table.dataset.fitPhase;

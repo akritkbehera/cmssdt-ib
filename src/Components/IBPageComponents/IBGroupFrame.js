@@ -1,3 +1,4 @@
+import DeferredMatrix from '../common/DeferredMatrix';
 import MatrixHelp from '../common/MatrixHelp';
 import ResultFilter from "../common/ResultFilter";
 import ComparisonContext from "../common/ComparisonContext";
@@ -287,7 +288,7 @@ class IBGroupFrame extends PureComponent {
                 {!isCollapsed && (
                     <Card.Body className="ib-release-panel-body">
                         {statusLabels}
-                        {comparisonTable}
+                        {comparisonTable && <DeferredMatrix>{comparisonTable}</DeferredMatrix>}
 
                         {showPullRequests && (
                             <Commits

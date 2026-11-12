@@ -20,7 +20,7 @@ import ResultDetails from "../common/ResultDetails";
 import ResultChangePreview from "../common/ResultChangePreview";
 import { configurationBuildState, familyBuildState, matchesResultFilter } from "../../Utils/buildStatus";
 import { tableTheme as THEME } from "../../styles/theme";
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, OverlayTrigger, Table, Tooltip } from "react-bootstrap";
 import {
@@ -344,19 +344,14 @@ const copyText = (text) => {
   }
 };
 
-const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resultFilter = 'all', onCountsChange, historyArchs, historyLatest = [] }) => {
+const EMPTY_LIST = Object.freeze([]);
+const EMPTY_COMPARISONS = new Map();
+const ComparisonTable = ({ data = EMPTY_LIST, comparisons = EMPTY_COMPARISONS, releaseQue, resultFilter = 'all', onCountsChange, historyArchs, historyLatest = EMPTY_LIST }) => {
   const historyWindow = useHistorySize();
   const [history, setHistory] = useState(null);
   const [showAllHistory, setShowAllHistory] = useState(false);
   const [historyFilter, setHistoryFilter] = useState('all');
   const [historyCounts, setHistoryCounts] = useState(null);
-  function openHistory(position) {
-    setShowAllHistory(false);
-    setHistoryFilter('all');
-    setHistoryCounts(null);
-    const builds = flavourHistory(data[position], comparisons.keys());
-    if (builds.length) setHistory({ anchor: data[position], builds, filters: extractInfoFromArchs(archsByIb[position].archs) });
-  }
   const flavourOptions = useMemo(() => history ? historyFlavours(history.anchor, comparisons.keys()) : [],
     [history?.anchor, comparisons]);
   const availableHistoryArchs = useMemo(() => history
@@ -379,14 +374,13 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     .filter(queue => !visibleHistoryBuilds.some(ib => ib.release_queue === queue)) : [];
   const [configuration, setConfiguration] = useState('');
   const [compareOnPhone, setCompareOnPhone] = useState(false);
-  const [inView, setInView] = useState(true);
   const sectionRef = useRef(null);
   const [copiedText, setCopiedText] = useState(null);
   const [hasOverflow, setHasOverflow] = useState(false);
   const tableContainer = useRef(null);
   const { getActiveArchsForQue = () => [], getColorsSchemeForQue = () => ({}) } = useShowArch();
 
-  const handleCopy = (e, text) => {
+  const handleCopy = useCallback((e, text) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -396,7 +390,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     setTimeout(() => {
       setCopiedText(null);
     }, 1500);
-  };
+  }, []);
 
   const activeArchs = getActiveArchsForQue(releaseQue);
   const configurationColors = getColorsSchemeForQue(releaseQue);
@@ -420,6 +414,12 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     [data, activeArchs, historyArchs]
   );
 
+  const openHistory = useCallback(position => {
+    setShowAllHistory(false); setHistoryFilter('all'); setHistoryCounts(null);
+    const builds = flavourHistory(data[position], comparisons.keys());
+    if (builds.length) setHistory({anchor:data[position], builds, filters:extractInfoFromArchs(archsByIb[position].archs)});
+  }, [data, comparisons, archsByIb]);
+  const {historyDays, historyBoundaries, configurations} = useMemo(() => {
   const historyDays = [];
   const historyBoundaries = new Map();
   if (historyArchs) {
@@ -438,6 +438,8 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
   const configurations = archsByIb.flatMap((item, position) => (item.archs || []).map(arch => ({
     key: JSON.stringify([item.name, arch]), position, arch, flavor: item.flavor
   })));
+    return {historyDays, historyBoundaries, configurations};
+  }, [data, archsByIb, historyArchs]);
   const selected = configurations.find(item => item.key === configuration) || configurations[0];
   const selectedIndex = configurations.indexOf(selected);
   const phoneRailId = React.useId();
@@ -461,7 +463,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     let visible = true;
     const update = () => {
       const active = visible && !document.hidden;
-      setInView(active);
+      sectionRef.current.dataset.inView = String(active);
       element.style.setProperty('--ib-motion-state', active ? 'running' : 'paused');
     };
     const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; update(); });
@@ -474,6 +476,7 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
   useMatrixFit(tableContainer, configurations.length, matrixLayout, setHasOverflow);
   useMatrixScroll(tableContainer, matrixLayout);
 
+  const {matrix, mobileCells, counts, hiddenStages} = useMemo(() => {
   const mobileCells = [];
   function renderCell(cellInfo, key) {
     const [stage, position] = key.split('-');
@@ -1246,10 +1249,13 @@ const ComparisonTable = ({ data = [], comparisons = new Map(), releaseQue, resul
     return React.cloneElement(node, {}, hidePassingRows(node.props.children));
   };
   if (hiddenStages.size) matrix = hidePassingRows(matrix);
+    return {matrix, mobileCells, counts, hiddenStages};
+  }, [data, comparisons, archsByIb, resultFilter, configurationColors, que, date, historyArchs,
+    historyLatest, copiedText, hasOverflow, openHistory, handleCopy, configurations, historyDays, historyBoundaries]);
   useEffect(() => { onCountsChange?.(counts); },
     [onCountsChange, counts.success, counts.danger, counts.warning, counts.secondary, counts.info]);
   return (
-    <section ref={sectionRef} className="ib-matrix-section" data-in-view={inView} data-result-filter={resultFilter} aria-label="Build test matrix">
+    <section ref={sectionRef} className="ib-matrix-section" data-in-view="true" data-result-filter={resultFilter} aria-label="Build test matrix">
       {resultFilter !== 'all' && <p className="visually-hidden" role="status">{resultFilter === 'issues' ? 'Failures and warnings' : resultFilter === 'danger' ? 'Failures' : resultFilter === 'warning' ? 'Warnings' : 'Passed results'} highlighted. Fully passing stages are hidden.</p>}
       {!historyArchs && <div className="ib-phone-controls">
         {!compareOnPhone && <div className="ib-phone-column-navigation">
@@ -1409,4 +1415,4 @@ ComparisonTable.propTypes = {
   releaseQue: PropTypes.string.isRequired
 };
 
-export default ComparisonTable;
+export default React.memo(ComparisonTable);

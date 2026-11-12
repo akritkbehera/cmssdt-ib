@@ -1,13 +1,13 @@
 import {testDeviceLabel} from '../../Utils/testDeviceLabel';
 import RunningBadgeRing from './RunningBadgeRing';
-import React, {useState} from 'react';
+import React, {useState, useMemo} from 'react';
 import {Dropdown, Form} from 'react-bootstrap';
 import {FaMicrochip, FaSearch} from 'react-icons/fa';
 import {SiNvidia, SiAmd} from 'react-icons/si';
 import {BsGpuCard} from 'react-icons/bs';
 import StatusDot from './StatusDot';
 import {testGroupState} from '../../Utils/buildStatus';
-import {dropdownComparison} from '../../Utils/dropdownComparison';
+import {buildDropdownComparisons} from '../../Utils/dropdownComparison';
 import {config} from '../../config';
 
 function Vendor({name, type}) {
@@ -24,17 +24,25 @@ function Vendor({name, type}) {
 
 export default function TestResultDropdown({tests={}, type, kind, ib, comparisons}) {
   const [search,setSearch]=useState('');
+  const [open,setOpen]=useState(false);
   const isRelval=kind==='relvals', failureKey=isRelval?'num_failed':'num_fails';
-  const state=testGroupState(tests,failureKey);
-  const title=type==='rntuple'?'RNTuple':isRelval?'RelVals':'Test';
-  const entries=Object.entries(tests).filter(([key])=>[key, Object.values(testDeviceLabel(key,type)).join('/')].some(value=>value.toLowerCase().includes(search.toLowerCase())));
-  const groups=[
-    ['Failures',entries.filter(([,item])=>Number(item.details?.[failureKey])>0)],
-    ['Warnings',entries.filter(([,item])=>!(Number(item.details?.[failureKey])>0)&&(Number(item.details?.known_failed)>0||Number(item.details?.num_warnings)>0||item.passed==='warning'))],
-    ['Other results',entries.filter(([,item])=>!(Number(item.details?.[failureKey])>0)&&!(Number(item.details?.known_failed)>0||Number(item.details?.num_warnings)>0||item.passed==='warning'))]
-  ];
+  const state=useMemo(()=>testGroupState(tests,failureKey),[tests,failureKey]);
   const context=comparisons?.get(ib);
-  const hasBaseline = Object.keys(tests).some(key => dropdownComparison(ib,context,type==='gpu'?'gpu_data':'other_data',kind,key,tests));
+  const deltas=useMemo(()=>buildDropdownComparisons(ib,context,type==='gpu'?'gpu_data':'other_data',kind,tests),[ib,context,type,kind,tests]);
+  const records=useMemo(()=>Object.entries(tests).map(([key,item])=>({key,item,search:[key,Object.values(testDeviceLabel(key,type)).join('/')].join(' ').toLowerCase()})),[tests,type]);
+  const title=type==='rntuple'?'RNTuple':isRelval?'RelVals':'Test';
+  const groups=useMemo(()=>{
+    const entries=records.filter(row=>row.search.includes(search.toLowerCase())).map(({key,item})=>[key,item]);
+    const groups=[['Failures',[]],['Warnings',[]],['Other results',[]]];
+    for(const entry of entries){
+      const details=entry[1].details||{};
+      const index=Number(details[failureKey])>0?0:Number(details.known_failed)>0||Number(details.num_warnings)>0||entry[1].passed==='warning'?1:2;
+      groups[index][1].push(entry);
+    }
+    return groups;
+  },[records,search,failureKey]);
+  const hasBaseline=deltas.size>0;
+  const hasResults=groups.some(([,items])=>items.length);
   if(!Object.keys(tests).length)return null;
   const getUrl=item=>{
     if(isRelval){
@@ -47,7 +55,7 @@ export default function TestResultDropdown({tests={}, type, kind, ib, comparison
     if(item.file==='not-ready')return config.urls.scramDetailUrl+item.arch+';'+item.release_name;
     return config.urls.buildOrUnitTestUrl+item.file.split('/').slice(4,9).join('/')+'?utests/'+(type==='gpu'?'gpu':'other')+'/'+encodeURIComponent(type==='gpu'?item.gpu:item.other);
   };
-  return <Dropdown className="d-inline-block me-1" autoClose="outside">
+  return <Dropdown className="d-inline-block me-1" autoClose="outside" show={open} onToggle={setOpen}>
     <Dropdown.Toggle variant="light" size="sm" id={type+'-'+kind+'-toggle'} className="ib-section-pill">
       <StatusDot {...state} size={22}/><span>{title}</span>
     </Dropdown.Toggle>
@@ -59,7 +67,7 @@ export default function TestResultDropdown({tests={}, type, kind, ib, comparison
         </div>
       </Form>
       {hasBaseline && <span className="visually-hidden">Compared with {context.previous.release_name}</span>}
-      {groups.map(([label,items])=>items.length>0 && <React.Fragment key={label}>
+      {open && groups.map(([label,items])=>items.length>0 && <React.Fragment key={label}>
         <div className="ib-dropdown-group"><span>{label}</span><span>{items.length}</span></div>
         {items.map(([key,item])=>{
           const resultState=testGroupState({item},failureKey);
@@ -68,7 +76,7 @@ export default function TestResultDropdown({tests={}, type, kind, ib, comparison
           const warnings=Number(item.details?.known_failed || item.details?.num_warnings || 0);
           const numeric=status==='danger'?failed:status==='warning'?warnings:isRelval&&status==='success'?Number(item.details?.num_passed):null;
           const count=Number.isFinite(numeric)&&numeric>0 ? numeric : null;
-          const delta=dropdownComparison(ib,context,type==='gpu'?'gpu_data':'other_data',kind,key,tests);
+          const delta=deltas.get(key);
           const label=(running?'Running, ':'')+(status==='danger'?'Failed':status==='warning'?'Warnings':status==='success'?'Passed':'Unknown')+(count!==null?', '+numeric:'');
           return <Dropdown.Item key={key} href={getUrl(item)} target="_blank" rel="noopener noreferrer" className="ib-dropdown-result"
             title={key+' — '+label+'. '+Object.entries(item.details||{}).filter(([name])=>['num_total','num_passed','num_failed','num_fails'].includes(name))
@@ -91,7 +99,7 @@ export default function TestResultDropdown({tests={}, type, kind, ib, comparison
           </Dropdown.Item>;
         })}
       </React.Fragment>)}
-      {!entries.length&&<Dropdown.Item disabled>No matching tests</Dropdown.Item>}
+      {!hasResults&&<Dropdown.Item disabled>No matching tests</Dropdown.Item>}
     </Dropdown.Menu>
   </Dropdown>;
 }

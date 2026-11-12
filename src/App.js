@@ -1,15 +1,12 @@
-import React, { Component } from 'react';
+import React, { Component, lazy, Suspense } from 'react';
 import './App.css';
-import IBLayoutWrapper from './Components/IBLayoutWrapper';
-import RelValLayoutWrapper from './Components/RelValLayoutWrapper';
+const IBLayoutWrapper = lazy(() => import('./Components/IBLayoutWrapper'));
+const RelValRoute = lazy(() => import('./Components/RelValRoute'));
 import { Routes, Route, Navigate } from "react-router-dom";
 import { config } from './config';
 import { getSingleFile } from "./Utils/ajax";
 import { Container } from "react-bootstrap";
-import { RelValProvider } from './Stores/RelValStore';
 import { ShowArchProvider } from './context/ShowArchContext';
-import { CommandProvider } from './context/CommandContext';
-import { ExitCodeProvider } from './context/ExitCodeContext';
 
 
 const { urls } = config;
@@ -58,15 +55,13 @@ class App extends Component {
 
   render() {
     if (this.state.structure.all_prefixes.length === 0) {
-      return <div />;
+      return <div role="status" className="p-3">Loading dashboard…</div>;
     }
 
     // WRAP EVERYTHING IN PROVIDERS
     return (
-      <ExitCodeProvider>
-        <CommandProvider>
-          <ShowArchProvider>
-            <RelValProvider>
+      <ShowArchProvider structure={this.state.structure}>
+        <Suspense fallback={<div role="status" className="p-3">Loading view…</div>}>
               <Routes>
                 <Route
                   path="/"
@@ -83,17 +78,15 @@ class App extends Component {
                 />
                 <Route
                   path="/relVal/:que/:date"
-                  element={<RelValLayoutWrapper />}
+                  element={<RelValRoute />}
                 />
                 <Route
                   path="*"
                   element={App.containerWrapper(App.errorWrongRoute)}
                 />
               </Routes>
-            </RelValProvider>
-          </ShowArchProvider>
-        </CommandProvider>
-      </ExitCodeProvider>
+        </Suspense>
+      </ShowArchProvider>
     );
   }
 }

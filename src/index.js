@@ -9,9 +9,6 @@ import { HashRouter } from 'react-router-dom';
 import App from './App';
 import { unregister } from './registerServiceWorker';
 
-import { ShowArchProvider } from './context/ShowArchContext';
-import { CommandProvider } from './context/CommandContext';
-import { RelValProvider } from './Stores/RelValStore';
 import './dashboard.css';
 
 const container = document.getElementById('root');
@@ -20,13 +17,7 @@ const root = createRoot(container);
 root.render(
   <React.StrictMode>
     <HashRouter>
-      <RelValProvider>
-        <ShowArchProvider>
-          <CommandProvider>
-            <App />
-          </CommandProvider>
-        </ShowArchProvider>
-      </RelValProvider>
+      <App />
     </HashRouter>
   </React.StrictMode>
 );

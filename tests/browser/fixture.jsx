@@ -15,7 +15,8 @@ import {buildComparisonIndex} from '../../src/Utils/ibComparison';
 
 const normal = 'el9_amd64_gcc14';
 const flavors = ['', 'ASAN', 'CLANG', 'DBG', 'DEVEL', 'MULTIARCHS', 'NONLTO', 'ROOT642', 'ROOT6', 'UBSAN'];
-const times = ['2026-11-09-2300','2026-11-09-1100','2026-11-08-2300','2026-11-08-1100','2026-11-07-2300'];
+const performanceMode=typeof location!=='undefined' && new URLSearchParams(location.search).has('performance');
+const times = performanceMode ? Array.from({length:20},(_,i)=>'2026-11-'+String(30-i).padStart(2,'0')+'-2300') : ['2026-11-09-2300','2026-11-09-1100','2026-11-08-2300','2026-11-08-1100','2026-11-07-2300'];
 export const groups = times.map((time, group) => flavors.map((flavor, i) => {
   const queue = `CMSSW_20_1_${flavor ? flavor+'_' : ''}X`;
   const archs = i===0 ? ['el8_amd64_gcc14','el9_aarch64_gcc14',normal] : i===1 ? [normal,'el9_amd64_gcc15'] : i===8 ? ['el9_aarch64_gcc14',normal] : [normal];
@@ -48,6 +49,14 @@ if (typeof location !== 'undefined' && new URLSearchParams(location.search).has(
     ib.other_data={relvals:{'rntuple/cpu':result('other','rntuple/cpu',time===0?0:2,'relvals')}};
   });
 }
+if(performanceMode){
+  groups.forEach(group=>{
+    const ib=group[0];
+    ib.gpu_data={relvals:Object.fromEntries(Array.from({length:80},(_,i)=>['NVIDIA_GPU'+i+'/el9_amd64_gcc14',{
+      arch:normal,gpu:'gpu'+i,release_name:ib.release_name,file:'fixture.log',done:true,passed:false,details:{num_failed:2,num_passed:10}
+    }]))};
+  });
+}
 const comparisons = buildComparisonIndex(groups.flat());
 function FixtureCard({group}) {
   const [collapsed, setCollapsed] = useState(false);
@@ -70,5 +79,9 @@ const navigatorFixture = <HashRouter>
       showAllPullRequests={false} />
   </DashboardDensity>
 </HashRouter>;
-if (typeof document !== 'undefined') createRoot(document.getElementById('root')).render(
-  new URLSearchParams(location.search).has('navigator') ? navigatorFixture : fixture);
+if (typeof document !== 'undefined') {
+  const view=new URLSearchParams(location.search).has('navigator') ? navigatorFixture : fixture;
+  window.__ibProfile=[];
+  createRoot(document.getElementById('root')).render(performanceMode ?
+    <React.Profiler id="dashboard" onRender={(id,phase,duration)=>window.__ibProfile.push({phase,duration})}>{view}</React.Profiler> : view);
+}

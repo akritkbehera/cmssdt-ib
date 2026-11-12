@@ -1,3 +1,4 @@
+import {memoizeLast} from '../Utils/memoizeLast';
 import DashboardDensity from "./common/DashboardDensity";
 import React, { Component } from 'react';
 import _ from 'underscore';
@@ -35,6 +36,7 @@ class IBLayout extends Component {
         this.boundGetNavigationHeight = this.getNavigationHeight.bind(this);
         this.lastRequestedIbListSignature = "";
         this._isMounted = false;
+        this.requestGeneration = 0;
 
         this.state = {
             nameList: [],
@@ -77,6 +79,8 @@ class IBLayout extends Component {
 
     componentWillUnmount() {
         this._isMounted = false;
+        this.requestGeneration++;
+        this.pendingBatch?.abort();
         window.removeEventListener('resize', this.boundGetNavigationHeight);
     }
 
@@ -109,6 +113,9 @@ class IBLayout extends Component {
     }
 
     getData(ibList) {
+        const generation = ++this.requestGeneration;
+        this.pendingBatch?.abort();
+        this.pendingBatch = new AbortController();
         if (!ibList || ibList.length === 0) {
             this.setState((prevState) => {
                 const updates = {
@@ -187,10 +194,21 @@ class IBLayout extends Component {
             };
         });
 
+        const receive = responsesList => {
+            if (!this._isMounted || generation !== this.requestGeneration) return;
+            responsesList.forEach((response, index) => {
+                if (response?.data) ibDataCache[missingNames[index]] = {data:response.data, cachedAt:Date.now()};
+            });
+            const mergedData=ibList.map(name=>ibDataCache[name]?.data).filter(Boolean);
+            this.setState(previous => previous.dataList.length===mergedData.length && previous.dataList.every((item,i)=>item===mergedData[i])
+                ? null : {dataList:mergedData});
+        };
         getMultipleFiles({
             fileUrlList: missingNames.map((name) => urls.dataDir + name + '.json'),
+            signal: this.pendingBatch.signal,
+            onProgress: receive,
             onSuccessCallback: (responsesList) => {
-                if (!this._isMounted) return;
+                if (!this._isMounted || generation !== this.requestGeneration) return;
 
                 responsesList.forEach((response, index) => {
                     const name = missingNames[index];
@@ -231,7 +249,7 @@ class IBLayout extends Component {
                 });
             },
             onErrorCallback: (error) => {
-                if (!this._isMounted) return;
+                if (!this._isMounted || generation !== this.requestGeneration) return;
 
                 const status = error?.response?.status;
                 const isUnauthorized = status === 401;
@@ -244,7 +262,7 @@ class IBLayout extends Component {
                     isNetworkError
                 });
             }
-        });
+        }).catch(() => { /* Request errors are represented by the callbacks; cancellation is silent. */ });
     }
 
     updateNameListToShow = (newNameList) => {
@@ -257,10 +275,11 @@ class IBLayout extends Component {
         });
     };
 
+    visibleData = memoizeLast((dataList, names) => !names?.length ? dataList : dataList.filter(item => names.includes(item.release_name)));
+
     filterListToShow() {
         const { nameListToShow, dataList } = this.state;
-        if (!nameListToShow || nameListToShow.length === 0) return dataList;
-        return _.filter(dataList, (item) => _.contains(nameListToShow, item.release_name));
+        return this.visibleData(dataList, nameListToShow);
     }
 
     getNavigationHeight() {

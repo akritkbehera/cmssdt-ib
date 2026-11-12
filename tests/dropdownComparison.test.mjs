@@ -26,3 +26,15 @@ test('RNTuple prefix maps to original key without crossing sections',()=>{
   const ctx={latest:true,previous:{...ib,release_name:'previous',other_data:{relvals:{'rntuple/cpu':old}}}};
   assert.equal(dropdownComparison(ib,ctx,'other_data','relvals','cpu',current).metrics[0].delta,-3);
 });
+
+test('indexed lookup retains exact matching and ambiguity suppression across many devices',async()=>{
+  const {buildDropdownComparisons}=await import('../src/Utils/dropdownComparison.js');
+  const current=Object.fromEntries(Array.from({length:100},(_,i)=>['GPU'+i,item(2,{gpu:'gpu'+i})]));
+  const old=Object.fromEntries(Array.from({length:100},(_,i)=>['GPU'+i,item(4,{gpu:'gpu'+i})]));
+  const deltas=buildDropdownComparisons(ib,{latest:true,previous:{...previous,gpu_data:{relvals:old}}},'gpu_data','relvals',current);
+  assert.equal(deltas.size,100);
+  assert.ok([...deltas.values()].every(delta=>delta.metrics[0].delta===-2));
+  const duplicate={...current,duplicate:current.GPU0};
+  const ambiguous=buildDropdownComparisons(ib,{latest:true,previous:{...previous,gpu_data:{relvals:old}}},'gpu_data','relvals',duplicate);
+  assert.equal(ambiguous.has('GPU0'),false);
+});

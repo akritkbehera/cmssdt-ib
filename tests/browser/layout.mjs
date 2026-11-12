@@ -15,6 +15,8 @@ try {
     });
     await page.goto('http://localhost:5173/tests/browser/index.html');
     await page.locator('.ib-release-panel').first().waitFor();
+    // Geometry regression covers every card, including intentionally deferred ones.
+    await page.evaluate(()=>document.querySelectorAll('.ib-deferred-matrix').forEach(el=>el.dispatchEvent(new Event('ib:reveal'))));
     const metrics = () => page.evaluate(() => {
       const cards=[...document.querySelectorAll('.ib-release-panel')];
       return {cards:cards.map(card=>{

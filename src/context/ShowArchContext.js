@@ -20,6 +20,7 @@ export const ShowArchActionTypes = {
 const initialState = {
   emptyConfig: { os: [], cpu: [], compiler: [] },
   queConfig: {},
+  emptyColors: Object.freeze({}),
 };
 
 // -----------------------------
@@ -32,10 +33,9 @@ function showArchReducer(state, action) {
 
     case ShowArchActionTypes.SET_ACTIVE_ARCHS: {
       const { releaseQue, field, activeValues } = action.payload;
-      const newQueConfig = { ...state.queConfig };
-      if (newQueConfig[releaseQue]) {
-        newQueConfig[releaseQue].activeArchs[field] = activeValues;
-      }
+      const previous = state.queConfig[releaseQue];
+      if (!previous) return state;
+      const newQueConfig = {...state.queConfig, [releaseQue]:{...previous, activeArchs:{...previous.activeArchs, [field]:activeValues}}};
       return { ...state, queConfig: newQueConfig };
     }
 
@@ -56,16 +56,16 @@ const ShowArchContext = createContext();
 // -----------------------------
 // Provider
 // -----------------------------
-export function ShowArchProvider({ children }) {
+export function ShowArchProvider({ children, structure: initialStructure }) {
   const [state, dispatch] = useReducer(showArchReducer, initialState);
 
   // Load data initially
   useEffect(() => {
     getMultipleFiles({
-      fileUrlList: [urls.releaseStructure, urls.latestIBSummary],
+      fileUrlList: initialStructure ? [urls.latestIBSummary] : [urls.releaseStructure, urls.latestIBSummary],
       onSuccessCallback: function (responseList) {
-        const structureData = responseList[0].data;
-        const ibSummary = responseList[1].data;
+        const structureData = initialStructure || responseList[0].data;
+        const ibSummary = responseList[initialStructure ? 0 : 1].data;
         const { all_prefixes, all_release_queues } = structureData;
         const { prod_archs } = ibSummary;
 
@@ -127,7 +127,7 @@ export function ShowArchProvider({ children }) {
         dispatch({ type: ShowArchActionTypes.LOAD_ARCHS, payload: configState });
       },
     });
-  }, []);
+  }, [initialStructure]);
 
   // -----------------------------
   // Helper functions for components
@@ -150,8 +150,8 @@ export function ShowArchProvider({ children }) {
   };
 
   const getColorsSchemeForQue = (releaseQue) => {
-    if (!state.queConfig[releaseQue]) return {};
-    return state.queConfig[releaseQue].colorCoding || {};
+    if (!state.queConfig[releaseQue]) return state.emptyColors;
+    return state.queConfig[releaseQue].colorCoding || state.emptyColors;
   };
 
   return (

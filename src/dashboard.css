@@ -1334,3 +1334,10 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-workspace[data-density="compact"] .ib-test-dropdown .ib-dropdown-search { padding: 10px; }
 .ib-workspace[data-density="compact"] .ib-dropdown-search > div { min-height: 34px; }
 .ib-workspace[data-density="compact"] .ib-test-dropdown .ib-dropdown-group { padding-block: 6px; line-height: 14px; }
+
+/* Offscreen matrices reserve space until first entry; mounted matrices retain their state. */
+.ib-matrix-placeholder { height: 350px; background: var(--ui-surface); }
+.ib-workspace[data-density="compact"] .ib-matrix-placeholder {
+  height: clamp(220px, calc((100dvh - var(--ib-card-list-top, 100px)) / 2 - 90px), 350px);
+}
+.ib-progressive-loading { padding: 4px 12px; margin: 0; font-size: 12px; color: var(--ui-text-secondary); }
