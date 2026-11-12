@@ -1341,3 +1341,34 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   height: clamp(220px, calc((100dvh - var(--ib-card-list-top, 100px)) / 2 - 90px), 350px);
 }
 .ib-progressive-loading { padding: 4px 12px; margin: 0; font-size: 12px; color: var(--ui-text-secondary); }
+
+/* Phone density is independent of the desktop two-card height budget. */
+@media (max-width: 767.98px) {
+  .ib-phone-matrix { grid-template-columns: 56px minmax(0, 1fr); }
+  .ib-phone-stage-rail .name-column { text-align: center !important; padding-inline: 4px !important; }
+  .ib-phone-stage-icon { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 44px; }
+  .ib-phone-stage-icon svg { width: 17px; height: 17px; }
+  .ib-phone-stage-rail .ib-stage-corner { align-items: center !important; justify-content: center; width: 100%; }
+  .ib-matrix-section .type-label-desktop { display: none !important; }
+  .ib-matrix-section .type-label-mobile { display: inline-flex !important; align-items: center; justify-content: center; }
+  .ib-matrix-section .table .name-column { width: 56px; min-width: 56px; }
+  .ib-workspace[data-density="compact"] .ib-phone-matrix { grid-template-columns: 52px minmax(0, 1fr); }
+  .ib-workspace[data-density="compact"] .ib-phone-results .ib-phone-column-table tbody tr,
+  .ib-workspace[data-density="compact"] .ib-phone-results .ib-phone-column-table tbody td,
+  .ib-workspace[data-density="compact"] .ib-phone-results .ib-phone-column-table tbody th { height: 44px !important; padding-block: 0 !important; }
+  .ib-workspace[data-density="compact"] .ib-phone-results .ib-phone-column-table .ib-family-header { height: 30px !important; }
+  .ib-workspace[data-density="compact"] .ib-phone-results .ib-phone-column-table .ib-config-header { height: 72px !important; }
+  .ib-workspace[data-density="compact"] .ib-phone-results .ib-phone-column-table .ib-config-content { height: 66px; }
+  .ib-workspace[data-density="compact"] .ib-phone-results .ib-phone-stage-rail .ib-phone-rail-heading { height: 102px; }
+  .ib-workspace[data-density="compact"] .ib-phone-column-position { padding-block: 2px 4px; margin: 0; }
+  .ib-workspace[data-density="compact"] .ib-section-controls { gap: 4px !important; padding-block: 4px !important; }
+  .ib-workspace[data-density="compact"] .ib-release-panel-header { padding-block: 6px; gap: 4px; }
+  .ib-workspace[data-density="compact"] .ib-phone-controls { padding-block: 4px; gap: 4px; }
+  .ib-workspace[data-density="compact"] .ib-history-body > p { margin-bottom: 8px; }
+  .ib-workspace[data-density="compact"] .ib-history-architectures { margin-bottom: 8px; }
+}
+@media (max-width: 767.98px) {
+  .ib-workspace[data-density="compact"] .ib-phone-results .ib-phone-column-table .ib-config-header { padding-block: 3px !important; }
+  .ib-workspace[data-density="compact"] .ib-phone-results .ib-phone-column-table .ib-family-header { padding-block: 2px !important; }
+  .ib-workspace[data-density="compact"] .ib-phone-column-table .ib-family-header .flavor-card-wrapper { min-height: 0; }
+}

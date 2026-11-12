@@ -32,6 +32,8 @@ jobs:
           done
           node tests/browser/layout.mjs
           IB_BROWSER=firefox node tests/browser/layout.mjs
+          node tests/browser/mobile-density.mjs
+          IB_BROWSER=firefox node tests/browser/mobile-density.mjs
           npm run build:pages
           npx vite preview --host 0.0.0.0 --port 5174 > /tmp/app-preview.log 2>&1 &
           for attempt in $(seq 1 30); do
@@ -39,6 +41,11 @@ jobs:
             sleep 1
           done
           node tests/browser/app-smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-responsive-screenshots
+          path: mobile-review
   performance:
     runs-on: ubuntu-latest
     container:

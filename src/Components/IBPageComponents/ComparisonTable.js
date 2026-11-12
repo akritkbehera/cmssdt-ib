@@ -1300,10 +1300,10 @@ const ComparisonTable = ({ data = EMPTY_LIST, comparisons = EMPTY_COMPARISONS, r
           <div className="ib-phone-matrix">
             <Table className="ib-phone-stage-rail ib-phone-column-table mb-0 align-middle" style={{tableLayout:'fixed', width:'100%'}}>
               <thead><tr><th className="name-column ib-phone-rail-heading">
-                <span className="ib-stage-corner"><span>Stage</span><small>Config →</small></span>
+                <span className="ib-stage-corner" title="Configuration"><FaTools aria-hidden="true"/><span className="visually-hidden">Stage / configuration</span></span>
               </th></tr></thead>
               <tbody>{mobileCells.filter(cell => cell.position === selected.position && cell.arch === selected.arch && !hiddenStages.has(cell.stage)).map(cell =>
-                <tr key={cell.stage}><th id={`${phoneRailId}-${cell.stage}`} className="name-column" scope="row">{rowLabelConfig[cell.stage]?.text || cell.stage}</th></tr>)}</tbody>
+                <tr key={cell.stage}><th id={`${phoneRailId}-${cell.stage}`} className="name-column" scope="row" aria-label={rowLabelConfig[cell.stage]?.text || cell.stage} title={rowLabelConfig[cell.stage]?.text || cell.stage}><span className="ib-phone-stage-icon" aria-hidden="true">{rowLabelConfig[cell.stage]?.icon}</span><span className="visually-hidden">{rowLabelConfig[cell.stage]?.text || cell.stage}</span></th></tr>)}</tbody>
             </Table>
           <div className="ib-phone-carousel-viewport" tabIndex={0} role="group"
             aria-label="Configuration carousel. Use Left and Right arrow keys.">
