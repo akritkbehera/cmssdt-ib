@@ -376,7 +376,8 @@ try {
   const ringSample=()=>runningPill.evaluate(el=>{
     const svg=el.querySelector('.ib-running-badge-ring'),base=svg.querySelector('.ib-running-ring-base'),streak=svg.querySelector('.ib-running-ring-streak');
     const r=el.getBoundingClientRect(),b=base.getBoundingClientRect();
-    return {badge:[r.width,r.height],ring:[b.width,b.height],fill:getComputedStyle(el).backgroundColor,
+    return {badge:[r.width,r.height],ring:[b.width,b.height], outside:b.left<r.left && b.right>r.right && b.top<r.top && b.bottom>r.bottom,
+      fill:getComputedStyle(el).backgroundColor,
       offset:parseFloat(getComputedStyle(streak).strokeDashoffset),animation:getComputedStyle(streak).animationName,count:el.querySelector('.ib-status-count')?.textContent};
   });
   const firstRing=await ringSample();
@@ -385,6 +386,7 @@ try {
   assert.ok(Math.abs(nextRing.offset-firstRing.offset)>1,'running RelVal stroke advances continuously');
   assert.deepEqual(nextRing.badge,firstRing.badge,'badge geometry remains stationary during motion');
   assert.deepEqual(nextRing.ring,firstRing.ring,'ring geometry remains stationary during motion');
+  assert.ok(firstRing.outside && nextRing.outside,'moving outline remains outside the filled badge boundary');
   assert.equal(nextRing.fill,firstRing.fill,'fill remains steady');
   assert.equal(nextRing.count,firstRing.count,'count remains steady');
   await runningPill.locator('.ib-status-count').evaluate(el=>{el.textContent='430';});

@@ -1246,16 +1246,17 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   display: block; position: absolute; inset: -5px;
   width: calc(100% + 10px); height: calc(100% + 10px); overflow: visible;
   color: var(--ib-pill-tone);
-  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--ib-pill-tone) 60%, transparent));
+  filter: none;
 }
 .ib-running-badge-ring rect {
   width: calc(100% - 6px); height: calc(100% - 6px); fill: none;
   stroke: currentColor; stroke-width: 2px;
 }
-.ib-running-ring-base { opacity: .55; }
+.ib-running-ring-base { opacity: .28; }
 .ib-running-badge-ring .ib-running-ring-streak {
-  stroke: color-mix(in srgb, var(--ib-pill-tone) 55%, white);
-  stroke-linecap: round; stroke-dasharray: 18 82;
+  stroke: var(--ib-pill-tone); stroke-width: 2.5px; opacity: 1;
+  filter: drop-shadow(0 0 2px var(--ib-pill-tone));
+  stroke-linecap: round; stroke-dasharray: 28 72;
   animation: ib-pill-perimeter 1.8s linear infinite;
   animation-play-state: var(--ib-motion-state, running);
 }
