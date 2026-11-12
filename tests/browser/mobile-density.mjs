@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
-import {chromium,firefox} from 'playwright';
-const engine=process.env.IB_BROWSER==='firefox'?'firefox':'chromium';
-const browser=await (engine==='firefox'?firefox:chromium).launch();
+import {chromium,firefox,webkit} from 'playwright';
+const engine=['firefox','webkit'].includes(process.env.IB_BROWSER)?process.env.IB_BROWSER:'chromium';
+const browser=await ({chromium,firefox,webkit}[engine]).launch();
 await mkdir('mobile-review',{recursive:true});
 try {
   for(const width of [320,375,390,430,767]){
@@ -21,6 +21,13 @@ try {
         readable:[...card.querySelectorAll('.ib-phone-results .ib-status-count')].every(el=>parseFloat(getComputedStyle(el).fontSize)>=12)};
     });
     const comfortable=await geometry();
+    const pillLayout=await card.locator('.ib-section-controls').evaluate(el=>{
+      const pills=[...el.querySelectorAll('.ib-section-pill')];
+      return {count:pills.length,rows:new Set(pills.map(p=>Math.round(p.getBoundingClientRect().top))).size,
+        overflow:el.scrollWidth>el.clientWidth+1};
+    });
+    assert.ok(!pillLayout.overflow,'analysis pills stay within the phone card');
+    if(width>=375 && pillLayout.count<=9)assert.ok(pillLayout.rows<=3,'analysis pills fit three rows: '+JSON.stringify(pillLayout));
     for(const name of ['Build','Unit tests','RelVal','AddOn','Q/A duplicates']){
       const cell=rail.getByRole('rowheader',{name,exact:true});
       assert.equal(await cell.locator('.ib-phone-stage-icon svg').count(),1,'each stage has an accessible icon');
@@ -67,6 +74,21 @@ try {
     const scrollViewport=expanded.locator('.ib-table-responsive');
     const stage=scrollViewport.locator('tbody .name-column').first();
     const initialStage=await stage.boundingBox();
+    // Exercise actual native touch input, not only scrollLeft assignment.
+    if(engine==='chromium'){
+      await scrollViewport.scrollIntoViewIfNeeded();
+      const rect=await scrollViewport.boundingBox();
+      const client=await page.context().newCDPSession(page);
+      const x=rect.x+rect.width-24,y=Math.min(rect.y+100,800);
+      await client.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
+      for(let step=1;step<=8;step++){
+        await client.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x-step*22,y}]});
+        await page.waitForTimeout(25);
+      }
+      assert.ok(await scrollViewport.evaluate(el=>el.scrollLeft)>30,'finger drag moves the native horizontal table');
+      await client.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+      await client.detach();
+    }
     await scrollViewport.evaluate(el=>{el.scrollLeft=200;});
     await page.waitForFunction(()=>{
       const rail=document.querySelector('.ib-release-panel .ib-comparison-matrix tbody .name-column');

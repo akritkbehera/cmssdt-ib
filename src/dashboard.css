@@ -1385,21 +1385,21 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   .ib-matrix-section .type-header-desktop { display: none !important; }
   .ib-matrix-section .type-header-mobile { display: inline-flex !important; align-items: center; justify-content: center; }
   .ib-matrix-section .type-header-mobile > svg { width: 17px; height: 17px; }
-  .ib-comparison-matrix .ib-matrix-section .table thead th.ib-family-header { height: 44px !important; }
-  .ib-comparison-matrix .ib-matrix-section .table .ib-family-header .flavor-card-wrapper {
+  .ib-matrix-section .ib-comparison-matrix .table thead th.ib-family-header { height: 44px !important; }
+  .ib-matrix-section .ib-comparison-matrix .table .ib-family-header .flavor-card-wrapper {
     grid-template-columns: 28px minmax(0, 1fr) 28px; gap: 0; padding-inline: 0;
   }
   .ib-comparison-matrix .ib-family-header .flavor-card-wrapper > a,
   .ib-comparison-matrix .ib-family-header .flavor-card-wrapper > .flavor-card { grid-column: 2; grid-row: 1; width: 100%; }
   .ib-comparison-matrix .ib-family-header .flavor-card-wrapper .flavor-card { padding-inline: 0 !important; }
   .ib-comparison-matrix .ib-family-header .ib-family-dot { display: none; }
-  .ib-comparison-matrix .ib-matrix-section .ib-history-trigger,
-  .ib-comparison-matrix .ib-matrix-section .table .flavor-card-wrapper > .flavor-copy-button {
+  .ib-matrix-section .ib-comparison-matrix .ib-history-trigger,
+  .ib-matrix-section .ib-comparison-matrix .table .flavor-card-wrapper > .flavor-copy-button {
     position: static; inset: auto; transform: none; grid-row: 1;
     width: 28px; min-width: 0; height: 44px; min-height: 0; justify-content: center;
   }
-  .ib-comparison-matrix .ib-matrix-section .ib-history-trigger { grid-column: 1; }
-  .ib-comparison-matrix .ib-matrix-section .table .flavor-card-wrapper > .flavor-copy-button { grid-column: 3; }
+  .ib-matrix-section .ib-comparison-matrix .ib-history-trigger { grid-column: 1; }
+  .ib-matrix-section .ib-comparison-matrix .table .flavor-card-wrapper > .flavor-copy-button { grid-column: 3; }
 }
 .ib-dropdown-device > svg[data-vendor="nvidia"] { color: #76b900; }
 .ib-dropdown-device > svg[data-vendor="amd"] { color: #ed1c24; }
@@ -1415,4 +1415,26 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
     text-align: center !important;
     padding-inline: calc(4px - var(--ib-rail-progress, 0) * 2px) !important;
   }
+}
+
+@media (max-width: 767.98px) {
+  .ib-matrix-section .ib-comparison-matrix .ib-table-responsive {
+    max-width: 100%; overflow-x: auto; overflow-y: hidden;
+    touch-action: pan-x pan-y pinch-zoom; -webkit-overflow-scrolling: touch;
+  }
+  .ib-section-controls { column-gap: 4px !important; row-gap: 4px !important; }
+  .ib-section-controls > .dropdown { margin-inline: 0 !important; }
+  .ib-section-controls .ib-section-pill {
+    font-size: 12px !important; gap: 4px; padding: 3px 6px 3px 3px !important;
+    min-height: 44px;
+  }
+  .ib-section-controls .ib-section-pill .ib-state-dot { --dot-size: 18px !important; }
+}
+@media (max-width: 480px) {
+  .ib-section-controls .dropdown-toggle::after,
+  .ib-section-controls .ib-section-external-arrow { display: none; }
+}
+@media (max-width: 359.98px) {
+  .ib-section-controls .ib-section-pill { font-size: 11px !important; gap: 3px; padding-inline-end: 4px !important; }
+  .ib-section-controls .ib-section-pill .ib-state-dot { --dot-size: 16px !important; }
 }

@@ -76,7 +76,11 @@ export default function useMatrixScroll(containerRef, version) {
       }
     };
     const down=()=>{reveal();cancel();pointerDown=true;samples=[];};
-    const up=()=>{if(pointerDown){pointerDown=false;schedule();}};
+    const up=event=>{if(event.pointerType==='touch')return;if(pointerDown){pointerDown=false;schedule();}};
+    // Native panning cancels pointer events before the finger lifts. Touch
+    // lifecycle, rather than pointercancel, owns the snap lock on phones.
+    const touchStart=()=>{reveal();cancel();pointerDown=true;samples=[];};
+    const touchEnd=event=>{if(!event.touches.length){pointerDown=false;schedule();}};
     const wheel=()=>{cancel();schedulePaint();schedule();};
     const key=e=>{if(['ArrowLeft','ArrowRight','Home','End','PageUp','PageDown'].includes(e.key))wheel();};
     const resize=new ResizeObserver(()=>{cancel();samples=[];schedulePaint(true);schedule();});
@@ -86,11 +90,15 @@ export default function useMatrixScroll(containerRef, version) {
     container.classList.add('ib-scroll-morph');schedulePaint(true);
     container.addEventListener('scroll',scroll,{passive:true});container.addEventListener('pointerdown',down,{passive:true});
     window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);
+    container.addEventListener('touchstart',touchStart,{passive:true});
+    window.addEventListener('touchend',touchEnd,{passive:true});window.addEventListener('touchcancel',touchEnd,{passive:true});
     container.addEventListener('wheel',wheel,{passive:true});container.addEventListener('keydown',key);
     return ()=>{
       disposed=true;cancel();cancelAnimationFrame(paintFrame);clearTimeout(revealTimer);resize.disconnect();mutations.disconnect();
       container.removeEventListener('scroll',scroll);container.removeEventListener('pointerdown',down);
       window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',up);
+      container.removeEventListener('touchstart',touchStart);
+      window.removeEventListener('touchend',touchEnd);window.removeEventListener('touchcancel',touchEnd);
       container.removeEventListener('wheel',wheel);container.removeEventListener('keydown',key);
       container.classList.remove('ib-scroll-morph','ib-scroll-interacting');
       container.style.removeProperty('--ib-rail-shrink');container.style.removeProperty('--ib-rail-progress');

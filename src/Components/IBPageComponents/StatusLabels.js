@@ -139,7 +139,7 @@ class StatusLabels extends React.PureComponent {
     const content = (
       <>
         {isStatus ? <StatusDot status={state.status} running={state.running} size={22} /> : icon}
-        <span>{name}</span>{url && <span aria-hidden="true">↗</span>}
+        <span>{name}</span>{url && <span className="ib-section-external-arrow" aria-hidden="true">↗</span>}
       </>
     );
 
