@@ -367,5 +367,30 @@ try {
     assert.ok(await datesTrack.evaluate(el=>el.scrollLeft)>hb.width*.8, 'touch swipe settles at next date');
     await touch.close();
   }
+
+  for (const width of [390,1440]) {
+    const menuPage=await browser.newPage({viewport:{width,height:900}});
+    await menuPage.goto('http://localhost:5173/tests/browser/index.html?dropdowns=1');
+    const latestCard=menuPage.locator('.ib-release-panel').first();
+    for (const [id,delta] of [['gpu-relvals-toggle','−2'],['gpu-qa-toggle','+2'],['rntuple-relvals-toggle','−2']]) {
+      await latestCard.locator('#'+id).click();
+      const menu=latestCard.locator('.ib-test-dropdown.show');
+      await menu.waitFor();
+      assert.ok((await menu.innerText()).includes(delta),'exact baseline delta appears in '+id);
+      const marker=menu.locator('.ib-table-result-pill').first();
+      assert.ok(await marker.isVisible());
+      const fill=await marker.evaluate(el=>getComputedStyle(el).backgroundColor);
+      assert.ok(fill.startsWith('rgb(') && fill!=='rgb(255, 255, 255)','dropdown count badge is filled');
+      const bounds=await menu.boundingBox();
+      assert.ok(bounds.x>=-1 && bounds.x+bounds.width<=width+1,'dropdown stays within viewport');
+      if(id==='gpu-qa-toggle') assert.equal(await marker.locator('.ib-status-count').innerText(),'3');
+      if(id==='rntuple-relvals-toggle') assert.equal(await marker.locator('.ib-status-count').innerText(),'12');
+      await menu.getByRole('textbox').fill('not-a-device');
+      assert.ok(await menu.getByText('No matching tests').isVisible());
+      await latestCard.locator('#'+id).click();
+    }
+    await menuPage.close();
+  }
+
   console.log('LAYOUT_REPORT '+JSON.stringify(rows));
 } finally {await browser.close();}

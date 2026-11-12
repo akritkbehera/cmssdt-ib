@@ -156,6 +156,7 @@ class IBGroupFrame extends PureComponent {
         statusLabels = (
             <StatusLabels
                 IBGroup={IBGroup}
+                comparisons={this.props.comparisons}
                 ibGroupType={ibGroupType}
                 showOnlyIbTag={showOnlyIbTag}
             />

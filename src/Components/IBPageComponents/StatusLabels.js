@@ -441,13 +441,13 @@ class StatusLabels extends Component {
     if (ib) {
       if (ib.gpu_data?.relvals && Object.keys(ib.gpu_data.relvals).length > 0) {
         menuData.push(
-          <RelvalsLabel key="gpu-relvals" tests={ib.gpu_data.relvals} type_name="gpu" />
+          <RelvalsLabel key="gpu-relvals" tests={ib.gpu_data.relvals} type_name="gpu" ib={ib} comparisons={this.props.comparisons} />
         );
       }
 
       if (ib.gpu_data?.qa && Object.keys(ib.gpu_data.qa).length > 0) {
         menuData.push(
-          <UnitTestsLabel key="gpu-qa" tests={ib.gpu_data.qa} type_name="gpu" />
+          <UnitTestsLabel key="gpu-qa" tests={ib.gpu_data.qa} type_name="gpu" ib={ib} comparisons={this.props.comparisons} />
         );
       }
 
@@ -460,7 +460,7 @@ class StatusLabels extends Component {
 
       if (Object.keys(rntupleRelvals).length > 0) {
         menuData.push(
-          <RelvalsLabel key="rntuple-relvals" tests={rntupleRelvals} type_name="rntuple" />
+          <RelvalsLabel key="rntuple-relvals" tests={rntupleRelvals} type_name="rntuple" ib={ib} comparisons={this.props.comparisons} />
         );
       }
     }

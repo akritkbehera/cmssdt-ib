@@ -37,6 +37,17 @@ groups.forEach((group, time) => group.forEach((ib, flavor) => {
 for (const stage of ['builds', 'utests', 'relvals', 'addons', 'dupDict']) {
   groups.at(-1)[1][stage] = groups.at(-1)[1][stage].filter(result => result.arch !== 'el9_amd64_gcc15');
 }
+
+if (typeof location !== 'undefined' && new URLSearchParams(location.search).has('dropdowns')) {
+  groups.forEach((group,time)=>{
+    const ib=group[0];
+    const result=(field,name,count,kind)=>({arch:normal,[field]:name,release_name:ib.release_name,file:'fixture.log',done:true,passed:count?false:true,
+      details:kind==='qa'?{num_fails:count,num_passed:12-count,num_total:12}:{num_failed:count,num_passed:12-count,num_total:12}});
+    ib.gpu_data={relvals:{'NVIDIA T4':result('gpu','nvidia-T4',time===0?2:4,'relvals')},
+      qa:{'AMD MI250':result('gpu','amd-MI250',time===0?3:1,'qa')}};
+    ib.other_data={relvals:{'rntuple/cpu':result('other','rntuple/cpu',time===0?0:2,'relvals')}};
+  });
+}
 const comparisons = buildComparisonIndex(groups.flat());
 function FixtureCard({group}) {
   const [collapsed, setCollapsed] = useState(false);
