@@ -256,7 +256,7 @@ try {
   await continuous.evaluate(el => { el.scrollLeft = 145; });
   await phone.waitForTimeout(1000);
   const stageAfter = await continuous.locator('tbody .name-column').first().boundingBox();
-  assert.ok(stageAfter.width < stageBefore.width && stageAfter.width >= 67, 'scroll compresses the visible stage rail');
+  assert.ok(stageAfter.width < stageBefore.width && stageAfter.width >= 31 && stageAfter.width <= 34, 'scroll compresses the visible stage rail');
   assert.ok(Math.abs(stageBefore.x - stageAfter.x) <= 1, 'compressed stage rail stays pinned');
   const snapDistance = await continuous.evaluate(el => {
     const rail = el.querySelector('.name-column').getBoundingClientRect().width;

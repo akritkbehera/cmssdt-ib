@@ -63,6 +63,19 @@ try {
     await historyDialog.waitFor({state:'hidden'});
     assert.ok(await card.locator('.ib-comparison-matrix').isVisible(),'expanded matrix remains available');
     assert.equal(await card.locator('.ib-comparison-matrix tbody .type-label-desktop:visible').count(),0,'expanded phone table uses icons');
+
+    const scrollViewport=expanded.locator('.ib-table-responsive');
+    const stage=scrollViewport.locator('tbody .name-column').first();
+    const initialStage=await stage.boundingBox();
+    await scrollViewport.evaluate(el=>{el.scrollLeft=200;});
+    await page.waitForFunction(()=>{
+      const rail=document.querySelector('.ib-release-panel .ib-comparison-matrix tbody .name-column');
+      return rail&&rail.getBoundingClientRect().width<=34;
+    });
+    const thinStage=await stage.boundingBox();
+    assert.ok(thinStage.width>=31 && thinStage.width<initialStage.width,'scroll reclaims the icon-only stage width');
+    assert.ok(Math.abs(thinStage.x-initialStage.x)<=1,'thin icon rail remains pinned');
+    assert.ok(await stage.locator('.type-label-mobile svg').isVisible(),'stage icon remains visible after compression');
     await page.setViewportSize({width:900,height:600});
     assert.ok(await card.locator('.ib-comparison-matrix tbody .type-label-desktop').first().isVisible(),'tablet/desktop labels restore outside phone breakpoint');
     assert.deepEqual(errors,[]);

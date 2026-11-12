@@ -9,10 +9,10 @@ export default function useMatrixScroll(containerRef, version) {
     const read=()=>rtl?-container.scrollLeft:container.scrollLeft;
     const write=x=>{container.scrollLeft=rtl?-x:x;};
     let animation, paintFrame, idle, revealTimer, pointerDown=false, disposed=false, dirty=true;
-    let stage=88, overflow=false, samples=[], previousShrink, previousProgress;
+    let stage=88, minimumRail=68, overflow=false, samples=[], previousShrink, previousProgress;
     const paint=x=>{
       const progress=overflow?Math.max(0,Math.min(1,x/Math.max(1,stage*1.5))):0;
-      const shrink=(Math.max(0,stage-Math.max(68,stage*.7))*progress).toFixed(3)+'px';
+      const shrink=(Math.max(0,stage-Math.min(stage,minimumRail))*progress).toFixed(3)+'px';
       if(shrink!==previousShrink){container.style.setProperty('--ib-rail-shrink',shrink);previousShrink=shrink;}
       if(progress!==previousProgress){container.style.setProperty('--ib-rail-progress',String(progress));previousProgress=progress;}
     };
@@ -25,6 +25,7 @@ export default function useMatrixScroll(containerRef, version) {
         if(dirty){
           const style=getComputedStyle(table);
           stage=parseFloat(style.getPropertyValue('--ib-stage-width'))||88;
+          minimumRail=parseFloat(style.getPropertyValue('--ib-rail-min-width'))||Math.max(68,stage*.7);
           const originalWidth=parseFloat(style.getPropertyValue('--ib-fit-width'))||table.scrollWidth;
           overflow=originalWidth>container.clientWidth+1;
           dirty=false;

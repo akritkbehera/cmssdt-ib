@@ -1403,3 +1403,16 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 }
 .ib-dropdown-device > svg[data-vendor="nvidia"] { color: #76b900; }
 .ib-dropdown-device > svg[data-vendor="amd"] { color: #ed1c24; }
+
+/* An icon-only phone rail needs no desktop label-width reserve. */
+@media (max-width: 767.98px) {
+  .ib-matrix-section,
+  .ib-workspace[data-density="compact"] .ib-matrix-section {
+    --ib-stage-units: 44;
+    --ib-rail-min-width: 32;
+  }
+  .ib-matrix-section .ib-scroll-morph .table .name-column {
+    text-align: center !important;
+    padding-inline: calc(4px - var(--ib-rail-progress, 0) * 2px) !important;
+  }
+}
