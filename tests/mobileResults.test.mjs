@@ -99,3 +99,10 @@ test('compact configuration highlights follow configured production colors, not 
   assert.doesNotMatch(alternate, /Default configuration/);
   assert.doesNotMatch(renderToStaticMarkup(React.createElement(ArchitectureHeader, { architecture: 'el9_amd64_gcc14' })), /ib-config-value is-default/);
 });
+
+test('expanded matrices expose stage row headings and configuration column headings', () => {
+  const html=render();
+  const matrix=html.slice(html.indexOf('<div class="ib-comparison-matrix'));
+  assert.match(matrix, /<th[^>]*scope="row"[^>]*>[\s\S]*?Build/);
+  assert.match(matrix, /<th[^>]*scope="col"[^>]*class="ib-config-header/);
+});

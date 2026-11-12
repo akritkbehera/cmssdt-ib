@@ -167,7 +167,7 @@ class IBGroupFrame extends PureComponent {
             <Card data-pr-visible={showPullRequests} className={`ib-release-panel ${isNextIB ? "ib-release-panel--upcoming" : ""}`}>
                 <Card.Header
                     className="ib-release-panel-header"
-                    onClick={onToggleCollapse}
+                    onClick={isNextIB && !showPullRequests ? undefined : onToggleCollapse}
                 >
                     {isNextIB ? (
                             <div
@@ -177,7 +177,8 @@ class IBGroupFrame extends PureComponent {
                                     justifyContent: 'center',
                                     gap: '10px',
                                     flexWrap: 'wrap',
-                                    width: '100%'
+                                    flex: 1,
+                                    minWidth: 0
                                 }}
                             >
                                 <IconButton
@@ -277,7 +278,7 @@ class IBGroupFrame extends PureComponent {
                             </button>
                         </>
                     )}
-                    {isNextIB && <button type="button" className="ib-collapse-toggle"
+                    {isNextIB && showPullRequests && <button type="button" className="ib-collapse-toggle"
                       aria-expanded={!isCollapsed} aria-label={isCollapsed ? `Expand ${panelHeader}` : `Collapse ${panelHeader}`}
                       onClick={event => { event.stopPropagation(); onToggleCollapse(); }}>
                       {isCollapsed ? 'Expand' : 'Collapse'}
@@ -285,7 +286,7 @@ class IBGroupFrame extends PureComponent {
                 </Card.Header>
                 <ComparisonContext builds={IBGroup} comparisons={this.props.comparisons || new Map()} />
 
-                {!isCollapsed && (
+                {!isCollapsed && (!isNextIB || showPullRequests) && (
                     <Card.Body className="ib-release-panel-body">
                         {statusLabels}
                         {comparisonTable && <DeferredMatrix>{comparisonTable}</DeferredMatrix>}

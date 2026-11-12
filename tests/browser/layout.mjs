@@ -412,7 +412,7 @@ try {
     await menuPage.goto('http://localhost:5173/tests/browser/index.html?dropdowns=1');
     const latestCard=menuPage.locator('.ib-release-panel').first();
     for (const [id,delta] of [['gpu-relvals-toggle','−2'],['gpu-qa-toggle','+2'],['rntuple-relvals-toggle','−2']]) {
-      await latestCard.locator('#'+id).click();
+      await latestCard.getByTestId(id).click();
       const menu=latestCard.locator('.ib-test-dropdown.show');
       await menu.waitFor();
       assert.ok((await menu.innerText()).includes(delta),'exact baseline delta appears in '+id);
@@ -436,17 +436,17 @@ try {
       });
       const comfortable=await dimensions();
       await menuPage.getByRole('button',{name:'Compact',exact:true}).click();
-      if(!await menu.isVisible())await latestCard.locator('#'+id).click();
+      if(!await menu.isVisible())await latestCard.getByTestId(id).click();
       const compact=await dimensions();
       assert.ok(compact.row<comfortable.row && compact.badge<comfortable.badge && compact.font<comfortable.font && compact.count<comfortable.count,
         'compact density reduces dropdown row, badge, label and count size');
       assert.ok(compact.font>=12 && compact.count>=12 && compact.row>=44,'compact menus stay readable and touchable');
       await menuPage.getByRole('button',{name:'Comfortable',exact:true}).click();
-      if(!await menu.isVisible())await latestCard.locator('#'+id).click();
+      if(!await menu.isVisible())await latestCard.getByTestId(id).click();
       assert.deepEqual(await dimensions(),comfortable,'comfortable restores the dropdown geometry');
       await menu.getByRole('textbox').fill('not-a-device');
       assert.ok(await menu.getByText('No matching tests').isVisible());
-      await latestCard.locator('#'+id).click();
+      await latestCard.getByTestId(id).click();
     }
     await menuPage.close();
   }

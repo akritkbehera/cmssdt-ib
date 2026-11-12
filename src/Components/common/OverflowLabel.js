@@ -5,25 +5,35 @@ export default function OverflowLabel({ text }) {
   const label = useRef(null);
   const [overflow, setOverflow] = useState(false);
   useLayoutEffect(() => {
+    let frame, disposed = false;
     const measure = () => {
-      if (viewport.current && label.current) {
-        setOverflow(label.current.getBoundingClientRect().width > viewport.current.clientWidth + 1);
+      if (!disposed && viewport.current && label.current) {
+        // Measure only glyphs: marquee spacing must not keep overflow latched.
+        const available = viewport.current.clientWidth;
+        setOverflow(available > 0 && label.current.getBoundingClientRect().width > available + 1);
       }
     };
-    const observer = new ResizeObserver(measure);
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
+    };
+    const observer = new ResizeObserver(schedule);
     observer.observe(viewport.current);
     observer.observe(label.current);
     measure();
-    document.fonts?.addEventListener('loadingdone', measure);
+    document.fonts?.ready.then(() => { if (!disposed) schedule(); });
+    document.fonts?.addEventListener('loadingdone', schedule);
     return () => {
+      disposed = true;
+      cancelAnimationFrame(frame);
       observer.disconnect();
-      document.fonts?.removeEventListener('loadingdone', measure);
+      document.fonts?.removeEventListener('loadingdone', schedule);
     };
   }, [text]);
   return <span ref={viewport} className={`ib-overflow-label ${overflow ? 'is-scrolling' : ''}`} title={text}>
     <span className="ib-overflow-track">
-      <span ref={label}>{text}</span>
-      {overflow && <span aria-hidden="true">{text}</span>}
+      <span><span ref={label}>{text}</span></span>
+      <span className="ib-overflow-repeat" aria-hidden="true">{text}</span>
     </span>
   </span>;
 }

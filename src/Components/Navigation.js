@@ -427,6 +427,8 @@ const Navigation = ({ toLinks, flaworControl, archControl, showAllPullRequests =
               <OverlayTrigger placement="bottom" overlay={popoverHelp}>
                 <Button
                   onClick={handleShow}
+                  aria-label="Dashboard help"
+                  title="Dashboard help"
                   size="sm"
                   className="icon-btn"
                   style={{
@@ -454,6 +456,8 @@ const Navigation = ({ toLinks, flaworControl, archControl, showAllPullRequests =
                     }}
                     variant="outline-danger"
                     id="issues-dropdown"
+                    aria-label="Report an issue"
+                    title="Report an issue"
                   >
                     <BsExclamationCircle size={18} />
                   </Dropdown.Toggle>

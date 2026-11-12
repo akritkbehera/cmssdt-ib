@@ -67,6 +67,54 @@ const STATIC_ANALYSIS_GROUP_NAMES = new Set([
 ]);
 const RUNTIME_ANALYSIS_GROUP_NAMES = new Set([ "Vtune", "RECO event loop", "Resources Piecharts"]);
 
+function GroupedStatusDropdown({title, items}) {
+  const id = React.useId();
+  if (!items || items.length === 0) return null;
+  const state = sectionState(items);
+  const variant = state.status;
+
+  return (
+    <Dropdown key={`group-${title}`} className="d-inline-block me-1" data-severity={variant} autoClose="outside">
+      <Dropdown.Toggle
+        variant="light"
+        size="sm"
+        id={`dropdown-group-${id}`}
+        className="ib-section-pill"
+        title={title}
+      >
+        <StatusDot status={state.status} running={state.running} size={22} />
+        <span>{title}</span>
+      </Dropdown.Toggle>
+
+      <Dropdown.Menu aria-labelledby={`dropdown-group-${id}`} style={{ minWidth: "240px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+        {items.map((item) => {
+
+          return (
+            <Dropdown.Item
+              key={`${title}-${item.name}-${item.url || item.tooltip || "item"}`}
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={item.tooltip || item.name}
+              style={{
+                padding: "8px 12px",
+                fontSize: "0.85rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px"
+              }}
+            >
+              <StatusDot {...sectionState([item])} size={16} />
+              <span>{item.name}</span>
+            </Dropdown.Item>
+          );
+        })}
+      </Dropdown.Menu>
+    </Dropdown>
+  );
+}
+
+
 class StatusLabels extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -285,49 +333,8 @@ class StatusLabels extends React.PureComponent {
   }
 
   static renderGroupedDropdown(title, items) {
-    if (!items || items.length === 0) return null;
-    const state = sectionState(items);
-    const variant = state.status;
-
-    return (
-      <Dropdown key={`group-${title}`} className="d-inline-block me-1" data-severity={variant} autoClose="outside">
-        <Dropdown.Toggle
-          variant="light"
-          size="sm"
-          id={`dropdown-group-${title.replace(/\s+/g, "-").toLowerCase()}`}
-          className="ib-section-pill"
-          title={title}
-        >
-          <StatusDot status={state.status} running={state.running} size={22} />
-          <span>{title}</span>
-        </Dropdown.Toggle>
-
-        <Dropdown.Menu style={{ minWidth: "240px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-          {items.map((item) => {
-
-            return (
-              <Dropdown.Item
-                key={`${title}-${item.name}-${item.url || item.tooltip || "item"}`}
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                title={item.tooltip || item.name}
-                style={{
-                  padding: "8px 12px",
-                  fontSize: "0.85rem",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px"
-                }}
-              >
-                <StatusDot {...sectionState([item])} size={16} />
-                <span>{item.name}</span>
-              </Dropdown.Item>
-            );
-          })}
-        </Dropdown.Menu>
-      </Dropdown>
-    );
+    if (!items?.length) return null;
+    return <GroupedStatusDropdown key={`group-${title}`} title={title} items={items} data-severity={sectionState(items).status} />;
   }
 
   static renderIBTag(IBGroup, ibGroupType) {

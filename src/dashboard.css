@@ -1451,3 +1451,28 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
     width: 17px; height: 17px; flex: none;
   }
 }
+
+/* Keep marquee copies out of ordinary, non-overflowing labels. */
+.ib-overflow-track > .ib-overflow-repeat { display: none; }
+.ib-overflow-label.is-scrolling .ib-overflow-track > .ib-overflow-repeat { display: inline; }
+@media (prefers-reduced-motion: reduce) {
+  .ib-overflow-label.is-scrolling .ib-overflow-track > .ib-overflow-repeat { display: none; }
+}
+/* Mouse headers reserve small action slots and use the rest for readable names. */
+@media (min-width: 768px) {
+  .ib-workspace[data-density="compact"] .ib-matrix-section { --ib-column-units: 104; }
+  .ib-matrix-section .ib-comparison-matrix .table .ib-family-header .flavor-card-wrapper {
+    grid-template-columns: 18px minmax(0, 1fr) 18px; gap: 0; padding-inline: 2px;
+  }
+  .ib-comparison-matrix .ib-family-header .flavor-card-wrapper > a,
+  .ib-comparison-matrix .ib-family-header .flavor-card-wrapper > .flavor-card { grid-column: 2; grid-row: 1; width: 100%; }
+  .ib-comparison-matrix .ib-family-header .flavor-card-wrapper .flavor-card { width: 100%; gap: 3px; padding-inline: 2px !important; }
+  .ib-matrix-section .ib-comparison-matrix .ib-history-trigger,
+  .ib-matrix-section .ib-comparison-matrix .table .flavor-card-wrapper > .flavor-copy-button {
+    position: static; inset: auto; transform: none; grid-row: 1;
+    width: 18px; min-width: 0; height: 100%; min-height: 0; justify-content: center;
+  }
+  .ib-matrix-section .ib-comparison-matrix .ib-history-trigger { grid-column: 1; }
+  .ib-matrix-section .ib-comparison-matrix .table .flavor-card-wrapper > .flavor-copy-button { grid-column: 3; }
+}
+.ib-release-panel--upcoming .ib-release-panel-header { flex-wrap: nowrap; min-height: 0; padding-block: 6px; }

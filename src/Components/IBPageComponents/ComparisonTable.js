@@ -1027,6 +1027,7 @@ const ComparisonTable = ({ data = EMPTY_LIST, comparisons = EMPTY_COMPARISONS, r
                   return (
                     <th
                       key={`arch-${pos}-${arch}`}
+                      scope="col"
                       className={`ib-config-header ib-config-${headerState.status} ${headerState.running ? 'is-running' : ''} ${archIndex === 0 ? `ib-group-start ${historyBoundaries.get(pos) || ''} ` : ""}`}
                       style={{
                         padding: '3px 2px',
@@ -1044,9 +1045,9 @@ const ComparisonTable = ({ data = EMPTY_LIST, comparisons = EMPTY_COMPARISONS, r
             <tbody>
               {shouldShowRow("builds") && (
                 <tr data-stage="builds">
-                  <td className="name-column fw-semibold">
+                  <th className="name-column fw-semibold" scope="row">
                     {renderStickyRowLabel('builds')}
-                  </td>
+                  </th>
                   {data.map((ib, pos) => {
                     const el = archsByIb[pos];
 
@@ -1114,9 +1115,9 @@ const ComparisonTable = ({ data = EMPTY_LIST, comparisons = EMPTY_COMPARISONS, r
 
               {shouldShowRow("utests") && (
                 <tr data-stage="utests">
-                  <td className="name-column fw-semibold">
+                  <th className="name-column fw-semibold" scope="row">
                     {renderStickyRowLabel('utests')}
-                  </td>
+                  </th>
                   {renderRowCells({
                     resultType: 'utests',
                     ifPassed: (details, ibName, cellKey) => renderCell(renderStatusMarker({
@@ -1142,7 +1143,7 @@ const ComparisonTable = ({ data = EMPTY_LIST, comparisons = EMPTY_COMPARISONS, r
 
               {shouldShowRow("relvals") && (
                 <tr data-stage="relvals">
-                  <td className="name-column fw-semibold">
+                  <th className="name-column fw-semibold" scope="row">
                     <a
                       href={urls.newRelVals(que, date)}
                       className="text-decoration-none d-flex align-items-center ib-row-label-link"
@@ -1154,7 +1155,7 @@ const ComparisonTable = ({ data = EMPTY_LIST, comparisons = EMPTY_COMPARISONS, r
                         <FaLayerGroup size={12} />
                       </span>
                     </a>
-                  </td>
+                  </th>
                   {renderRowCells({
                     resultType: 'relvals',
                     ifPassed: showRelValsResults(showLabelConfig.relvals || [], getRelValUrl),
@@ -1167,9 +1168,9 @@ const ComparisonTable = ({ data = EMPTY_LIST, comparisons = EMPTY_COMPARISONS, r
 
               {shouldShowRow("addons") && (
                 <tr data-stage="addons">
-                  <td className="name-column fw-semibold">
+                  <th className="name-column fw-semibold" scope="row">
                     {renderStickyRowLabel('addons')}
-                  </td>
+                  </th>
                   {renderRowCells({
                     resultType: 'addons',
                     ifPassed: (details, ibName, cellKey) => renderCell(renderStatusMarker({
@@ -1198,9 +1199,9 @@ const ComparisonTable = ({ data = EMPTY_LIST, comparisons = EMPTY_COMPARISONS, r
 
               {shouldShowRow("dupDict") && (
                 <tr data-stage="dupDict">
-                  <td className="name-column fw-semibold">
+                  <th className="name-column fw-semibold" scope="row">
                     {renderStickyRowLabel('dupDict')}
-                  </td>
+                  </th>
                   {renderRowCells({
                     resultType: 'dupDict',
                     ifPassed: (details, ibName, cellKey) => renderCell(renderStatusMarker({

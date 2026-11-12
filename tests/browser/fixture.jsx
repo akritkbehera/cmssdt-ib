@@ -6,6 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../src/styles/tokens.css';
 import '../../src/index.css';
 import '../../src/dashboard.css';
+import OverflowLabel from '../../src/Components/common/OverflowLabel';
 import Navigation from '../../src/Components/Navigation';
 import DashboardDensity from '../../src/Components/common/DashboardDensity';
 import IBGroups from '../../src/Components/IBPageComponents/IBGroups';
@@ -63,10 +64,23 @@ function FixtureCard({group}) {
   return <IBGroupFrame IBGroup={group} releaseQue="CMSSW_20_1_X" comparisons={comparisons}
     isCollapsed={collapsed} onToggleCollapse={() => setCollapsed(value => !value)} />;
 }
+function ReviewLabels() {
+  const [width,setWidth]=useState(30);
+  return <div style={{fontSize:12}}>
+    <div data-testid="short-label" style={{width:180}}><OverflowLabel text="NONLTO"/></div>
+    <div data-testid="resize-label" style={{width}}><OverflowLabel text="NONLTO"/></div>
+    <button onClick={()=>setWidth(60)}>Give label room</button>
+    <div data-testid="long-label" style={{width:60}}><OverflowLabel text="MULTIARCHSV4"/></div>
+  </div>;
+}
 export const fixture = <HashRouter>
   <Navigation toLinks={[]} flaworControl={<span>Build variants</span>} archControl={<span>Architectures</span>}/>
   <DashboardDensity release="CMSSW_20_1_X">
     <div className="ib-card-list" style={{position:'relative'}}>
+      {new URLSearchParams(location.search).has('review') && <>
+        <FixtureCard group={[{isIB:false,next_ib:true,release_queue:'CMSSW_20_1_X',release_name:'nextIB',merged_prs:[]}]}/>
+        <ReviewLabels/>
+      </>}
       {groups.map((group,i)=><div key={i}><FixtureCard group={group}/></div>)}
     </div>
   </DashboardDensity>

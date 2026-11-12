@@ -65,6 +65,8 @@ const DropdownResultRow=React.memo(function DropdownResultRow({name:key,item,typ
 });
 
 export default function TestResultDropdown({tests={}, type, kind, ib, comparisons}) {
+  const instanceId=React.useId();
+  const toggleId=type+'-'+kind+'-toggle-'+instanceId;
   const [search,setSearch]=useState('');
   const [open,setOpen]=useState(false);
   const isRelval=kind==='relvals', failureKey=isRelval?'num_failed':'num_fails';
@@ -87,10 +89,10 @@ export default function TestResultDropdown({tests={}, type, kind, ib, comparison
   const hasResults=groups.some(([,items])=>items.length);
   if(!Object.keys(tests).length)return null;
   return <Dropdown className="d-inline-block me-1" autoClose="outside" show={open} onToggle={setOpen}>
-    <Dropdown.Toggle variant="light" size="sm" id={type+'-'+kind+'-toggle'} className="ib-section-pill">
+    <Dropdown.Toggle variant="light" size="sm" id={toggleId} data-testid={type+'-'+kind+'-toggle'} className="ib-section-pill">
       <StatusDot {...state} size={22}/><span>{title}</span>
     </Dropdown.Toggle>
-    <Dropdown.Menu className="ib-test-dropdown">
+    <Dropdown.Menu className="ib-test-dropdown" aria-labelledby={toggleId}>
       <Form className="ib-dropdown-search" onSubmit={event=>event.preventDefault()}>
         <div className="d-flex align-items-center border rounded px-2"><FaSearch aria-hidden="true"/>
           <Form.Control size="sm" aria-label={'Search '+title+' results'} placeholder="Search tests..." value={search}
