@@ -49,8 +49,9 @@ test('phone view shows only the selected configuration with the same stage resul
   assert.equal((phone.match(/scope="row"/g) || []).length, 2);
   assert.match(phone, /ib-family-header/);
   assert.equal((phone.match(/class="ib-config-field"/g) || []).length, 3);
-  assert.match(phone, /Build<\/th>/);
-  assert.match(phone, /Unit tests<\/th>/);
+  assert.match(phone, /aria-label="Build"/);
+  assert.match(phone, /aria-label="Unit tests"/);
+  assert.match(phone, /ib-phone-stage-icon/);
   assert.doesNotMatch(phone, /aarch64|Build or tests failed/);
   assert.match(html, /Compare configurations/);
   assert.equal((html.match(/<option /g) || []).length, 2);
