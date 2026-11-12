@@ -121,4 +121,24 @@ try {
     console.log('MOBILE_DENSITY '+JSON.stringify({engine,width,comfortable,compact}));
     await page.close();
   }
+
+  // Reproduce a desktop user narrowing the window, then using Show all.
+  const narrow=await browser.newPage({viewport:{width:1280,height:900},hasTouch:false});
+  await narrow.goto('http://localhost:5173/tests/browser/index.html?navigator=1');
+  const first=narrow.locator('.ib-release-panel').first();
+  await first.waitFor();
+  await narrow.setViewportSize({width:690,height:900});
+  await first.getByRole('button',{name:'Compare configurations',exact:true}).click();
+  const viewport=first.locator('.ib-comparison-matrix .ib-table-responsive');
+  await viewport.scrollIntoViewIfNeeded();
+  const box=await viewport.boundingBox();
+  await narrow.mouse.move(box.x+box.width-40,Math.min(box.y+90,850));
+  await narrow.mouse.wheel(24,0);
+  await narrow.waitForTimeout(1000);
+  const small=await viewport.evaluate(el=>el.scrollLeft);
+  assert.ok(small>=18,'narrow desktop trackpad movement is not reversed');
+  await narrow.mouse.wheel(170,0);
+  await narrow.waitForTimeout(1000);
+  assert.ok(await viewport.evaluate(el=>el.scrollLeft)>small+60,'narrow desktop supports continued horizontal scrolling');
+  await narrow.close();
 }finally{await browser.close();}
