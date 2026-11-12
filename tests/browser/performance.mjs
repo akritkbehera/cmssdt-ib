@@ -32,7 +32,10 @@ try {
   const mount={scriptMs:(after.ScriptDuration-before.ScriptDuration)*1000,layoutMs:(after.LayoutDuration-before.LayoutDuration)*1000,
     nodes:(await client.send('Memory.getDOMCounters')).nodes,
     cards:await page.locator('.ib-release-panel').count(),matrices:await page.locator('.ib-release-panel .ib-comparison-matrix').count()};
-  if(await page.locator('.ib-deferred-matrix').count())assert.ok(mount.matrices<mount.cards,'distant matrices are deferred');
+  if(label==='candidate'){
+    assert.equal(await page.locator('.ib-deferred-matrix').count(),mount.cards,'candidate server serves the optimized revision');
+    assert.ok(mount.matrices<mount.cards,'distant matrices are deferred');
+  }
   const navigation=await measure(async()=>{
     for(let i=0;i<3;i++){
       await page.getByRole('button',{name:'Show releases',exact:true}).click();

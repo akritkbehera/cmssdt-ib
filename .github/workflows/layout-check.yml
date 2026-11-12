@@ -59,12 +59,12 @@ jobs:
           npm ci
           npm install --no-save --package-lock=false playwright@1.62.1
           chown "$(id -u):$(id -g)" "$HOME"
-          git worktree add --detach /tmp/cmssdt-perf-baseline "$PERF_BASELINE"
+          git -c safe.directory="$GITHUB_WORKSPACE" worktree add --detach /tmp/cmssdt-perf-baseline "$PERF_BASELINE"
           cp tests/browser/fixture.jsx tests/browser/performance.mjs tests/browser/context.js /tmp/cmssdt-perf-baseline/tests/browser/
           ln -s "$PWD/node_modules" /tmp/cmssdt-perf-baseline/node_modules
           PERF_RESULTS="$PWD/performance-results"
           cd /tmp/cmssdt-perf-baseline
-          npx vite --config tests/browser/vite.config.mjs > /tmp/perf-before.log 2>&1 &
+          node node_modules/vite/bin/vite.js --strictPort --config tests/browser/vite.config.mjs > /tmp/perf-before.log 2>&1 &
           PERF_SERVER_PID=$!
           for attempt in $(seq 1 30); do
             curl -fsS http://localhost:5173/tests/browser/index.html > /dev/null && break
@@ -74,7 +74,7 @@ jobs:
           kill "$PERF_SERVER_PID"
           wait "$PERF_SERVER_PID" || true
           cd "$GITHUB_WORKSPACE"
-          npx vite --config tests/browser/vite.config.mjs > /tmp/perf-after.log 2>&1 &
+          node node_modules/vite/bin/vite.js --strictPort --config tests/browser/vite.config.mjs > /tmp/perf-after.log 2>&1 &
           PERF_SERVER_PID=$!
           trap 'kill "$PERF_SERVER_PID"; cat /tmp/perf-before.log /tmp/perf-after.log' EXIT
           for attempt in $(seq 1 30); do
