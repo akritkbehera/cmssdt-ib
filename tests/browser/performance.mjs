@@ -65,10 +65,10 @@ try {
   scroll.frames=await page.evaluate(()=>window.__ibScrollFrames);
   assert.ok(scroll.range.max>40 && scroll.range.end>scroll.range.start+Math.min(100,scroll.range.max*.5),'scroll benchmark must actually move the matrix');
   const search=await measure(async()=>{
-    await page.locator('#gpu-relvals-toggle').first().click();
+    await page.locator('.ib-section-controls').getByRole('button',{name:'RelVals',exact:true}).first().click();
     const input=page.locator('.ib-test-dropdown.show input');
     for(const text of ['N','NV','NVI','NVID','NVIDIA','NVIDIA_GPU4','']){await input.fill(text);await page.waitForTimeout(60);}
-    await page.locator('#gpu-relvals-toggle').first().click();
+    await page.locator('.ib-section-controls').getByRole('button',{name:'RelVals',exact:true}).first().click();
   });
   const density=await measure(async()=>{
     for(const name of ['Compact','Comfortable','Compact','Comfortable']){
