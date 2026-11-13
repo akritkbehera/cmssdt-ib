@@ -52,7 +52,8 @@ export default function useMatrixFit(containerRef, columnCount, contentVersion, 
       const columnWidth = Number(styles.getPropertyValue('--ib-column-units')) || 104;
       const stageWidth = Number(styles.getPropertyValue('--ib-stage-units')) || 88;
       const density = workspace?.dataset.density || 'comfortable';
-      const twoCards = density === 'compact' && card?.dataset.prVisible === 'false' && window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)').matches;
+      const compactDesktop = density === 'compact' && window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)').matches;
+      const twoCards = compactDesktop && card?.dataset.prVisible === 'false';
       const nextBaseKey = `${density}:${columnWidth}:${stageWidth}:${twoCards}:${twoCards ? window.innerHeight + ':' + getComputedStyle(workspace).getPropertyValue('--ib-card-list-top') : ''}`;
       if (!base || baseKey !== nextBaseKey) {
         base=cache.bases.get(nextBaseKey);
@@ -70,7 +71,7 @@ export default function useMatrixFit(containerRef, columnCount, contentVersion, 
       const availableHeight = Math.max(base.height, heightBudget);
       const key = `${nextBaseKey}:${availableWidth}:${availableHeight}:${base.height}`;
       if (key !== lastKey) {
-        const fit = fitMatrix({ ...options, ...(twoCards ? { maxUniformScale: 1, paddingX: 4 } : {}), containerWidth: availableWidth, containerHeight: availableHeight, columnCount, columnWidth, stageWidth, baseHeight: base.height });
+        const fit = fitMatrix({ ...options, ...(compactDesktop ? { maxUniformScale: 1, paddingX: 4 } : {}), containerWidth: availableWidth, containerHeight: availableHeight, columnCount, columnWidth, stageWidth, baseHeight: base.height });
         const values = [fit.width, fit.scale, fit.stageWidth, fit.columnWidth, fit.paddingX, fit.paddingAdded];
         properties.forEach((property, index) => table.style.setProperty(property, `${values[index]}px`));
         [...table.rows].forEach((row, index) => { row.style.height = `${base.rows[index] * fit.scale}px`; });

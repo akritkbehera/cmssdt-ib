@@ -138,7 +138,7 @@ try {
     await page.getByRole('button',{name:'Show Pull Requests',exact:true}).first().click();
     await page.waitForFunction(()=>document.querySelector('.ib-release-panel')?.dataset.prVisible==='true'&&getComputedStyle(document.querySelector('.ib-release-panel')).maxHeight==='none');
     const shown=await metrics();
-    assert.ok(shown.cards[0].height>compact.cards[0].height,'PR shown restores original layout');
+    assert.ok(shown.cards[0].height>=compact.cards[0].height-1,'PR visibility keeps compact cards unclipped');
     await page.getByRole('button',{name:'Hide Pull Requests',exact:true}).first().click();
     await page.waitForTimeout(250);
     await page.evaluate(()=>scrollTo(0,0));

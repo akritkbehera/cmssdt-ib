@@ -92,14 +92,18 @@ export const fixture = <HashRouter>
     </div>
   </DashboardDensity>
 </HashRouter>;
-const navigatorFixture = <HashRouter>
-  <Navigation toLinks={[]} flaworControl={<span>Build variants</span>} archControl={<span>Architectures</span>}/>
+function NavigatorFixture() {
+  const [showPRs,setShowPRs]=useState(false);
+  return <HashRouter>
+  <Navigation showAllPullRequests={showPRs} onToggleAllPullRequests={()=>setShowPRs(value=>!value)} toLinks={[]} flaworControl={<span>Build variants</span>} archControl={<span>Architectures</span>}/>
   <DashboardDensity release="CMSSW_20_1_X">
     <IBGroups data={groups.map(comparisons => ({comparisons}))} releaseQue="CMSSW_20_1_X"
       activeArchs={{os:['el8','el9'],cpu:['amd64','aarch64'],compiler:['gcc14','gcc15']}}
-      showAllPullRequests={false} />
+      showAllPullRequests={showPRs} />
   </DashboardDensity>
 </HashRouter>;
+}
+const navigatorFixture=<NavigatorFixture/>;
 if (typeof document !== 'undefined') {
   const view=new URLSearchParams(location.search).has('navigator') ? navigatorFixture : fixture;
   window.__ibProfile=[];
