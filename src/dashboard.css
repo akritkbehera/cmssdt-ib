@@ -1523,7 +1523,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 }
 .ib-workspace[data-density="compact"] .ib-pr-list-content { padding: 0 !important; }
 .ib-workspace[data-density="compact"] .ib-pr-row-top { gap: 5px !important; }
-.ib-workspace[data-density="compact"] .ib-commits-panel .nav-link { min-height: 28px; }
+.ib-workspace[data-density="compact"] .ib-commits-panel .nav-link { min-height: 28px; font-size: var(--ib-pr-tab-size) !important; padding: var(--ib-pr-tab-pad) !important; }
 @media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
   .ib-workspace[data-density="compact"] .ib-build-identity strong { font-size: clamp(14px, calc(16 * var(--ib-spacing-unit)), 18px) !important; }
 }

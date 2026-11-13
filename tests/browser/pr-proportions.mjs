@@ -24,6 +24,8 @@ try{
     const compact=await measure();
     assert.ok(compact.height<comfortable.height,'compact reduces the whole PR section: '+JSON.stringify({engine,width,comfortable,compact}));
     assert.ok(compact.font>=12&&compact.font<=13.1&&compact.tab<=13,'compact PR text matches matrix-scale typography');
+    const distFont=await panel.locator('#cmsdist-dropdown').evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+    assert.ok(Math.abs(distFont-compact.tab)<=0.5,'CMS Dist and flavour tabs share the same density');
     assert.ok(compact.topGap<=10,'empty heading does not add a blank band above PR rows');
     if(width>=1024){
       assert.ok(compact.row<comfortable.row,'compact row spacing reduces');

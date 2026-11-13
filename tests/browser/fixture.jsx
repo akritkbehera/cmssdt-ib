@@ -32,6 +32,8 @@ if(new URLSearchParams(location.search).has('prproportions')){
   groups.forEach(group=>group.forEach(ib=>{
     ib.compared_tags='previous-->'+ib.release_name;
     ib.merged_prs=Array.from({length:3},(_,i)=>({number:52495-i,title:'Phase-2 HLT: update a representative reconstruction configuration with a longer descriptive title',author_login:'developer'+i,labels:['core','orp','tests'],created_at:'2026-11-11T21:02:00Z'}));
+    ib.cmsdist_merged_prs={[normal]:ib.merged_prs};
+    ib.cmsdist_compared_tags={[normal]:'previous..current'};
   }));
 }
 if(new URLSearchParams(location.search).has('archtooltips')){
