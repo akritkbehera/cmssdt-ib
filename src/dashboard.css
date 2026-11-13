@@ -1476,3 +1476,7 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
   .ib-matrix-section .ib-comparison-matrix .table .flavor-card-wrapper > .flavor-copy-button { grid-column: 3; }
 }
 .ib-release-panel--upcoming .ib-release-panel-header { flex-wrap: nowrap; min-height: 0; padding-block: 6px; }
+
+/* At the tightest desktop height, split the gutter evenly before the two
+   fixed-size text lines can overlap by a table border's fractional pixel. */
+.ib-result-cell .ib-inline-result .ib-delta-slot { height: min(11px, 50%); }

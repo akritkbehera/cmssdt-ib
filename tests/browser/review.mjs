@@ -6,7 +6,8 @@ try {
   const page=await browser.newPage({viewport:{width:1366,height:936}});
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await page.goto('http://localhost:5173/tests/browser/index.html?review=1&dropdowns=1');
-  await page.getByRole('button',{name:'Dashboard help',exact:true}).waitFor();
+  try { await page.getByRole('button',{name:'Dashboard help',exact:true}).waitFor({timeout:10000}); }
+  catch(error){ throw new Error('Review fixture failed: '+JSON.stringify(errors)+'; '+(await page.locator('body').innerText()).slice(0,800),{cause:error}); }
   assert.ok(await page.getByRole('button',{name:'Report an issue',exact:true}).isVisible());
   await page.getByRole('button',{name:'Compact',exact:true}).click();
   const upcoming=page.locator('.ib-release-panel--upcoming');

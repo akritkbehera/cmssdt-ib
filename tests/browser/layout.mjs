@@ -76,7 +76,7 @@ try {
     assert.ok(statusLayout.some(c=>c.slots.length===2),'fixture exercises both signs');
     for(const cell of statusLayout) {
       assert.ok(cell.slots.every(s=>s.contained&&s.height<=11.5),'11px corner slots fit without touching the status: '+JSON.stringify(cell));
-      if(cell.slots.length===2) assert.ok(cell.slots[0].bottom<=cell.slots[1].top+.5,'corner lines do not overlap');
+      if(cell.slots.length===2) assert.ok(cell.slots[0].bottom<=cell.slots[1].top+.5,'corner lines do not overlap: '+JSON.stringify({width,height,cell}));
     }
     const pills = await page.locator('table .ib-table-result-pill').evaluateAll(elements => elements.map(el => {
       const count = el.querySelector('.ib-status-count'), bounds=el.getBoundingClientRect();

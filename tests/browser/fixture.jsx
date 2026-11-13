@@ -78,7 +78,7 @@ export const fixture = <HashRouter>
   <DashboardDensity release="CMSSW_20_1_X">
     <div className="ib-card-list" style={{position:'relative'}}>
       {new URLSearchParams(location.search).has('review') && <>
-        <FixtureCard group={[{isIB:false,next_ib:true,release_queue:'CMSSW_20_1_X',release_name:'nextIB',merged_prs:[]}]}/>
+        <FixtureCard group={[{isIB:false,next_ib:true,release_queue:'CMSSW_20_1_X',release_name:'nextIB',compared_tags:'previous-->CMSSW_20_1_X',merged_prs:[]}]}/>
         <ReviewLabels/>
       </>}
       {groups.map((group,i)=><div key={i}><FixtureCard group={group}/></div>)}
