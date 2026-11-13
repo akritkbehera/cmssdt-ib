@@ -178,13 +178,13 @@ const styles = {
       ? `1px solid ${THEME.surface}`
       : `1px solid transparent`,
     borderRadius: "7px 7px 0 0",
-    padding: "0.45rem 0.8rem",
+    padding: "var(--ib-pr-tab-pad, 0.45rem 0.8rem)",
     fontWeight: 800,
-    fontSize: "0.75rem",
+    fontSize: "var(--ib-pr-tab-size, 0.75rem)",
     transition: "background-color 0.15s ease, border-color 0.15s ease"
   }),
   tabPane: {
-    padding: "1rem",
+    padding: "var(--ib-pr-pane-pad, 1rem)",
     background: THEME.surface
   },
   badge: {
@@ -226,7 +226,7 @@ const styles = {
     transition: "background 0.15s ease"
   },
   prRowWrap: {
-    padding: "6px 10px",
+    padding: "var(--ib-pr-row-pad, 6px 10px)",
     transition:
       "background-color 0.12s ease, border-color 0.12s ease",
   },
@@ -239,12 +239,12 @@ const styles = {
   },
   prRowMeta: {
     
-    fontSize: "0.78rem"
+    fontSize: "var(--ib-pr-meta-size, 0.78rem)"
    
   },
   prRowTitle: {
     color: THEME.text.primary,
-    fontSize: "0.86rem",
+    fontSize: "var(--ib-pr-title-size, 0.86rem)",
     fontWeight: 700,
     lineHeight: 1.35,
     minWidth: 0
@@ -253,13 +253,14 @@ const styles = {
     color: THEME.primary,
     fontWeight: 900,
     textDecoration: "none",
-    fontSize: "0.84rem",
+    fontSize: "var(--ib-pr-title-size, 0.84rem)",
     whiteSpace: "nowrap"
   },
   prActionBtn: {
     borderRadius: "999px",
-    padding: "0.22rem 0.65rem",
-    fontSize: "0.74rem",
+    padding: "var(--ib-pr-action-pad, 0.22rem 0.65rem)",
+    minHeight: "var(--ib-pr-action-height, auto)",
+    fontSize: "var(--ib-pr-action-size, 0.74rem)",
     fontWeight: 800,
     display: "inline-flex",
     alignItems: "center",
@@ -270,12 +271,12 @@ const styles = {
   labelPill: {
     display: "inline-flex",
     alignItems: "center",
-    padding: "2px 8px",
+    padding: "var(--ib-pr-label-pad, 2px 8px)",
     borderRadius: "999px",
     border: `1px solid ${THEME.border}`,
     background: THEME.surfaceMuted,
     color: THEME.text.secondary,
-    fontSize: "0.68rem",
+    fontSize: "var(--ib-pr-label-size, 0.68rem)",
     fontWeight: 800,
     lineHeight: 1.2
   },
@@ -601,6 +602,7 @@ const PRLabels = ({ pr, cmsswLabelsMap }) => {
 
         return (
           <span
+            className="ib-pr-label"
             key={label.baseName}
             title={label.originalName}
             style={{
@@ -1086,22 +1088,8 @@ function renderCommits(
   const sortedPrs = [...enrichedPrs].sort((a, b) => (b.number || 0) - (a.number || 0));
 
   return (
-    <div className="mt-2">
-      <div className="d-flex align-items-center justify-content-between mb-2 px-2">
-        <h6
-          className="d-flex align-items-center m-0"
-          style={{
-            color: THEME.text.primary,
-            fontWeight: 900,
-            fontSize: "0.95rem"
-          }}
-        >
-          {/* <FaGitAlt className="me-2" style={{ color: THEME.primary }} size={14} />
-          Pull Requests
-          <span style={{ ...styles.pill, marginLeft: 8 }}>{sortedPrs.length} total</span> */}
-        </h6>
-      </div>
-      <div className="px-2 pb-2">
+    <div className="ib-pr-list">
+      <div className="ib-pr-list-content px-2 pb-2">
         {sortedPrs.map((pr, index) => {
           const baseBg = index % 2 === 0 ? THEME.surface : THEME.surfaceMuted;
           const isMatchedPr =
@@ -1113,6 +1101,7 @@ function renderCommits(
 
           return (
             <div
+              className="ib-pr-row"
               key={`${repo}-pr-${pr.number}`}
               data-target-pr={isMatchedPr ? String(pr.number) : undefined}
               style={{
@@ -1150,7 +1139,7 @@ function renderCommits(
               <div className="d-flex flex-column gap-2">
                 <div className="d-flex align-items-start justify-content-between gap-2 flex-wrap">
                   <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={styles.prRowTop}>
+                    <div className="ib-pr-row-top" style={styles.prRowTop}>
                       <a
                         href={pr.url}
                         target="_blank"
@@ -1169,7 +1158,7 @@ function renderCommits(
                         :
                       </span>
 
-                      <span style={styles.prRowTitle} title={pr.title}>
+                      <span className="ib-pr-title" style={styles.prRowTitle} title={pr.title}>
                         {truncateTitle(pr.title, 90)}
                       </span>
 
@@ -1192,7 +1181,7 @@ function renderCommits(
                     <Button
                       variant="outline-secondary"
                       size="sm"
-                      style={styles.prActionBtn}
+                      className="ib-pr-action" style={styles.prActionBtn}
                       disabled={isThisPreviewLoading}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1223,6 +1212,7 @@ function renderCommits(
                         color: THEME.text.secondary
                       }}
                       onClick={(e) => e.stopPropagation()}
+                      className="ib-pr-action"
                       title="Open on GitHub"
                     >
                       <FaGithub size={13} />
@@ -1801,7 +1791,7 @@ activateTargetPr = () => {
     if (!Array.isArray(ibComparison) || ibComparison.length === 0) {
       return (
         <>
-          <Card style={styles.card}>
+          <Card className="ib-commits-panel" style={styles.card}>
             <Card.Header
               style={styles.cardHeader}
               onClick={this.toggleExpand}
@@ -1887,7 +1877,7 @@ activateTargetPr = () => {
         <Tab.Pane
           key={`cmssw-pane-${ib.release_queue || "unknown"}-${pos}`}
           eventKey={cmsswTabKey}
-          style={styles.tabPane}
+          className="ib-commits-pane" style={styles.tabPane}
         >
           {/* {renderComparisonLink("cms-sw/cmssw", previousTag, currentTag)} */}
           {renderCommits(
@@ -1967,7 +1957,7 @@ activateTargetPr = () => {
             <Tab.Pane
               key={`cmsdist-pane-${tabKey}`}
               eventKey={tabKey}
-              style={styles.tabPane}
+              className="ib-commits-pane" style={styles.tabPane}
             >
               {/* {renderComparisonLink("cms-sw/cmsdist", prevTag, nextTag)} */}
               {renderCommits(
@@ -2002,7 +1992,7 @@ activateTargetPr = () => {
 
     return (
       <>
-        <Card style={styles.card}>
+        <Card className="ib-commits-panel" style={styles.card}>
           {/* <Card.Header
             style={styles.cardHeader}
             onClick={this.toggleExpand}

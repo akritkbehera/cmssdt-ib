@@ -28,6 +28,12 @@ export const groups = times.map((time, group) => flavors.map((flavor, i) => {
     addons:stage(true,0),dupDict:stage(true,0),merged_prs:[],
     hlt:stage(true,0),static_checks:stage(true,0), runtests:stage(true,0),crab:stage(true,0),fwlite:stage(true,0),rntuple:stage(true,0)};
 }));
+if(new URLSearchParams(location.search).has('prproportions')){
+  groups.forEach(group=>group.forEach(ib=>{
+    ib.compared_tags='previous-->'+ib.release_name;
+    ib.merged_prs=Array.from({length:3},(_,i)=>({number:52495-i,title:'Phase-2 HLT: update a representative reconstruction configuration with a longer descriptive title',author_login:'developer'+i,labels:['core','orp','tests'],created_at:'2026-11-11T21:02:00Z'}));
+  }));
+}
 if(new URLSearchParams(location.search).has('archtooltips')){
   groups.forEach(group=>group.forEach(ib=>{
     ib.compared_tags='previous-->'+ib.release_name;

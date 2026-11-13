@@ -1502,3 +1502,32 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 .ib-arch-tooltip[data-popper-placement^="bottom"] .tooltip-arrow::before { border-bottom-color: white !important; }
 .ib-arch-tooltip[data-popper-placement^="left"] .tooltip-arrow::before { border-left-color: white !important; }
 .ib-arch-tooltip[data-popper-placement^="right"] .tooltip-arrow::before { border-right-color: white !important; }
+
+/* PR lists share the selected density with the matrix above them. */
+.ib-commits-panel .ib-pr-title { overflow-wrap: anywhere; }
+.ib-commits-panel .nav-tabs { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; min-width: 0; }
+.ib-commits-panel .nav-tabs > .nav-item { flex: none; }
+.ib-workspace[data-density="compact"] .ib-commits-panel {
+  --ib-pr-pane-pad: 8px;
+  --ib-pr-row-pad: 3px 8px;
+  --ib-pr-title-size: 13px;
+  --ib-pr-meta-size: 12px;
+  --ib-pr-tab-size: 12px;
+  --ib-pr-tab-pad: 3px 8px;
+  --ib-pr-action-size: 12px;
+  --ib-pr-action-pad: 2px 8px;
+  --ib-pr-action-height: 26px;
+  --ib-pr-label-size: 11px;
+  --ib-pr-label-pad: 1px 5px;
+  border-radius: 6px !important;
+}
+.ib-workspace[data-density="compact"] .ib-pr-list-content { padding: 0 !important; }
+.ib-workspace[data-density="compact"] .ib-pr-row-top { gap: 5px !important; }
+.ib-workspace[data-density="compact"] .ib-commits-panel .nav-link { min-height: 28px; }
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  .ib-workspace[data-density="compact"] .ib-build-identity strong { font-size: clamp(14px, calc(16 * var(--ib-spacing-unit)), 18px) !important; }
+}
+@media (max-width: 767.98px), (pointer: coarse) {
+  .ib-workspace[data-density="compact"] .ib-commits-panel { --ib-pr-action-height: 44px; }
+  .ib-commits-panel .ib-pr-action, .ib-commits-panel .nav-link { min-height: 44px !important; }
+}

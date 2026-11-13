@@ -61,6 +61,9 @@ jobs:
             curl -fsS http://localhost:5173/tests/browser/index.html > /dev/null && break
             sleep 1
           done
+          node tests/browser/pr-proportions.mjs
+          IB_BROWSER=firefox node tests/browser/pr-proportions.mjs
+          IB_BROWSER=webkit node tests/browser/pr-proportions.mjs
           node tests/browser/pr-density.mjs
           IB_BROWSER=firefox node tests/browser/pr-density.mjs
           IB_BROWSER=webkit node tests/browser/pr-density.mjs
