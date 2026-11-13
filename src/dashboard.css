@@ -1480,3 +1480,20 @@ button.ib-summary-badge[aria-pressed="true"] { outline: 2px solid currentColor; 
 /* At the tightest desktop height, split the gutter evenly before the two
    fixed-size text lines can overlap by a table border's fractional pixel. */
 .ib-result-cell .ib-inline-result .ib-delta-slot { height: min(11px, 50%); }
+
+/* CMSDist details remain readable at narrow widths and browser zoom. */
+.ib-arch-tooltip.custom-tooltip { pointer-events: auto; --bs-tooltip-max-width: min(340px, calc(100vw - 24px)); max-width: calc(100vw - 24px); }
+.ib-arch-tooltip.custom-tooltip .tooltip-inner {
+  min-width: 0; width: min(340px, calc(100vw - 24px)); max-width: calc(100vw - 24px);
+  max-height: min(380px, calc(100dvh - 24px)); overflow-y: auto; overscroll-behavior: contain;
+  font-size: 13px; line-height: 1.45; text-align: left;
+}
+.ib-arch-tooltip-content { min-width: 0; padding: 12px; }
+.ib-arch-tooltip-content .small { font-size: inherit; }
+.ib-arch-tooltip-content code { font-size: 12px; line-height: 1.5; white-space: normal; overflow-wrap: anywhere; word-break: break-word; }
+.ib-arch-tooltip-content > div:last-child { margin-bottom: 0 !important; }
+.ib-arch-tooltip.custom-tooltip .tooltip-arrow::before { border-color: transparent !important; }
+.ib-arch-tooltip[data-popper-placement^="top"] .tooltip-arrow::before { border-top-color: white !important; }
+.ib-arch-tooltip[data-popper-placement^="bottom"] .tooltip-arrow::before { border-bottom-color: white !important; }
+.ib-arch-tooltip[data-popper-placement^="left"] .tooltip-arrow::before { border-left-color: white !important; }
+.ib-arch-tooltip[data-popper-placement^="right"] .tooltip-arrow::before { border-right-color: white !important; }

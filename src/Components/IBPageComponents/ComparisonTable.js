@@ -133,7 +133,7 @@ function renderStickyRowLabel(typeKey, color = THEME.text.primary) {
 }
 
 const ArchTooltip = ({ cmsdistTag, isPatch, baseTag }) => (
-  <div className="text-start p-3" style={{ minWidth: '280px' }}>
+  <div className="text-start ib-arch-tooltip-content">
     <div className="d-flex align-items-center border-bottom pb-2 mb-2">
       <FaCodeBranch className="text-primary me-2" size={16} />
       <span className="fw-semibold">CMSDist Tag Information</span>
@@ -172,6 +172,40 @@ const ArchTooltip = ({ cmsdistTag, isPatch, baseTag }) => (
     )}
   </div>
 );
+
+// Hover/focus can move from the trigger into scrollable tag details.
+function ArchitectureTagLink({href, tooltipId, cmsdistTag, isPatch, baseTag, children}) {
+  const [open,setOpen]=React.useState(false);
+  const timer=React.useRef();
+  const focused=React.useRef(false);
+  React.useEffect(()=>()=>clearTimeout(timer.current),[]);
+  const enter=()=>{clearTimeout(timer.current);setOpen(true);};
+  const leave=()=>{
+    clearTimeout(timer.current);
+    timer.current=setTimeout(()=>{if(!focused.current)setOpen(false);},150);
+  };
+  const focus=()=>{focused.current=true;enter();};
+  const blur=()=>{focused.current=false;leave();};
+  const key=event=>{if(event.key==='Escape'){clearTimeout(timer.current);setOpen(false);}};
+  const hover=()=>{
+    clearTimeout(timer.current);
+    timer.current=setTimeout(()=>setOpen(true),typeof tooltipDelayInMs==='number'?tooltipDelayInMs:tooltipDelayInMs.show||0);
+  };
+  return <OverlayTrigger show={open} trigger={[]} placement="auto"
+    popperConfig={{strategy:'fixed',modifiers:[
+      {name:'flip',options:{padding:12,rootBoundary:'viewport'}},
+      {name:'preventOverflow',options:{padding:12,rootBoundary:'viewport',altAxis:true}}
+    ]}}
+    overlay={<Tooltip id={tooltipId} className="custom-tooltip ib-arch-tooltip" tabIndex={0}
+      onMouseEnter={enter} onMouseLeave={leave} onFocus={focus} onBlur={blur} onKeyDown={key}>
+      <ArchTooltip cmsdistTag={cmsdistTag} isPatch={isPatch} baseTag={baseTag}/>
+    </Tooltip>}>
+    <a className="ib-config-content" href={href} target="_blank" rel="noopener noreferrer"
+      style={{display:'block'}} onMouseEnter={hover} onMouseLeave={leave} onFocus={focus} onBlur={blur} onKeyDown={key}>
+      {children}
+    </a>
+  </OverlayTrigger>;
+}
 
 const StatusTooltip = ({ status, value, details, type, running = false }) => {
   const style = statusStyles[status] || statusStyles.secondary;
@@ -998,28 +1032,19 @@ const ComparisonTable = ({ data = EMPTY_LIST, comparisons = EMPTY_COMPARISONS, r
                   const buildTypePrefixIcon = cmsdistTag && cmsdistTag !== "Not Found"
                     ? (
                         isPatch
-                          ? <span title="Patch build: reuses CMSDist tag"><FaTools size={13} /></span>
-                          : <span title="Full build: dedicated CMSDist tag"><FaWrench size={13} /></span>
+                          ? <FaTools size={13} />
+                          : <FaWrench size={13} />
                       )
                     : null;
 
                   const headerState = configurationBuildState(data[pos], arch);
-                  const archStack = <ArchitectureHeader architecture={arch} icon={buildTypePrefixIcon} status={headerState.status} running={headerState.running} colors={configurationColors} productionColor={config.colorCoding.prodColor} />;
+                  const archStack = <ArchitectureHeader architecture={arch} icon={buildTypePrefixIcon} showNativeTooltip={!link} status={headerState.status} running={headerState.running} colors={configurationColors} productionColor={config.colorCoding.prodColor} />;
 
                   const cellContent = link ? (
-                    <OverlayTrigger
-                      placement="top"
-                      overlay={
-                        <Tooltip id={`arch-tooltip-${pos}-${makeSafeId(arch)}`} className="custom-tooltip">
-                          <ArchTooltip cmsdistTag={cmsdistTag} isPatch={isPatch} baseTag={baseTag} />
-                        </Tooltip>
-                      }
-                      delay={tooltipDelayInMs}
-                    >
-                      <a className="ib-config-content" href={link} target="_blank" rel="noopener noreferrer" style={{ display: 'block' }}>
-                        {archStack}
-                      </a>
-                    </OverlayTrigger>
+                    <ArchitectureTagLink href={link} tooltipId={`${phoneRailId}-arch-${pos}-${makeSafeId(arch)}`}
+                      cmsdistTag={cmsdistTag} isPatch={isPatch} baseTag={baseTag}>
+                      {archStack}
+                    </ArchitectureTagLink>
                   ) : (
                     <div className="ib-config-content">{archStack}</div>
                   );

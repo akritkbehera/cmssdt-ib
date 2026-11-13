@@ -61,6 +61,9 @@ jobs:
             curl -fsS http://localhost:5173/tests/browser/index.html > /dev/null && break
             sleep 1
           done
+          node tests/browser/arch-tooltip.mjs
+          IB_BROWSER=firefox node tests/browser/arch-tooltip.mjs
+          IB_BROWSER=webkit node tests/browser/arch-tooltip.mjs
           node tests/browser/review.mjs
           IB_BROWSER=firefox node tests/browser/review.mjs
           IB_BROWSER=webkit node tests/browser/review.mjs

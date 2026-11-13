@@ -1,14 +1,14 @@
 import React from 'react';
 import { architectureParts } from '../../Utils/buildStatus';
 
-export default function ArchitectureHeader({ architecture, icon, status = 'unknown', running = false, colors = {}, productionColor }) {
+export default function ArchitectureHeader({ architecture, icon, status = 'unknown', running = false, colors = {}, productionColor, showNativeTooltip = true }) {
   const values = architectureParts(architecture).filter(Boolean);
   const labels = { passed: 'Passed', failed: 'Failed', warnings: 'Warnings', running: 'Running', queued: 'Queued', unknown: 'Unknown' };
   const isDefault = value => Boolean(productionColor && colors[value] === productionColor);
   const defaultConfiguration = values.length === 3 && values.every(isDefault);
   const description = `${architecture} · ${defaultConfiguration ? 'Default configuration · ' : ''}Build status: ${labels[status]}${running && status !== 'running' ? ' so far; build still running' : ''}`;
   return (
-    <div className="ib-architecture-header ib-config-label" aria-label={description} title={description}>
+    <div className="ib-architecture-header ib-config-label" aria-label={description} title={showNativeTooltip ? description : undefined}>
       {values.map((value, index) => <span className="ib-config-field" key={`${value}-${index}`}>
         <span className={`ib-config-value ${isDefault(value) ? 'is-default' : ''}`}
           style={colors[value] ? { '--ib-field-color': colors[value] } : undefined}>

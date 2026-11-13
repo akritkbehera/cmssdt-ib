@@ -106,3 +106,9 @@ test('expanded matrices expose stage row headings and configuration column headi
   assert.match(matrix, /<th[^>]*scope="row"[^>]*>[\s\S]*?Build/);
   assert.match(matrix, /<th[^>]*scope="col"[^>]*class="ib-config-header/);
 });
+
+test('architecture descriptions remain accessible without a duplicate native tooltip', () => {
+  const html=renderToStaticMarkup(React.createElement(ArchitectureHeader,{architecture:'el9_amd64_gcc14',status:'warnings',showNativeTooltip:false}));
+  assert.match(html,/aria-label="el9_amd64_gcc14/);
+  assert.doesNotMatch(html,/ title=/);
+});

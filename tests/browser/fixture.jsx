@@ -28,6 +28,13 @@ export const groups = times.map((time, group) => flavors.map((flavor, i) => {
     addons:stage(true,0),dupDict:stage(true,0),merged_prs:[],
     hlt:stage(true,0),static_checks:stage(true,0), runtests:stage(true,0),crab:stage(true,0),fwlite:stage(true,0),rntuple:stage(true,0)};
 }));
+if(new URLSearchParams(location.search).has('archtooltips')){
+  groups.forEach(group=>group.forEach(ib=>{
+    ib.compared_tags='previous-->'+ib.release_name;
+    ib.cmsdistTags=Object.fromEntries(ib.tests_archs.map((arch,index)=>[arch,
+      index===1?'IB/previous_'+('long_tag_'.repeat(30))+'/'+arch:'IB/'+ib.release_name+'/'+arch]));
+  }));
+}
 // Exercise empty, decreasing, increasing and mixed gutters, plus a running cell.
 groups.forEach((group, time) => group.forEach((ib, flavor) => {
   const scenario = flavor % 4;
