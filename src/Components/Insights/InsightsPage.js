@@ -55,7 +55,7 @@ function Conversation({ thread, endpoint, token, onSaved, onError, onAuthenticat
 export default function InsightsPage() {
   const [threads, setThreads] = useState([]), [selected, setSelected] = useState(null);
   const [error, setError] = useState(''), [settings, setSettings] = useState(false);
-  const [endpoint, setEndpoint] = useState(() => safeGet('localStorage', 'cmssdt-chat-backend') || import.meta.env.VITE_CHAT_BACKEND_URL || '');
+  const [endpoint, setEndpoint] = useState(() => backendURL(safeGet('localStorage', 'cmssdt-chat-backend') || import.meta.env.VITE_CHAT_BACKEND_URL || ''));
   const [token, setToken] = useState('');
   const [draftURL, setDraftURL] = useState(endpoint), [draftToken, setDraftToken] = useState(token);
   const connection = useChatConnection(endpoint, token, setError);

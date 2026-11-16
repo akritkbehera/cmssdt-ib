@@ -7,7 +7,7 @@ export function backendURL(value) {
   if (url.protocol !== 'https:' && !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)) {
     throw new Error('Use HTTPS for a remote backend.');
   }
-  return value.trim().replace(/\/+$/, '');
+  return value.trim().replace(/\/+$/, '').replace(/\/api\/chat$/, '');
 }
 
 export async function* readEvents(response) {
