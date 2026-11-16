@@ -1,0 +1,69 @@
+name: Deploy CERN chat backend
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'server/chat/**'
+      - 'package*.json'
+      - '.github/workflows/deploy-chat.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cern-chat-backend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment: github-pages
+    runs-on: [self-hosted, Linux, X64, compops]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check deployment configuration
+        env:
+          CERN_AI_KEY: ${{ secrets.CERN_AI_KEY }}
+          CERN_OIDC_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CERN_OIDC_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          CHAT_BACKEND_URL: ${{ vars.CHAT_BACKEND_URL }}
+        run: |
+          set -eu
+          test "$(hostname -s)" = cmscompops02 || { echo 'This deployment must run on cmscompops02'; exit 1; }
+          command -v docker >/dev/null || { echo 'Docker is required on this runner'; exit 1; }
+          docker info >/dev/null
+          for key in CERN_AI_KEY CERN_OIDC_CLIENT_ID CERN_OIDC_CLIENT_SECRET CHAT_BACKEND_URL; do
+            test -n "${!key}" || { echo "Missing $key in the github-pages environment"; exit 1; }
+          done
+          case "$CHAT_BACKEND_URL" in
+            https://*/api/chat) ;;
+            *) echo 'CHAT_BACKEND_URL must be https://YOUR-BACKEND-HOST/api/chat (no trailing slash)'; exit 1 ;;
+          esac
+      - name: Build backend image
+        run: docker build -f server/chat/Dockerfile -t cmssdt-chat:${{ github.sha }} .
+      - name: Start persistent backend
+        env:
+          CERN_AI_KEY: ${{ secrets.CERN_AI_KEY }}
+          CERN_OIDC_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CERN_OIDC_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          CHAT_BACKEND_URL: ${{ vars.CHAT_BACKEND_URL }}
+          CERN_AI_MODEL: ${{ vars.CERN_AI_MODEL || 'MiMo-V2.6-Pro-MOPD-FLATIRON' }}
+        run: |
+          set -eu
+          export CERN_OIDC_REDIRECT_URI="$CHAT_BACKEND_URL/auth/callback"
+          docker rm -f cmssdt-chat-backend 2>/dev/null || true
+          docker run -d --name cmssdt-chat-backend --restart unless-stopped \
+            --init --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --log-opt max-size=10m --log-opt max-file=3 \
+            -p 127.0.0.1:8787:8787 \
+            -e CERN_AI_KEY -e CERN_AI_MODEL \
+            -e CERN_OIDC_CLIENT_ID -e CERN_OIDC_CLIENT_SECRET -e CERN_OIDC_REDIRECT_URI \
+            -e CHAT_ALLOWED_ORIGINS=https://akritkbehera.github.io \
+            cmssdt-chat:${{ github.sha }}
+      - name: Check backend health
+        run: |
+          curl --fail --silent --show-error --retry 10 --retry-delay 2 --retry-connrefused \
+            http://127.0.0.1:8787/api/chat/health >/dev/null
+          echo 'Backend is running on loopback port 8787. Authenticated MCP must be verified in the browser.'
