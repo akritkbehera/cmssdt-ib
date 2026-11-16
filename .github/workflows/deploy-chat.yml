@@ -65,7 +65,22 @@ jobs:
         run: |
           set -eu
           export CERN_OIDC_REDIRECT_URI="$CHAT_BACKEND_URL/auth/callback"
-          runtime_args=()
+          # Reuse the host's public CA trust without mounting private keys or
+          # relabeling system certificate directories for rootless Podman.
+          trust_dir="$HOME/.local/share/cmssdt-chat/tls"
+          mkdir -p "$trust_dir"
+          chmod 755 "$trust_dir"
+          host_bundle=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+          test -r "$host_bundle" || { echo 'Host CA bundle is unavailable'; exit 1; }
+          cp "$host_bundle" "$trust_dir/ca-bundle.pem"
+          chmod 644 "$trust_dir/ca-bundle.pem"
+          runtime_args=(-e CURL_CA_BUNDLE=/run/cmssdt-trust/ca-bundle.pem
+            -e NODE_EXTRA_CA_CERTS=/run/cmssdt-trust/ca-bundle.pem)
+          if docker --version | grep -qi podman; then
+            runtime_args+=(-v "$trust_dir:/run/cmssdt-trust:ro,Z")
+          else
+            runtime_args+=(-v "$trust_dir:/run/cmssdt-trust:ro")
+          fi
           if [ "$OPENSEARCH_AUTH_MODE" = kerberos ]; then
             umask 077
             cache_dir="$HOME/.local/share/cmssdt-chat/krb5"
