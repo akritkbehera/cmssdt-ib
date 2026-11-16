@@ -1,3 +1,4 @@
+import { createKerberosFetch } from './kerberos.mjs';
 import OpenAI from 'openai';
 import Ajv from 'ajv';
 import { ChatError, publicError } from './errors.mjs';
@@ -13,6 +14,7 @@ export async function openMcp(config, signal) {
   const client = new Client({ name: 'cmssdt-insights', version: '1.0.0' });
   const transport = new StreamableHTTPClientTransport(new URL(config.mcpURL), {
     requestInit: { headers: config.mcpHeaders, redirect: 'error' },
+    ...(config.kerberosCache ? { fetch: createKerberosFetch(config) } : {}),
   });
   try {
     await client.connect(transport, { signal, timeout: 30000 });

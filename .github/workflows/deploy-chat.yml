@@ -17,9 +17,22 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run test:chat
   deploy:
+    needs: verify
     environment: github-pages
     runs-on: [self-hosted, Linux, X64, compops]
+    env:
+      OPENSEARCH_AUTH_MODE: ${{ vars.OPENSEARCH_AUTH_MODE || 'kerberos' }}
     steps:
       - uses: actions/checkout@v4
       - name: Check deployment configuration
@@ -52,9 +65,26 @@ jobs:
         run: |
           set -eu
           export CERN_OIDC_REDIRECT_URI="$CHAT_BACKEND_URL/auth/callback"
+          runtime_args=()
+          if [ "$OPENSEARCH_AUTH_MODE" = kerberos ]; then
+            umask 077
+            cache_dir="$HOME/.local/share/cmssdt-chat/krb5"
+            mkdir -p "$cache_dir"
+            chmod 700 "$cache_dir"
+            export OPENSEARCH_KRB5CCNAME=FILE:/run/cmssdt-krb5/ccache
+            runtime_args+=(--user "$(id -u):$(id -g)" -e OPENSEARCH_KRB5CCNAME
+              -e KRB5_CONFIG=/app/server/chat/krb5.conf)
+            if docker --version | grep -qi podman; then
+              runtime_args+=(--userns keep-id -v "$cache_dir:/run/cmssdt-krb5:rw,Z")
+            else
+              runtime_args+=(-v "$cache_dir:/run/cmssdt-krb5:rw")
+            fi
+          elif [ "$OPENSEARCH_AUTH_MODE" != oidc ]; then
+            echo 'OPENSEARCH_AUTH_MODE must be kerberos or oidc'; exit 1
+          fi
           docker rm -f cmssdt-chat-backend 2>/dev/null || true
           # Rootless Podman forwarding helpers must survive Actions orphan cleanup.
-          RUNNER_TRACKING_ID= docker run -d --name cmssdt-chat-backend --restart unless-stopped \
+          RUNNER_TRACKING_ID= docker run "${runtime_args[@]}" -d --name cmssdt-chat-backend --restart unless-stopped \
             --init --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m \
             --cap-drop ALL --security-opt no-new-privileges \
             --log-opt max-size=10m --log-opt max-file=3 \

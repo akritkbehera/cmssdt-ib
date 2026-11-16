@@ -9,6 +9,7 @@ export function loadConfig(env = process.env) {
     baseURL: env.CERN_AI_BASE_URL || 'https://aigw.cern.ch/v1',
     mcpURL: env.OPENSEARCH_MCP_URL || 'https://os-cmssdt.cern.ch/os/_plugins/_ml/mcp',
     mcpHeaders: JSON.parse(env.OPENSEARCH_MCP_HEADERS || '{}'),
+    kerberosCache: env.OPENSEARCH_KRB5CCNAME,
     mcpTokenFile: env.OPENSEARCH_TOKEN_FILE,
     mcpAudience: 'itos_cmssdt',
     oidcClientId: env.CERN_OIDC_CLIENT_ID,
@@ -31,6 +32,11 @@ export function loadConfig(env = process.env) {
     const url = new URL(config[key]);
     if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password) throw new Error(`Invalid ${key}`);
     if (url.protocol === 'http:' && !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)) throw new Error(`${key} must use HTTPS except for local tests.`);
+  }
+  if (config.kerberosCache) {
+    if (!config.kerberosCache.startsWith('FILE:/run/cmssdt-krb5/')) throw new Error('Use a dedicated FILE cache under /run/cmssdt-krb5/.');
+    if (config.mcpTokenFile || Object.keys(config.mcpHeaders).length) throw new Error('Do not combine Kerberos with OpenSearch bearer tokens or custom headers.');
+    if (new URL(config.mcpURL).origin !== 'https://os-cmssdt.cern.ch') throw new Error('Kerberos is restricted to the CERN CMSSDT endpoint.');
   }
   return config;
 }

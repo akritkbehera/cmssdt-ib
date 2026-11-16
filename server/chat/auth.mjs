@@ -57,6 +57,7 @@ export function createAuth(config, dependencies = {}) {
     if (mode === 'oidc') {
       const id = bearer(req), session = sessions.get(id);
       if (!session) throw authRequired();
+      if (config.kerberosCache) return config;
       if (session.target.expires < Date.now() + 30000) {
         session.refresh ||= (async () => {
           const provider = await getProvider();
@@ -107,10 +108,11 @@ export function createAuth(config, dependencies = {}) {
           const provider = await getProvider();
           const callback = new URL(config.oidcRedirectURI); callback.search = url.search;
           const tokens = await codeGrant(provider, callback, { pkceCodeVerifier: flow.verifier, expectedState: state, expectedNonce: flow.nonce });
-          const target = await exchangeTokens(provider, tokens);
+          // Login still protects the shared backend, but MCP uses the host's Kerberos identity.
+          const target = config.kerberosCache ? { expires: Infinity } : await exchangeTokens(provider, tokens);
           if (sessions.size >= 128) throw new ChatError('busy', 'Too many active sessions. Try again later.', 429);
           const session = random();
-          sessions.set(session, { tokens, target, expires: Date.now() + 8 * 3600000 });
+          sessions.set(session, { tokens: config.kerberosCache ? {} : tokens, target, expires: Date.now() + 8 * 3600000 });
           callbackPage(res, flow.origin, { type: 'cmssdt-cern-login', loginId: flow.loginId, session });
         } catch (error) {
           const issue = publicError(error);
