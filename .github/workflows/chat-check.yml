@@ -1,0 +1,39 @@
+name: IB Insights chat
+on:
+  push:
+    branches: [master]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  chat:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run test:chat
+      - run: npm run build:pages
+      - run: chown "$(id -u):$(id -g)" "$HOME"
+      - name: Test production chat with local fixtures
+        run: |
+          npm run preview -- --host 0.0.0.0 --port 5174 > /tmp/chat-preview.log 2>&1 &
+          trap 'cat /tmp/chat-preview.log' EXIT
+          for attempt in $(seq 1 30); do
+            curl -fsS http://localhost:5174/ > /dev/null && break
+            sleep 1
+          done
+          node tests/browser/chat.mjs
+          IB_BROWSER=firefox node tests/browser/chat.mjs
+          IB_BROWSER=webkit node tests/browser/chat.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chat-responsive-screenshots
+          path: chat-review

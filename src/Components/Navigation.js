@@ -338,6 +338,9 @@ const Navigation = ({ toLinks, flaworControl, archControl, showAllPullRequests =
 
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="mx-auto gap-lg-1 align-items-lg-center">
+              <LinkContainer to="/insights" onClick={handleNavbarClose}>
+                <Nav.Link className="navpill d-flex align-items-center">IB Insights</Nav.Link>
+              </LinkContainer>
               {importantNavLinks}
 
               {olderMenuItems.length > 0 && (

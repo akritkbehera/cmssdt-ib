@@ -2,6 +2,7 @@ import React, { Component, lazy, Suspense } from 'react';
 import './App.css';
 const IBLayoutWrapper = lazy(() => import('./Components/IBLayoutWrapper'));
 const RelValRoute = lazy(() => import('./Components/RelValRoute'));
+const InsightsPage = lazy(() => import('./Components/Insights/InsightsPage'));
 import { Routes, Route, Navigate } from "react-router-dom";
 import { config } from './config';
 import { getSingleFile } from "./Utils/ajax";
@@ -91,4 +92,9 @@ class App extends Component {
   }
 }
 
-export default App;
+export default function AppRoutes() {
+  return <Routes>
+    <Route path="/insights" element={<Suspense fallback={<div role="status" className="p-3">Loading chat…</div>}><InsightsPage /></Suspense>} />
+    <Route path="*" element={<App />} />
+  </Routes>;
+}
