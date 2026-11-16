@@ -53,7 +53,8 @@ jobs:
           set -eu
           export CERN_OIDC_REDIRECT_URI="$CHAT_BACKEND_URL/auth/callback"
           docker rm -f cmssdt-chat-backend 2>/dev/null || true
-          docker run -d --name cmssdt-chat-backend --restart unless-stopped \
+          # Rootless Podman forwarding helpers must survive Actions orphan cleanup.
+          RUNNER_TRACKING_ID= docker run -d --name cmssdt-chat-backend --restart unless-stopped \
             --init --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m \
             --cap-drop ALL --security-opt no-new-privileges \
             --log-opt max-size=10m --log-opt max-file=3 \
