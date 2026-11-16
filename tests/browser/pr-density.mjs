@@ -16,10 +16,13 @@ try{
     const closeMenu=async()=>{
       const toggle=page.locator('.navbar-toggler');
       if(await toggle.isVisible()&&await toggle.getAttribute('aria-expanded')==='true')await toggle.click();
+      await page.waitForFunction(()=>!document.querySelector('#basic-navbar-nav')?.classList.contains('collapsing'));
     };
     const togglePRs=async name=>{
       const button=page.getByRole('button',{name,exact:true});
       if(!await button.isVisible())await page.locator('.navbar-toggler').click();
+      await page.waitForFunction(()=>!document.querySelector('#basic-navbar-nav')?.classList.contains('collapsing'));
+      await button.scrollIntoViewIfNeeded();
       await button.click();await closeMenu();
     };
     for(const density of ['Compact','Comfortable']){
