@@ -1,4 +1,4 @@
-.insights-page { height: 100dvh; display: flex; flex-direction: column; background: var(--ui-bg, #f6f8fa); color: var(--ui-text, #182230); font-size: 14px; }
+.insights-page { height: 100dvh; display: flex; flex-direction: column; background: var(--ui-page, #f6f8fa); color: var(--ui-text, #182230); font: 14px var(--ui-font-sans, system-ui, sans-serif); }
 .insights-page button, .insights-page input, .insights-page textarea { font: inherit; }
 .insights-page button { border: 1px solid #d7dfe7; border-radius: 9px; background: #fff; color: #25384c; padding: 8px 12px; cursor: pointer; }
 .insights-page button:disabled { opacity: .45; cursor: default; }

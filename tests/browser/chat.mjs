@@ -9,13 +9,19 @@ try {
   for (const width of [390, 1440]) {
     const context = await browser.newContext({ viewport: { width, height: 844 } });
     const page = await context.newPage(), errors = [], requests = [];
-    let failNext = false;
+    let failNext = false, holdNext = false, release;
     page.on('pageerror', error => errors.push(error.message));
     // No build-data fixtures: /insights must load independently of monitoring.
     await page.route('**/api/chat/health', route => route.fulfill({ json: { ready: true, model: 'fixture-model' } }));
     await page.route('**/api/chat', async route => {
       const body = route.request().postDataJSON(); requests.push(body);
       if (failNext) { failNext = false; await route.fulfill({ status: 503, json: { error: 'Fixture backend unavailable' } }); return; }
+      if (holdNext) {
+        holdNext = false;
+        await new Promise(resolve => { release = resolve; });
+        await route.fulfill({ contentType: 'application/x-ndjson', body: '{"type":"done"}\n' }).catch(() => {});
+        return;
+      }
       const text = body.messages.at(-1).content === 'Follow up' ? 'Follow-up answer using context.' : 'Fixture answer from cmssdt-ibs: **120 seconds**.';
       await route.fulfill({ contentType: 'application/x-ndjson', body: [
         { type: 'activity', text: 'Querying SearchIndexTool…' },
@@ -37,6 +43,13 @@ try {
     await input.fill('Independent question'); await page.getByRole('button', { name: 'Send message', exact: true }).click();
     await page.getByText('120 seconds', { exact: true }).waitFor();
     assert.equal(requests.at(-1).messages.length, 1, 'new conversation does not send another conversation');
+    holdNext = true;
+    const started = page.waitForRequest(request => request.url().endsWith('/api/chat') && request.postDataJSON().messages.at(-1).content === 'Stop example');
+    await input.fill('Stop example'); await page.getByRole('button', { name: 'Send message', exact: true }).click();
+    await started;
+    await page.getByRole('button', { name: 'Stop response', exact: true }).click();
+    release();
+    await page.getByRole('button', { name: 'Stop response', exact: true }).waitFor({ state: 'detached' });
     await page.getByRole('button', { name: 'Build duration', exact: true }).click();
     await page.getByText('Follow-up answer using context.').waitFor();
     page.once('dialog', dialog => dialog.accept('Saved investigation'));

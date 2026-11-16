@@ -38,6 +38,7 @@ export function createChatServer(config, agent = runAgent) {
       }
       messages = validateMessages(JSON.parse(body));
     } catch { fail(400, 'Invalid or oversized conversation. Start a new chat if needed.'); return; }
+    if (active >= 4) { fail(429, 'Chat backend is busy. Try again shortly.'); return; }
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 180000);
     res.on('close', () => controller.abort());

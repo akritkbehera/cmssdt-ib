@@ -46,6 +46,7 @@ export async function runAgent({ config, messages, signal, emit, client, model }
     const ajv = new Ajv({ strict: false });
     const validators = new Map(tools.map(tool => [tool.function.name, ajv.compile(tool.function.parameters)]));
     const context = [{ role: 'system', content: SYSTEM }, ...messages];
+    let evidenceSize = 0;
     for (let step = 0; step < config.maxSteps; step++) {
       const stream = await ai.chat.completions.create({ model: config.model, messages: context,
         tools, tool_choice: 'auto', stream: true, max_tokens: 4096 }, { signal });
@@ -82,6 +83,8 @@ export async function runAgent({ config, messages, signal, emit, client, model }
         emit({ type: 'activity', text: `Querying ${call.function.name}…` });
         const result = await mcp.callTool({ name: call.function.name, arguments: args }, undefined, { signal, timeout: 30000 });
         const content = JSON.stringify(result);
+        evidenceSize += Math.min(content.length, 48000);
+        if (evidenceSize > 192000) throw new Error('Evidence context limit reached. Ask a narrower question.');
         context.push({ role: 'tool', tool_call_id: call.id, content: content.length > 48000
           ? JSON.stringify({ truncated: true, note: 'Tool result exceeded context limit. Request a smaller query or aggregation.', excerpt: content.slice(0, 48000) }) : content });
       }
