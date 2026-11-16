@@ -64,6 +64,10 @@ jobs:
             cmssdt-chat:${{ github.sha }}
       - name: Check backend health
         run: |
-          curl --fail --silent --show-error --retry 10 --retry-delay 2 --retry-connrefused \
-            http://127.0.0.1:8787/api/chat/health >/dev/null
+          if ! curl --fail --silent --show-error --connect-timeout 2 --max-time 5 \
+            --retry 10 --retry-delay 2 --retry-all-errors \
+            http://127.0.0.1:8787/api/chat/health >/dev/null; then
+            docker inspect --format 'Container state: {{.State.Status}}; exit code: {{.State.ExitCode}}' cmssdt-chat-backend
+            exit 1
+          fi
           echo 'Backend is running on loopback port 8787. Authenticated MCP must be verified in the browser.'
