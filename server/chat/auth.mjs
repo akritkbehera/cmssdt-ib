@@ -64,7 +64,7 @@ export function createAuth(config, dependencies = {}) {
           const refreshed = await refreshGrant(provider, session.tokens.refresh_token);
           session.tokens = { ...refreshed, refresh_token: refreshed.refresh_token || session.tokens.refresh_token };
           session.target = await exchangeTokens(provider, session.tokens);
-        })().catch(error => { sessions.delete(id); throw publicError(error); }).finally(() => { session.refresh = undefined; });
+        })().catch(error => { sessions.delete(id); throw error instanceof ChatError ? error : authRequired(); }).finally(() => { session.refresh = undefined; });
         await session.refresh;
       }
       return { ...config, mcpHeaders: { ...config.mcpHeaders, Authorization: `Bearer ${session.target.accessToken}` } };

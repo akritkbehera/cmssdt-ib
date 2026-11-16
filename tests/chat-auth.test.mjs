@@ -22,6 +22,7 @@ test('OIDC configuration requires a distinct confidential client and exact HTTPS
 });
 
 test('PKCE login binds state and cookie, returns only an opaque session, and logout revokes it', async t => {
+  let expireTarget = false;
   const origin = 'https://akritkbehera.github.io';
   const config = loadConfig({ CERN_OIDC_CLIENT_ID: 'insights-test', CERN_OIDC_CLIENT_SECRET: 'private-server-secret',
     CERN_OIDC_REDIRECT_URI: 'https://backend.test/api/chat/auth/callback' });
@@ -33,7 +34,8 @@ test('PKCE login binds state and cookie, returns only an opaque session, and log
       assert.ok(checks.pkceCodeVerifier.length >= 43); assert.ok(checks.expectedState); assert.ok(checks.expectedNonce);
       return { access_token: 'source-access-secret', refresh_token: 'source-refresh-secret' };
     },
-    exchange: async () => ({ accessToken: 'target-access-secret', expires: Date.now() + 3600000 }),
+    exchange: async () => ({ accessToken: 'target-access-secret', expires: Date.now() + (expireTarget ? -1 : 3600000) }),
+    refreshGrant: async () => { throw new Error('invalid_grant: private refresh details'); },
   });
   const url = await start(t, createChatServer(config, undefined, { auth }));
   const login = await fetch(`${url}/api/chat/auth/start?origin=${encodeURIComponent(origin)}&login_id=12345678-1234-1234-1234-123456789abc`, { redirect: 'manual' });
@@ -60,6 +62,12 @@ test('PKCE login binds state and cookie, returns only an opaque session, and log
   const another = await fetch(`${url}/api/chat/auth/start?origin=${encodeURIComponent(origin)}&login_id=22345678-1234-1234-1234-123456789abc`, { redirect: 'manual' });
   const anotherState = new URL(another.headers.get('location')).searchParams.get('state');
   assert.equal((await fetch(`${url}/api/chat/auth/callback?state=${anotherState}&code=code-for-test`)).status, 400, 'state alone cannot replace the login binding cookie');
+  expireTarget = true;
+  const expiring = await fetch(`${url}/api/chat/auth/start?origin=${encodeURIComponent(origin)}&login_id=32345678-1234-1234-1234-123456789abc`, { redirect: 'manual' });
+  const expiringState = new URL(expiring.headers.get('location')).searchParams.get('state');
+  const expiringResponse = await fetch(`${url}/api/chat/auth/callback?state=${expiringState}&code=code-for-test`, { headers: { Cookie: expiring.headers.get('set-cookie').split(';')[0] } });
+  const expiringMessage = JSON.parse((await expiringResponse.text()).match(/postMessage\((\{.*?\}),/s)[1]);
+  await assert.rejects(() => auth.resolve({ headers: { authorization: `Bearer ${expiringMessage.session}` } }), error => error.status === 401 && error.code === 'authentication_required' && !error.message.includes('private'));
 });
 
 test('fresh CLI token file is re-read so renewal does not require server restart', async t => {
