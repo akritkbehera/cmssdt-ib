@@ -18,6 +18,10 @@ export default function useChatConnection(endpoint, serviceToken, onError) {
   useEffect(() => {
     const controller = new AbortController();
     setStatus('Checking backend…');
+    const timeout = setTimeout(() => {
+      setStatus('Backend health check timed out. Open its HTTPS health page to check connectivity and certificate trust.');
+      controller.abort();
+    }, 12000);
     fetch(`${endpoint}/api/chat/health`, { signal: controller.signal,
       headers: serviceToken ? { Authorization: `Bearer ${serviceToken}` } : {} })
       .then(async response => { const result = await response.json(); if (!response.ok) throw new Error(result.error); return result; })
@@ -25,8 +29,8 @@ export default function useChatConnection(endpoint, serviceToken, onError) {
         setMode(value.authMode || 'service');
         setStatus(value.ready ? `Backend configured · ${value.model} · MCP not tested`
           : 'Backend needs CERN model configuration · MCP not tested');
-      }).catch(error => { if (!controller.signal.aborted) setStatus(error.message && error.message !== 'Failed to fetch' && !error.message.includes('JSON') ? error.message : 'Backend unavailable · open Connection'); });
-    return () => controller.abort();
+      }).catch(error => { if (!controller.signal.aborted) setStatus(error.message && error.message !== 'Failed to fetch' && !error.message.includes('JSON') ? error.message : 'Backend unavailable · open Connection'); }).finally(() => clearTimeout(timeout));
+    return () => { clearTimeout(timeout); controller.abort(); };
   }, [endpoint, serviceToken]);
   const testConnection = useCallback(async override => {
     probe.current?.abort();
