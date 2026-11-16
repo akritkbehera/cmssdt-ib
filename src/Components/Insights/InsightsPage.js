@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm';
 import { FaPlus, FaCog, FaArrowLeft, FaRegCommentDots, FaPaperPlane, FaStop, FaPen, FaTrash } from 'react-icons/fa';
 import { createThread, deleteThread, renameThread, listThreads, historyAdapter } from './storage';
 import { backendURL, chatAdapter } from './transport';
+import useChatConnection from './useChatConnection';
 import './insights.css';
 
 const safeGet = (store, key) => { try { return window[store].getItem(key) || ''; } catch { return ''; } };
@@ -21,9 +22,9 @@ function Message() {
     <MessagePrimitive.Error><ErrorPrimitive.Root className="insights-error" role="alert"><ErrorPrimitive.Message /></ErrorPrimitive.Root></MessagePrimitive.Error>
   </MessagePrimitive.Root>;
 }
-function Conversation({ thread, endpoint, token, onSaved, onError }) {
+function Conversation({ thread, endpoint, token, onSaved, onError, onAuthenticationError }) {
   const [activity, setActivity] = useState('');
-  const adapter = useMemo(() => chatAdapter({ endpoint, token, onActivity: setActivity }), [endpoint, token]);
+  const adapter = useMemo(() => chatAdapter({ endpoint, token, onActivity: setActivity, onError: onAuthenticationError }), [endpoint, token, onAuthenticationError]);
   const history = useMemo(() => historyAdapter(thread.id, onSaved, onError), [thread.id, onSaved, onError]);
   const runtime = useLocalRuntime(adapter, { adapters: { history } });
   useEffect(() => () => runtime.thread.cancelRun(), [runtime]);
@@ -55,9 +56,10 @@ export default function InsightsPage() {
   const [threads, setThreads] = useState([]), [selected, setSelected] = useState(null);
   const [error, setError] = useState(''), [settings, setSettings] = useState(false);
   const [endpoint, setEndpoint] = useState(() => safeGet('localStorage', 'cmssdt-chat-backend') || import.meta.env.VITE_CHAT_BACKEND_URL || '');
-  const [token, setToken] = useState(() => safeGet('sessionStorage', 'cmssdt-chat-access'));
+  const [token, setToken] = useState('');
   const [draftURL, setDraftURL] = useState(endpoint), [draftToken, setDraftToken] = useState(token);
-  const [connection, setConnection] = useState('Checking backend…');
+  const connection = useChatConnection(endpoint, token, setError);
+  useEffect(() => { try { sessionStorage.removeItem('cmssdt-chat-access'); } catch { /* Tokens now remain in memory. */ } }, []);
   const refresh = useCallback(async () => { try { setThreads(await listThreads()); } catch { setError('Browser storage is unavailable. Enable site storage to save and open conversations.'); } }, []);
   useEffect(() => { let live = true; (async () => {
     try {
@@ -67,15 +69,6 @@ export default function InsightsPage() {
       if (live) { setThreads(existing.length ? existing : [thread]); setSelected(thread); }
     } catch { if (live) setError('Browser storage is unavailable. Enable site storage to use conversations.'); }
   })(); return () => { live = false; }; }, []);
-  useEffect(() => {
-    const controller = new AbortController();
-    setConnection('Checking backend…');
-    fetch(`${endpoint}/api/chat/health`, { signal: controller.signal, headers: token ? { Authorization: `Bearer ${token}` } : {} })
-      .then(async response => { if (!response.ok) throw new Error(); return response.json(); })
-      .then(status => setConnection(status.ready ? `Backend configured · ${status.model}` : 'Backend needs CERN model and MCP configuration'))
-      .catch(() => { if (!controller.signal.aborted) setConnection('Backend unavailable · open Connection'); });
-    return () => controller.abort();
-  }, [endpoint, token]);
   const act = async fn => { try { setError(''); await fn(); await refresh(); } catch { setError('Could not save this change in browser storage.'); } };
   return <div className="insights-page">
     <header className="insights-header"><Link to="/" aria-label="Back to builds"><FaArrowLeft /> Builds</Link>
@@ -84,13 +77,12 @@ export default function InsightsPage() {
       event.preventDefault(); try {
         const url = backendURL(draftURL);
         localStorage.setItem('cmssdt-chat-backend', url);
-        sessionStorage.setItem('cmssdt-chat-access', draftToken);
         setEndpoint(url); setToken(draftToken); setError(''); setSettings(false);
       } catch (err) { setError(err.message); }
     }}>
       <label>Backend address<input type="url" placeholder="https://your-backend.example" value={draftURL} onChange={event => setDraftURL(event.target.value)} /></label>
-      <label>Backend access token<input type="password" autoComplete="off" value={draftToken} onChange={event => setDraftToken(event.target.value)} /></label>
-      <p>Leave the address empty for a same-origin backend. The access token lasts for this tab session. Configure your CERN AI key and OpenSearch credentials on the server.</p>
+      {connection.mode !== 'oidc' && <label>Backend access token<input type="password" autoComplete="off" value={draftToken} onChange={event => setDraftToken(event.target.value)} /></label>}
+      <p>Leave the address empty for a same-origin backend. Authentication stays in memory and is cleared on reload. CERN AI and OpenSearch credentials belong on the backend.</p>
       <button type="submit">Save connection</button>
     </form>}
     {error && <div className="insights-error" role="alert">{error}</div>}
@@ -106,8 +98,15 @@ export default function InsightsPage() {
           }); }}><FaTrash /></button>
         </li>)}</ul>
       </aside>
-      <main className="insights-main"><p className="insights-connection" role="status">{connection}</p>
-        {selected && <Conversation key={`${selected.id}:${endpoint}:${token}`} thread={selected} endpoint={endpoint} token={token} onSaved={refresh} onError={setError} />}
+      <main className="insights-main"><div className="insights-connection-bar">
+        <p className="insights-connection" role="status">{connection.status}</p>
+        <div className="insights-connection-actions">
+          {connection.mode === 'oidc' && (connection.signedIn
+            ? <button onClick={connection.logout}>Sign out</button>
+            : <button onClick={connection.login} disabled={connection.signingIn}>{connection.signingIn ? 'Signing in…' : 'Sign in with CERN'}</button>)}
+          <button onClick={() => connection.testConnection()} disabled={connection.checking || (connection.mode === 'oidc' && !connection.signedIn)}>{connection.checking ? 'Checking MCP…' : 'Test MCP connection'}</button>
+        </div></div>
+        {selected && <Conversation key={`${selected.id}:${endpoint}:${connection.token}`} thread={selected} endpoint={endpoint} token={connection.token} onSaved={refresh} onError={setError} onAuthenticationError={connection.expired} />}
       </main>
     </div>
   </div>;

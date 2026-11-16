@@ -34,6 +34,8 @@ jobs:
         run: npm ci
 
       - name: Build site for GitHub Pages
+        env:
+          VITE_CHAT_BACKEND_URL: ${{ vars.CHAT_BACKEND_URL }}
         run: npm run build:pages
 
       - name: Upload Pages artifact

@@ -11,7 +11,9 @@
     "axios-cache-plugin": "^0.1.0",
     "bootstrap": "^5.3.3",
     "idb": "^8.0.4",
+    "jose": "^6.2.17",
     "openai": "^7.57.0",
+    "openid-client": "^6.9.0",
     "query-string": "^9.5.1",
     "react": "^19.2.5",
     "react-bootstrap": "^2.10.10",
@@ -32,7 +34,8 @@
     "sync:preview": "python3 scripts/sync-preview.py",
     "build:preview": "npm run build && python3 scripts/sync-preview.py --build",
     "chat:server": "node --env-file-if-exists=.env.chat server/chat/index.mjs",
-    "test:chat": "node --test tests/chat-*.test.mjs"
+    "test:chat": "node --test tests/chat-*.test.mjs",
+    "chat:check": "node --env-file-if-exists=.env.chat server/chat/check-mcp.mjs"
   },
   "engines": {
     "node": ">=18.18 || >=20",

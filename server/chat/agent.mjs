@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import Ajv from 'ajv';
+import { ChatError, publicError } from './errors.mjs';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 
@@ -16,7 +17,7 @@ export async function openMcp(config, signal) {
   try {
     await client.connect(transport, { signal, timeout: 30000 });
     return client;
-  } catch (error) { await client.close().catch(() => {}); throw error; }
+  } catch (error) { await client.close().catch(() => {}); throw publicError(error); }
 }
 
 export async function discoverTools(client, signal) {
@@ -24,13 +25,13 @@ export async function discoverTools(client, signal) {
   let cursor;
   const seen = new Set();
   do {
-    const page = await client.listTools(cursor ? { cursor } : {}, { signal, timeout: 30000 });
+    const page = await client.listTools(cursor ? { cursor } : {}, { signal, timeout: 30000 }).catch(error => { throw publicError(error); });
     tools.push(...page.tools.filter(tool => READ_TOOLS.has(tool.name)));
     cursor = page.nextCursor;
     if (cursor && seen.has(cursor)) throw new Error('Repeated MCP pagination cursor');
     seen.add(cursor);
   } while (cursor);
-  if (!tools.length) throw new Error('No approved read tools are registered.');
+  if (!tools.length) throw new ChatError('tools_not_registered', 'MCP initialized but no approved read tools were discovered. Register ListIndexTool, IndexMappingTool or SearchIndexTool.', 409, 'opensearch');
   return tools.map(tool => ({ type: 'function', function: {
     name: tool.name, description: tool.description, parameters: tool.inputSchema,
   } }));
@@ -49,10 +50,10 @@ export async function runAgent({ config, messages, signal, emit, client, model }
     let evidenceSize = 0;
     for (let step = 0; step < config.maxSteps; step++) {
       const stream = await ai.chat.completions.create({ model: config.model, messages: context,
-        tools, tool_choice: 'auto', stream: true, max_tokens: 4096 }, { signal });
+        tools, tool_choice: 'auto', stream: true, max_tokens: 4096 }, { signal }).catch(error => { throw publicError(error, 'model'); });
       const calls = new Map();
       let text = '', finish;
-      for await (const part of stream) {
+      try { for await (const part of stream) {
         const choice = part.choices[0];
         if (!choice) continue;
         finish = choice.finish_reason || finish;
@@ -64,7 +65,7 @@ export async function runAgent({ config, messages, signal, emit, client, model }
           if (delta.function?.arguments) call.function.arguments += delta.function.arguments;
           calls.set(delta.index, call);
         }
-      }
+      } } catch (error) { throw publicError(error, 'model'); }
       if (finish === 'length') throw new Error('Model response reached its token limit.');
       if (!calls.size) {
         if (!text.trim()) throw new Error('Model returned an empty answer. Check model tool-calling support.');
@@ -81,7 +82,7 @@ export async function runAgent({ config, messages, signal, emit, client, model }
           continue;
         }
         emit({ type: 'activity', text: `Querying ${call.function.name}…` });
-        const result = await mcp.callTool({ name: call.function.name, arguments: args }, undefined, { signal, timeout: 30000 });
+        const result = await mcp.callTool({ name: call.function.name, arguments: args }, undefined, { signal, timeout: 30000 }).catch(error => { throw publicError(error); });
         const content = JSON.stringify(result);
         evidenceSize += Math.min(content.length, 48000);
         if (evidenceSize > 192000) throw new Error('Evidence context limit reached. Ask a narrower question.');

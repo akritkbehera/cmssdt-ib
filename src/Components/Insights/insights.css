@@ -17,6 +17,10 @@
 .insights-sidebar .insights-thread-select { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
 .insights-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 .insights-connection { margin: 0; padding: 8px 20px; font-size: 12px; color: #53677a; border-bottom: 1px solid #e4e9ed; }
+.insights-connection-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; border-bottom: 1px solid #e4e9ed; padding: 5px 10px; }
+.insights-connection-bar .insights-connection { flex: 1 1 240px; border: 0; overflow-wrap: anywhere; padding: 5px 10px; }
+.insights-connection-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.insights-connection-actions button { font-size: 12px; }
 .insights-thread { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .insights-transcript { flex: 1; min-height: 0; overflow-y: auto; padding: 24px max(20px, calc((100% - 850px)/2)); }
 .insights-message { margin-bottom: 24px; overflow-wrap: anywhere; }

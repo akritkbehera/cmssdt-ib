@@ -17,21 +17,23 @@ npm run chat:server
 
 Set `CERN_AI_KEY`, `CERN_AI_MODEL`, and `OPENSEARCH_MCP_URL`. Choose a model available at your CERN gateway that supports streamed OpenAI-compatible tool calls. The gateway defaults to `https://aigw.cern.ch/v1`.
 
-`OPENSEARCH_MCP_URL` must point directly to the authenticated `/_plugins/_ml/mcp` endpoint. A successful request inside Dashboards Dev Tools does not establish access from this backend. Configure `OPENSEARCH_MCP_HEADERS` as a JSON object of headers supported by your service, for example `{"Authorization":"Bearer ..."}` if your OpenSearch endpoint accepts that method. CERN model authentication does not authenticate OpenSearch. SSO redirects intentionally fail instead of returning a login page as tool data. Use a trusted CA (`NODE_EXTRA_CA_CERTS` if needed), never disable TLS validation.
+`CERN_AI_TOKEN` is accepted as an alias for `CERN_AI_KEY`. For CERN authentication, audience requirements and deployment steps, follow [CERN authentication setup](cern-authentication.md).
+
+The endpoint defaults to `https://os-cmssdt.cern.ch/os/_plugins/_ml/mcp`. The `/os` prefix is required. A successful request inside Dashboards Dev Tools does not establish access from this backend. Use per-user OIDC login, a newly issued CLI token file, or a dedicated read-only service credential; see the authentication guide. SSO cookies are rejected. CERN model authentication is separate from OpenSearch. Use a trusted CA (`NODE_EXTRA_CA_CERTS` if needed), never disable TLS validation.
 
 Register the existing `ListIndexTool`, `IndexMappingTool` and `SearchIndexTool` with the native MCP server. Only those three names are exposed to the model, with arguments validated against the discovered schemas. The backend creates a Streamable HTTP MCP client per question, discovers/paginates tools, streams the model's response, executes requested tools and continues the model loop. Tool-step, concurrency, context, result-size and request-duration limits keep requests bounded. Actual read permissions and query quotas must be enforced by the OpenSearch identity and cluster policy.
 
-The system prompt asks for exact build identities, mappings before queries, limited searches, comparable architectures, evidence and explicit uncertainty. This does not replace checking model conclusions. Model/provider errors are returned as a safe user-facing error without upstream payloads or credentials. The health endpoint reports configuration presence; the first question tests actual model/MCP connectivity.
+The system prompt asks for exact build identities, mappings before queries, limited searches, comparable architectures, evidence and explicit uncertainty. This does not replace checking model conclusions. Model/provider errors are returned without upstream payloads or credentials. Health reports configuration only. **Test MCP connection** performs real initialization and tool discovery; only success produces the verified status. This verifies MCP access, not model inference; send a question to verify both.
 
 ## Local development
 
-Run `npm start` in a second terminal. Vite proxies `/api/chat` to port 8787. Leave **Connection → Backend address** empty. If configured, enter `CHAT_ACCESS_TOKEN` in Connection. It is stored only in sessionStorage, separate from chat records.
+Run `npm start` in a second terminal. Vite proxies `/api/chat` to port 8787. Leave **Connection → Backend address** empty. In service mode, enter `CHAT_ACCESS_TOKEN` in Connection if configured. Tokens are held in memory only and cleared on reload. Conversations continue to persist in IndexedDB.
 
 ## GitHub Pages deployment
 
-Pages hosts the chat UI, but cannot run the backend. Deploy `server/chat/index.mjs` on a CERN-reachable Node service, preferably behind your authenticated HTTPS reverse proxy. Set the exact Pages origin in `CHAT_ALLOWED_ORIGINS`; include any other frontend origins explicitly. If binding beyond loopback, the server requires `CHAT_ACCESS_TOKEN`. For a shared service, use per-user authentication at the reverse proxy in addition to this backend token and a read-only OpenSearch identity.
+Pages hosts the UI but cannot hold the model key or run this backend. Deploy `server/chat/index.mjs` on a CERN-reachable Node 24 service behind HTTPS. An optional Dockerfile is provided at `server/chat/Dockerfile` (build from repository root). Allow the exact Pages origin in `CHAT_ALLOWED_ORIGINS`. Beyond loopback, service mode requires `CHAT_ACCESS_TOKEN`; OIDC mode requires a registered confidential client and per-user login. Use a least-privilege OpenSearch identity.
 
-Open Connection on the deployed page and enter the backend HTTPS address (without `/api/chat`) and backend access token. The address is saved in localStorage and the access token for the tab session. No CERN keys or OpenSearch headers are entered in the UI or bundled by Vite. Alternatively set `VITE_CHAT_BACKEND_URL` to a public backend address at build time. Do not put secrets in any `VITE_` variable.
+Open Connection and enter the backend HTTPS address without `/api/chat`. Only that address is saved in localStorage. Access/session tokens stay in memory. CERN keys and OpenSearch tokens never go into the UI. Alternatively set the GitHub Actions repository variable `CHAT_BACKEND_URL`; the Pages workflow embeds this public address as `VITE_CHAT_BACKEND_URL`. Never put secrets in any `VITE_` variable or Actions variable.
 
 The server binds to localhost by default. It stores no conversations and logs no request bodies. Browser cancellation aborts model and MCP requests. Follow-up context includes the prior user/assistant text; tool responses are used during each investigation and must be queried again when a follow-up needs fresh evidence.
 
@@ -42,4 +44,4 @@ npm run test:chat
 npm run build:pages
 ```
 
-The chat tests use local fake model/MCP endpoints and fake IndexedDB; no CERN credentials are required. CI additionally runs the production page in Chromium, Firefox and WebKit, testing streamed answers, follow-up context, independent chats, rename/delete, reload persistence, connection settings, cancellation and mobile overflow. Real CERN authentication and model tool-calling support must be checked with configured credentials after backend deployment.
+Tests use local model/MCP endpoints and fake IndexedDB. CI runs Chromium, Firefox and WebKit checks for chat persistence, context, OIDC popup messaging, memory-only sessions, logout, cancellation, and mobile layout. These are fixtures, not evidence of live CERN authentication. After deployment, use **Test MCP connection** or `npm run chat:check` in service mode to verify real `tools/list`, then ask a question to test model inference.

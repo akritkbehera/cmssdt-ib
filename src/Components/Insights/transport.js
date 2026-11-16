@@ -12,9 +12,9 @@ export function backendURL(value) {
 
 export async function* readEvents(response) {
   if (!response.ok) {
-    let error;
-    try { error = (await response.json()).error; } catch { /* Static host may return HTML. */ }
-    throw new Error(error || `Chat backend unavailable (${response.status}). Open Connection to configure it.`);
+    let issue;
+    try { issue = await response.json(); } catch { /* Static host may return HTML. */ }
+    throw Object.assign(new Error(issue?.error || `Chat backend unavailable (${response.status}). Open Connection to configure it.`), { code: issue?.code, source: issue?.source });
   }
   if (!response.headers.get('content-type')?.includes('application/x-ndjson')) throw new Error('The address is not a chat backend. Open Connection to configure it.');
   const reader = response.body.getReader(), decoder = new TextDecoder();
@@ -28,7 +28,7 @@ export async function* readEvents(response) {
       for (const line of lines) {
         if (!line.trim()) continue;
         const event = JSON.parse(line);
-        if (event.type === 'error') throw new Error(event.text);
+        if (event.type === 'error') throw Object.assign(new Error(event.text), { code: event.code, source: event.source });
         if (event.type === 'done') complete = true;
         yield event;
       }
@@ -38,7 +38,7 @@ export async function* readEvents(response) {
   } finally { await reader.cancel().catch(() => {}); reader.releaseLock(); }
 }
 
-export function chatAdapter({ endpoint, token, onActivity }) {
+export function chatAdapter({ endpoint, token, onActivity, onError = () => {} }) {
   return {
     async *run({ messages, abortSignal }) {
       onActivity('Connecting…');
@@ -54,7 +54,8 @@ export function chatAdapter({ endpoint, token, onActivity }) {
           if (event.type === 'activity') onActivity(event.text);
           if (event.type === 'text') { text += event.text; onActivity('Writing answer…'); yield { content: [{ type: 'text', text }] }; }
         }
-      } finally { onActivity(''); }
+      } catch (error) { onError(error); throw error; }
+      finally { onActivity(''); }
     },
   };
 }

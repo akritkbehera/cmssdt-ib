@@ -13,6 +13,7 @@ try {
     page.on('pageerror', error => errors.push(error.message));
     // No build-data fixtures: /insights must load independently of monitoring.
     await page.route('**/api/chat/health', route => route.fulfill({ json: { ready: true, model: 'fixture-model' } }));
+    await page.route('**/api/chat/connection', route => route.fulfill({ json: { connected: true, tools: ['ListIndexTool'], modelConfigured: true, verifiedAt: new Date().toISOString() } }));
     await page.route('**/api/chat', async route => {
       const body = route.request().postDataJSON(); requests.push(body);
       if (failNext) { failNext = false; await route.fulfill({ status: 503, json: { error: 'Fixture backend unavailable' } }); return; }
@@ -30,6 +31,8 @@ try {
     });
     await page.goto('http://localhost:5174/#/insights');
     await page.getByRole('status').filter({ hasText: 'fixture-model' }).waitFor();
+    await page.getByRole('button', { name: 'Test MCP connection', exact: true }).click();
+    await page.getByRole('status').filter({ hasText: 'MCP tools/list verified' }).waitFor();
     const input = page.getByRole('textbox', { name: 'Ask about builds' });
     await input.fill('Build duration'); await page.getByRole('button', { name: 'Send message', exact: true }).click();
     await page.getByText('120 seconds', { exact: true }).waitFor();
@@ -60,7 +63,7 @@ try {
     await page.getByLabel('Backend access token', { exact: true }).fill('browser-backend-token');
     await page.getByRole('button', { name: 'Save connection', exact: true }).click();
     assert.equal(await page.evaluate(() => localStorage.getItem('cmssdt-chat-backend')), 'http://localhost:5174');
-    assert.equal(await page.evaluate(() => sessionStorage.getItem('cmssdt-chat-access')), 'browser-backend-token');
+    assert.equal(await page.evaluate(() => sessionStorage.getItem('cmssdt-chat-access')), null, 'access tokens are not persisted');
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'no page overflow');
     await page.screenshot({ path: `chat-review/${engine}-${width}.png`, fullPage: true });
     page.once('dialog', dialog => dialog.accept());

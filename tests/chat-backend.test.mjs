@@ -71,7 +71,7 @@ test('HTTP backend enforces origin/auth, configuration, streaming and safe error
   assert.equal((await fetch(`${url}/api/chat/health`, { headers: { Origin: 'https://wrong.test', Authorization: 'Bearer private' } })).status, 403);
   const response = await fetch(`${url}/api/chat`, { method: 'POST', headers: { Authorization: 'Bearer private', 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'user', content: 'Hello' }] }) });
   const output = await response.text();
-  assert.match(output, /Hello/); assert.match(output, /Investigation failed/); assert.ok(!output.includes('secret'));
+  assert.match(output, /Hello/); assert.match(output, /Could not connect/); assert.ok(!output.includes('secret'));
   const unavailable = await serve(t, createChatServer(loadConfig({})));
   assert.equal((await fetch(`${unavailable}/api/chat`, { method: 'POST' })).status, 503);
 });
@@ -97,4 +97,11 @@ test('stream parser handles split unicode and detects incomplete streams', async
   for await (const event of readEvents(new Response(stream, { headers: { 'Content-Type': 'application/x-ndjson' } }))) events.push(event);
   assert.equal(events[0].text, '✓');
   await assert.rejects(async () => { for await (const event of readEvents(new Response('{"type":"text","text":"partial"}\n', { headers: { 'Content-Type': 'application/x-ndjson' } }))) void event; }, /before the answer completed/);
+});
+
+test('a model streaming authentication failure is not reported as OpenSearch failure', async () => {
+  const client = { listTools: async () => ({ tools: [{ name: 'ListIndexTool', inputSchema: { type: 'object' } }] }), close: async () => {} };
+  const model = { chat: { completions: { create: async () => (async function* () { throw { status: 401, message: 'private model response' }; })() } } };
+  await assert.rejects(() => runAgent({ config: { model: 'test', maxSteps: 1 }, messages: [{ role: 'user', content: 'Question' }],
+    signal: new AbortController().signal, emit: () => {}, client, model }), error => error.source === 'model' && error.code === 'authentication_required' && !error.message.includes('private'));
 });

@@ -1,12 +1,16 @@
 import { createServer } from 'node:http';
 import { pathToFileURL } from 'node:url';
-import { timingSafeEqual } from 'node:crypto';
 import { loadConfig, validateMessages } from './config.mjs';
-import { runAgent } from './agent.mjs';
+import { runAgent, openMcp, discoverTools } from './agent.mjs';
+import { createAuth } from './auth.mjs';
+import { publicError } from './errors.mjs';
 
-export function createChatServer(config, agent = runAgent) {
+export function createChatServer(config, agent = runAgent, options = {}) {
   let active = 0;
-  return createServer(async (req, res) => {
+  const auth = options.auth || createAuth(config);
+  const connect = options.openMcp || openMcp;
+  const list = options.discoverTools || discoverTools;
+  async function handle(req, res) {
     const origin = req.headers.origin;
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -16,18 +20,34 @@ export function createChatServer(config, agent = runAgent) {
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); res.writeHead(204).end(); return;
     }
-    if (config.accessToken) {
-      const actual = Buffer.from(req.headers.authorization || ''), expected = Buffer.from(`Bearer ${config.accessToken}`);
-      if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
-        res.writeHead(401, { 'Content-Type': 'application/json' }).end(JSON.stringify({ error: 'Chat backend access token required.' })); return;
-      }
-    }
+    const url = new URL(req.url, 'http://localhost');
+    if (await auth.handle(req, res, url)) return;
     const ready = Boolean(config.apiKey && config.model && config.mcpURL);
     if (req.url === '/api/chat/health' && req.method === 'GET') {
-      res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ ready, model: config.model || null })); return;
+      if (auth.mode === 'service' && config.accessToken) await auth.resolve(req);
+      res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ ready, model: config.model || null,
+        authMode: auth.mode, mcpURL: config.mcpURL, audience: config.mcpAudience,
+        connectionVerified: false })); return;
+    }
+    if (req.url === '/api/chat/connection' && req.method === 'POST') {
+      if (active >= 4) { res.writeHead(429).end(); return; }
+      const runtime = await auth.resolve(req);
+      if (active >= 4) { res.writeHead(429).end(); return; }
+      active++;
+      const signal = AbortSignal.timeout(45000);
+      let client;
+      try {
+        client = await connect(runtime, signal);
+        const tools = await list(client, signal);
+        res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ connected: true,
+          verifiedAt: new Date().toISOString(), tools: tools.map(tool => tool.function.name), modelConfigured: ready,
+          endpoint: config.mcpURL }));
+      } finally { active--; await client?.close().catch(() => {}); }
+      return;
     }
     if (req.url !== '/api/chat' || req.method !== 'POST') { res.writeHead(404).end(); return; }
     const fail = (status, error) => res.writeHead(status, { 'Content-Type': 'application/json' }).end(JSON.stringify({ error }));
+    const runtime = await auth.resolve(req);
     if (!ready) { fail(503, 'Backend needs CERN_AI_KEY, CERN_AI_MODEL and OPENSEARCH_MCP_URL.'); return; }
     if (active >= 4) { fail(429, 'Chat backend is busy. Try again shortly.'); return; }
     let body = '', messages;
@@ -45,12 +65,19 @@ export function createChatServer(config, agent = runAgent) {
     res.writeHead(200, { 'Content-Type': 'application/x-ndjson', 'X-Accel-Buffering': 'no' });
     res.flushHeaders(); active++;
     const emit = event => { if (!res.destroyed) res.write(`${JSON.stringify(event)}\n`); };
-    try { await agent({ config, messages, signal: controller.signal, emit }); }
-    catch {
-      if (!res.destroyed) emit({ type: 'error', text: controller.signal.aborted
-        ? 'Request timed out. Try a narrower question.'
-        : 'Investigation failed. Check the configured model, tool-calling support, MCP registration and CERN authentication.' });
+    try { await agent({ config: runtime, messages, signal: controller.signal, emit }); }
+    catch (error) {
+      const issue = publicError(error);
+      if (!res.destroyed) emit({ type: 'error', code: issue.code, source: issue.source, text: controller.signal.aborted
+        ? 'Request timed out. Try a narrower question.' : issue.message });
     } finally { active--; clearTimeout(timer); res.end(); }
+  }
+  return createServer((req, res) => {
+    handle(req, res).catch(error => {
+      const issue = publicError(error);
+      if (!res.headersSent) res.writeHead(issue.status, { 'Content-Type': 'application/json' }).end(JSON.stringify({ error: issue.message, code: issue.code, source: issue.source }));
+      else res.end();
+    });
   });
 }
 

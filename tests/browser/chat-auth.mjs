@@ -1,0 +1,45 @@
+import assert from 'node:assert/strict';
+import { chromium, firefox, webkit } from 'playwright';
+const browser = await ({ chromium, firefox, webkit }[process.env.IB_BROWSER || 'chromium']).launch();
+try {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await context.newPage(), errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await context.route('**/api/chat/health', route => route.fulfill({ json: { ready: true, model: 'fixture-model', authMode: 'oidc', connectionVerified: false } }));
+  const session = 'opaque-session-for-fixture-only-123456789';
+  let probes = 0;
+  await context.route('**/api/chat/connection', async route => {
+    assert.equal(route.request().headers().authorization, `Bearer ${session}`); probes++;
+    await route.fulfill({ json: { connected: true, tools: ['ListIndexTool'], verifiedAt: new Date().toISOString() } });
+  });
+  await context.route('**/api/chat/auth/logout', route => route.fulfill({ status: 204 }));
+  await context.route('**/api/chat', route => route.fulfill({ status: 401, json: { code: 'authentication_required', source: 'opensearch', error: 'Sign in again' } }));
+  await context.route('**/api/chat/auth/start?*', async route => {
+    const url = new URL(route.request().url());
+    const message = { type: 'cmssdt-cern-login', loginId: url.searchParams.get('login_id'), session };
+    await route.fulfill({ contentType: 'text/html', body: `<script>window.opener.postMessage({type:'cmssdt-cern-login',loginId:'wrong-attempt',session:'forged-session-for-fixture-123456789'},'http://localhost:5174');setTimeout(()=>{window.opener.postMessage(${JSON.stringify(message)},'http://localhost:5174');window.close();},100);</script>` });
+  });
+  await page.goto('http://localhost:5174/#/insights');
+  const signIn = page.getByRole('button', { name: 'Sign in with CERN', exact: true });
+  await signIn.waitFor();
+  assert.equal(probes, 0, 'configuration presence is not a live connection');
+  await signIn.click();
+  await page.getByRole('status').filter({ hasText: 'MCP tools/list verified' }).waitFor();
+  assert.equal(probes, 1);
+  assert.ok(await page.evaluate(() => !JSON.stringify(localStorage).includes('opaque-session') && !JSON.stringify(sessionStorage).includes('opaque-session')), 'session remains in memory');
+  await page.getByRole('textbox', { name: 'Ask about builds' }).fill('Expired token example');
+  await page.getByRole('button', { name: 'Send message', exact: true }).click();
+  await signIn.waitFor();
+  await page.getByRole('status').filter({ hasText: 'OpenSearch authentication expired' }).waitFor();
+  await signIn.click();
+  await page.getByRole('status').filter({ hasText: 'MCP tools/list verified' }).waitFor();
+  assert.equal(probes, 2);
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await signIn.waitFor();
+  await page.reload(); await signIn.waitFor();
+  assert.equal(probes, 2, 'reload requires sign-in again');
+  assert.deepEqual(errors, []);
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await context.close();
+} finally { await browser.close(); }
+console.log(`${process.env.IB_BROWSER || 'chromium'}: OIDC popup, memory session and actual discovery state checks passed`);
