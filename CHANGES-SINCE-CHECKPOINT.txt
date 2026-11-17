@@ -1,0 +1,15 @@
+ M server/chat/agent.mjs
+ M server/chat/auth.mjs
+ M server/chat/config.mjs
+ M server/chat/errors.mjs
+ M server/chat/index.mjs
+?? CHANGES-SINCE-CHECKPOINT.txt
+?? opensearch-discovery/
+?? server/chat/context.mjs
+?? server/chat/diagnostics.mjs
+?? server/chat/knowledge.mjs
+?? server/chat/knowledge/
+?? server/chat/mcp.mjs
+?? server/chat/planner.mjs
+?? server/chat/registry.mjs
+?? server/chat/templates.mjs

@@ -1,0 +1,264 @@
+{
+  "schema_version": 1,
+  "snapshot": {
+    "captured_at": "2026-11-17",
+    "captured_by": "manual OpenSearch Dev Tools discovery session",
+    "sources": ["opensearch-discovery/raw/context1.txt", "opensearch-discovery/raw/context2.txt", "opensearch-discovery/raw/context3.txt", "opensearch-discovery/raw/context4.txt"],
+    "note": "Every fact below carries a provenance object. Mapping responses (queries 04/05) were never captured, so all field types are OBSERVED _source JSON TYPES and VERIFIED QUERY BEHAVIOUR, not mapping declarations. Do not invent mapping types beyond what is listed here."
+  },
+  "index_generations": [
+    { "suffix": "2964", "created_at": "2026-10-18T00:00:03.986Z", "creation_date_ms": 1792281603986, "provenance": { "file": "context1.txt", "query": "06", "lines": [20, 309] } },
+    { "suffix": "2968", "created_at": "2026-11-15T00:00:10.921Z", "creation_date_ms": 1794700810921, "provenance": { "file": "context1.txt", "query": "06", "lines": [20, 309] } }
+  ],
+  "index_families": [
+    { "family": "cmssdt-ib-matrix", "indices": ["cmssdt-ib-matrix-2964", "cmssdt-ib-matrix-2968"], "documents_verified": true, "doc_grain": "one document per RelVal workflow step run of one IB on one architecture", "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-ibs", "indices": ["cmssdt-ibs-2964", "cmssdt-ibs-2968"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-ib-dataset", "indices": ["cmssdt-ib-dataset-2964", "cmssdt-ib-dataset-2968"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-jenkins-jobs", "indices": ["cmssdt-jenkins-jobs-2964", "cmssdt-jenkins-jobs-2968"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-jenkins-ibs", "indices": ["cmssdt-jenkins-ibs-2964", "cmssdt-jenkins-ibs-2968"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-jenkins-queue", "indices": ["cmssdt-jenkins-queue-2964", "cmssdt-jenkins-queue-2968"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-jenkins-offline-nodes", "indices": ["cmssdt-jenkins-offline-nodes"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-relvals_stats_summary", "indices": ["cmssdt-relvals_stats_summary-2964", "cmssdt-relvals_stats_summary-2968"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-externals_stats_summary", "indices": ["cmssdt-externals_stats_summary-2964", "cmssdt-externals_stats_summary-2968"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-externals_stats_avgs", "indices": ["cmssdt-externals_stats_avgs"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-git-repository-size", "indices": ["cmssdt-git-repository-size"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-cmspkg-access", "indices": ["cmssdt-cmspkg-access-2964", "cmssdt-cmspkg-access-2968"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-scram-access", "indices": ["cmssdt-scram-access-2964"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-apache-cmsrep", "indices": ["cmssdt-apache-cmsrep-2964", "cmssdt-apache-cmsrep-2968"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-apache-cmssdt", "indices": ["cmssdt-apache-cmssdt-2964", "cmssdt-apache-cmssdt-2968"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-cmssw-afs-eos", "indices": ["cmssdt-cmssw-afs-eos-2964", "cmssdt-cmssw-afs-eos-2968"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-cmssw-pkginfo", "indices": ["cmssdt-cmssw-pkginfo-2964", "cmssdt-cmssw-pkginfo-2968"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } },
+    { "family": "cmssdt-github-api", "indices": ["cmssdt-github-api-2964", "cmssdt-github-api-2968"], "documents_verified": false, "doc_grain": null, "provenance": { "file": "context1.txt", "query": "06" } }
+  ],
+  "field_grain": {
+    "family": "cmssdt-ib-matrix",
+    "key": ["release", "architecture", "workflow", "step"],
+    "note": "The observed key is (release, architecture, workflow, step). test_type variants (gpu, other) add a discriminator field and its companion label field. Verified from sampled documents only; no _id construction rule was discovered."
+  },
+  "fields": {
+    "release": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["string"],
+      "queryable_as": "keyword",
+      "verified_clauses": ["term", "terms_agg", "sort_unverified"],
+      "semantics": "IB/release name, see naming grammar",
+      "example": "CMSSW_20_1_X_2026-11-16-2300",
+      "confidence": "verified",
+      "provenance": [{ "file": "context3.txt", "query": "10", "lines": [86, 513] }, { "file": "context4.txt", "query": "21", "lines": [57, 1117] }]
+    },
+    "architecture": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["string"],
+      "queryable_as": "keyword",
+      "verified_clauses": ["term", "terms_agg"],
+      "semantics": "<os>_<cpu>_<compiler> build architecture",
+      "example": "el9_amd64_gcc14",
+      "confidence": "verified",
+      "provenance": [{ "file": "context3.txt", "query": "11", "lines": [514, 641] }]
+    },
+    "workflow": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["string"],
+      "queryable_as": "keyword",
+      "verified_clauses": ["terms_agg"],
+      "semantics": "RelVal matrix workflow id, dotted-decimal string; sub-workflow suffix after the dot (e.g. 38634.422)",
+      "example": "136.755",
+      "confidence": "verified",
+      "provenance": [{ "file": "context3.txt", "query": "12", "lines": [642, 1069] }]
+    },
+    "step": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["string"],
+      "queryable_as": "keyword",
+      "verified_clauses": [],
+      "semantics": "workflow step; observed values step1..step4",
+      "example": "step3",
+      "confidence": "verified-value",
+      "provenance": [{ "file": "context2.txt", "query": "07-09", "lines": [37, 888] }]
+    },
+    "exitcode": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["integer"],
+      "queryable_as": "integer",
+      "verified_clauses": ["terms_agg", "term", "exists"],
+      "semantics": "0 means the step succeeded (used as the failure discriminator in queries 15/22). Non-zero semantics UNVERIFIED; most observed non-zero values are multiples of 256 and one value (1) is not.",
+      "example": 0,
+      "confidence": "verified-zero-only",
+      "observed_values": [0, 1, 256, 512, 13568, 16640, 16896, 17152, 17920, 18176, 18688, 19456, 21504, 21760, 22016, 23040, 23552, 24832, 25600, 31744, 32256, 32512, 34304, 35584, 62720, 63232, 63744, 64000],
+      "provenance": [{ "file": "context3.txt", "query": "13", "lines": [1070, 1209] }]
+    },
+    "@timestamp": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["integer"],
+      "queryable_as": "epoch_millis",
+      "verified_clauses": [],
+      "semantics": "ingestion/run time of the step as epoch milliseconds (e.g. 1794904490576 = 2026-11-17T08:34:50Z); unverified whether it is a mapped date field",
+      "example": 1794904490576,
+      "confidence": "observed",
+      "provenance": [{ "file": "context2.txt", "query": "07-09", "lines": [37, 888] }]
+    },
+    "hostname": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["string"],
+      "queryable_as": "unknown",
+      "semantics": "worker node that ran the step",
+      "example": "cmsbuild909.cern.ch",
+      "confidence": "observed",
+      "provenance": [{ "file": "context2.txt", "query": "07-09", "lines": [37, 888] }]
+    },
+    "url": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["string"],
+      "queryable_as": "unknown",
+      "semantics": "step log URL: https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/<arch>/<release>/pyRelValMatrixLogs/run/<workflow>_<name>/<log>",
+      "example": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/136.755_RunSinglePh2016D/step2_RunSinglePh2016D.log",
+      "confidence": "observed",
+      "provenance": [{ "file": "context2.txt", "query": "07-09", "lines": [37, 888] }]
+    },
+    "jobreport": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["string"],
+      "queryable_as": "unknown",
+      "semantics": "JobReport XML URL in the same directory as the step log; present only for steps that reached job reporting",
+      "confidence": "observed",
+      "provenance": [{ "file": "context2.txt", "query": "07-09", "lines": [37, 888] }]
+    },
+    "command": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["string"],
+      "queryable_as": "unknown",
+      "semantics": "full cmsDriver.py command line of the step (long, noisy; select via _source exclusion)",
+      "confidence": "observed",
+      "provenance": [{ "file": "context2.txt", "query": "07-09", "lines": [37, 888] }]
+    },
+    "exception": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["string"],
+      "queryable_as": "text (unverified)",
+      "verified_clauses": ["exists"],
+      "semantics": "full CMSSW exception text ('An exception of category ... occurred while ...'); present on some failing steps but NOT on all (e.g. exitcode 1 step1 docs have none)",
+      "confidence": "verified-presence-only",
+      "provenance": [{ "file": "context3.txt", "query": "14", "lines": [1210, 1831] }]
+    },
+    "errors": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["array-of-object"],
+      "queryable_as": "object",
+      "subfields": {
+        "error": { "observed_types": ["string"], "semantics": "raw %MSG-e log line(s) of the CMS message" },
+        "kind": { "observed_types": ["string"], "semantics": "message category prefix 'Category:  Module:process@method' (trailing whitespace observed)" }
+      },
+      "semantics": "CMS %MSG-e category messages of the step. IMPORTANT: the array is CAPPED AT 10 ENTRIES while error_count holds the true total (verified: _id 10401f60… error_count 26 vs 10 entries; _id 10f5339f… error_count 136 vs 10 entries). Present on successful steps too (exitcode 0 with errors is common).",
+      "confidence": "verified",
+      "provenance": [{ "file": "context4.txt", "query": "21", "lines": [57, 1117] }]
+    },
+    "error_count": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["integer"],
+      "queryable_as": "integer",
+      "semantics": "true total number of %MSG-e messages for the step; always present in sampled docs",
+      "confidence": "verified",
+      "provenance": [{ "file": "context4.txt", "query": "21", "lines": [57, 1117] }]
+    },
+    "events_read": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["string"],
+      "queryable_as": "unknown (likely keyword; numeric strings)",
+      "semantics": "events read by the step, as a numeric string",
+      "confidence": "observed",
+      "provenance": [{ "file": "context2.txt", "query": "07-09", "lines": [37, 888] }]
+    },
+    "total_events": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["string"],
+      "queryable_as": "unknown (likely keyword; numeric strings)",
+      "semantics": "events in the output, numeric string; sometimes absent; may differ from events_read (e.g. '100' vs '99')",
+      "confidence": "observed",
+      "provenance": [{ "file": "context2.txt", "query": "07-09", "lines": [37, 888] }]
+    },
+    "test_type": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["string"],
+      "queryable_as": "keyword",
+      "semantics": "discriminator for non-standard RelVal runs; ABSENT on standard runs. Observed values: 'gpu' (companion field gpu, e.g. 'nvidia_t4'), 'other' (companion field other, e.g. 'rntuple').",
+      "confidence": "verified-values",
+      "observed_values": ["gpu", "other"],
+      "provenance": [{ "file": "context2.txt", "query": "07-09", "lines": [37, 888] }, { "file": "context3.txt", "query": "14", "lines": [1210, 1831] }]
+    },
+    "gpu": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["string"],
+      "queryable_as": "keyword",
+      "semantics": "GPU device label when test_type=gpu",
+      "example": "nvidia_t4",
+      "confidence": "verified-value",
+      "provenance": [{ "file": "context3.txt", "query": "14", "lines": [1210, 1831] }]
+    },
+    "other": {
+      "family": "cmssdt-ib-matrix",
+      "observed_types": ["string"],
+      "queryable_as": "keyword",
+      "semantics": "sub-type label when test_type=other",
+      "example": "rntuple",
+      "confidence": "verified-value",
+      "provenance": [{ "file": "context2.txt", "query": "07-09", "lines": [37, 888] }]
+    }
+  },
+  "metric_field_groups": {
+    "note": "All metric fields below are observed only in cmssdt-ib-matrix documents. They are USUALLY numeric strings but were seen as JSON numbers too (mixed typing is verified; see inconsistencies). Treat as display/analysis values, not as reliably typed fields. Do not aggregate them without checking types first.",
+    "timing": ["AvgEventTime", "EventThroughput", "MaxEventTime", "MinEventTime", "NumberOfStreams", "NumberOfThreads", "TotalEventSetupTime", "TotalInitCPU", "TotalInitTime", "TotalJobCPU", "TotalJobChildrenCPU", "TotalJobTime", "TotalLoopCPU", "TotalLoopTime", "TotalNonModuleTime"],
+    "memory": ["AverageGrowthRateRss", "AverageGrowthRateVsize", "PeakValueRss", "PeakValueVsize", "HEAP_ARENA_N_UNUSED_CHUNKS", "HEAP_ARENA_SIZE_BYTES", "HEAP_MAPPED_N_CHUNKS", "HEAP_MAPPED_SIZE_BYTES", "HEAP_TOP_FREE_BYTES", "HEAP_UNUSED_BYTES", "HEAP_USED_BYTES"],
+    "memory_probe_pattern": {
+      "pattern": "<Name>-{a-COUNT,b-RUN,c-EVENT,d-VSIZE,e-DELTV,f-RSS}",
+      "names": ["LargeVsizeIncreaseEventL1", "LargeVsizeIncreaseEventL2", "LargeVsizeIncreaseEventR1", "LargeVsizeIncreaseEventR2", "LargestIncreaseRssEvent", "LargestRssEvent", "LargestVsizeEventT1", "LargestVsizeEventT2", "LargestVsizeEventT3", "LargestVsizeIncreaseEvent", "SecondLargestIncreaseRssEvent", "SecondLargestRssEvent", "SecondLargestVsizeEventT2", "ThirdLargestIncreaseRssEvent", "ThirdLargestRssEvent", "ThirdLargestVsizeEventT3"],
+      "confidence": "observed-pattern"
+    },
+    "mixed_types_verified": {
+      "MinEventTime": ["string", "number (sentinel 1000000 when no events)"],
+      "TotalInitTime": ["string", "number (large negative values observed, e.g. -3786700)"],
+      "TotalLoopTime": ["string", "number (large positive values observed, e.g. 3786880)"]
+    },
+    "provenance": [{ "file": "context2.txt", "query": "07-09" }, { "file": "context3.txt", "query": "14" }, { "file": "context4.txt", "query": "21" }]
+  },
+  "release_naming": {
+    "grammar": "CMSSW_<major>_<minor>[_<FLAVOUR>]_X_<YYYY-MM-DD>-<HHMM>",
+    "flavour_tokens_observed": ["", "HI", "ROOT6", "UBSAN", "ASAN", "DBG"],
+    "cycles_observed": ["CMSSW_20_1_X", "CMSSW_20_1_ROOT6_X", "CMSSW_20_1_UBSAN_X", "CMSSW_20_1_ASAN_X", "CMSSW_20_1_DBG_X", "CMSSW_9_4_X", "CMSSW_8_0_X", "CMSSW_5_3_X", "CMSSW_5_3_HI_X"],
+    "cadence_observed": {
+      "CMSSW_20_1_X": "intraday IBs, timestamps 0000/1100/2300 observed (occasional 1400/1600)",
+      "CMSSW_20_1_ROOT6_X": "daily at 2300",
+      "CMSSW_20_1_UBSAN_X": "every other day at 2300",
+      "legacy_cycles": "weekly on Sunday at 0000 (2026-10-18 … 2026-11-15 observed)"
+    },
+    "sorting": "The zero-padded date suffix sorts lexicographically = chronologically WITHIN one cycle. ACROSS cycles lexicographic order is NOT chronological (verified: terms agg order _key desc ranks CMSSW_9_4_X above CMSSW_20_1_X). Never use a bare sort on release to mean 'latest overall'.",
+    "confidence": "verified",
+    "provenance": [{ "file": "context3.txt", "query": "10", "lines": [86, 513] }]
+  },
+  "architectures_observed": {
+    "pattern": "<os>_<cpu>_<compiler>",
+    "values": ["el9_amd64_gcc14", "el8_amd64_gcc13", "el8_amd64_gcc12", "el9_amd64_gcc13", "el9_aarch64_gcc14", "el8_aarch64_gcc13", "el8_amd64_gcc11", "el8_amd64_gcc14", "el9_amd64_gcc12", "slc7_amd64_gcc12", "el9_amd64_gcc15", "slc7_amd64_gcc11", "el8_aarch64_gcc12", "el9_amd64_gcc11", "el8_amd64_gcc10", "el9_amd64_gcc16", "el10_amd64_gcc15", "slc7_amd64_gcc10", "slc7_amd64_gcc700", "slc6_amd64_gcc630", "slc7_amd64_gcc630", "fc42_riscv64_gcc15", "slc6_amd64_gcc530", "slc7_amd64_gcc530", "slc6_amd64_gcc472"],
+    "provenance": [{ "file": "context3.txt", "query": "11", "lines": [514, 641] }]
+  },
+  "query_pitfalls": [
+    { "id": "lexicographic-release-sort", "fact": "Sorting or ordering release keys lexicographically does not give 'latest' across cycles (9_4_X sorts above 20_1_X).", "confidence": "verified", "provenance": { "file": "context3.txt", "query": "10" } },
+    { "id": "hits-total-capped", "fact": "hits.total returns 10000/gte on large aggregations; use aggregation buckets for counts, never hits.total.", "confidence": "verified", "provenance": { "file": "context3.txt", "query": "10-13" } },
+    { "id": "errors-array-capped", "fact": "errors[] is capped at 10 entries; error_count is the true total.", "confidence": "verified", "provenance": { "file": "context4.txt", "query": "21" } },
+    { "id": "errors-on-success", "fact": "exitcode 0 documents can carry errors[] and error_count > 0; errors alone do not mean failure.", "confidence": "verified", "provenance": { "file": "context2.txt", "query": "07-09" } },
+    { "id": "exception-missing-on-failures", "fact": "Failing steps (exitcode != 0) do not always have an exception field; query failures via exitcode, not via exists(exception).", "confidence": "verified", "provenance": { "file": "context3.txt", "query": "15" } },
+    { "id": "metrics-mixed-types", "fact": "Metric fields mix JSON strings and numbers; do not assume numeric mapping for range/avg aggregations without checking.", "confidence": "verified", "provenance": { "file": "context3.txt", "query": "14" } },
+    { "id": "live-ingestion-count-drift", "fact": "Document counts for the same release differ between discovery runs (8239 in context2/3 vs 8735 in context4 for CMSSW_20_1_X_2026-11-16-2300): an IB that is still running keeps ingesting; counts are snapshots.", "confidence": "verified", "provenance": [{ "file": "context3.txt", "query": "10" }, { "file": "context4.txt", "query": "21" }] },
+    { "id": "size-limit", "fact": "Keep size <= 100 and prefer size 0 + aggregations; sampled docs show step-level grain, so naive hit lists mix steps of the same workflow.", "confidence": "verified", "provenance": { "file": "context2.txt", "query": "07-09" } },
+    { "id": "double-generation-wildcard", "fact": "cmssdt-ib-matrix-* spans generations 2964 and 2968 and both contain the same releases; use the wildcard (as the discovery did) and deduplicate by _index when counting.", "confidence": "verified", "provenance": [{ "file": "context1.txt", "query": "06" }, { "file": "context2.txt", "query": "07-09" }] }
+  ],
+  "unverified": [
+    "Index mapping declarations (queries 04/05 responses were never captured); all field types are observed _source types or verified query behaviour only.",
+    "Schemas of every index family except cmssdt-ib-matrix (no documents sampled).",
+    "Semantics of non-zero exitcode values (multiples of 256 suggest a shifted status, one value 1 breaks the pattern; nothing confirmed).",
+    "Meaning of the MinEventTime sentinel 1000000 and of negative TotalInitTime / huge TotalLoopTime values.",
+    "Whether @timestamp is a mapped date field and supports range queries (no range query was executed in the discovery).",
+    "Whether release is a pure keyword or text+keyword (term and terms-agg worked; sorting behaviour unverified).",
+    "Dashboard flavour labels (DEFAULT/X, ROOT642_X) vs release-string flavour tokens: discovery shows 'ROOT6' in release names; the ROOT642 label is from the dashboard code, not from OpenSearch data.",
+    "Relationships between cmssdt-ib-matrix and cmssdt-ibs / cmssdt-relvals_stats_summary (no sampled documents).",
+    "Whether the errors[] cap is fixed at 10 or configurable."
+  ]
+}

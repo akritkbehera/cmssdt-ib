@@ -1,0 +1,157 @@
+{
+  "generated_at": "2026-11-17T14:12:44.753Z",
+  "method": {
+    "harness": "real runAgent pipeline + scripted model + mock MCP server replaying discovery fixtures",
+    "measurement_note": "modelRounds counts LLM round-trips the scripted plan makes; wallMs is harness wall-clock over zero-latency mocks and is NOT live latency. No live LLM or OpenSearch measurements were taken (no credentials in this environment).",
+    "cold_plan": "no warm-up: system prompt requires index/mapping discovery before queries; latest-IB questions query release counts first",
+    "warm_plan": "verified knowledge block + cached OPERATIONAL SNAPSHOT; only answer queries are run (templates rendered from query-templates.json)",
+    "fixtures": "query result fixtures replay values captured in opensearch-discovery/raw/context3.txt and context4.txt"
+  },
+  "questions": [
+    {
+      "id": "q1-latest-ib",
+      "question": "What is the latest CMSSW_20_1_X IB?",
+      "cold": {
+        "mcpToolCalls": 3,
+        "indexDiscoveryCalls": 1,
+        "mappingDiscoveryCalls": 1,
+        "probeSearchCalls": 0,
+        "answerSearchCalls": 1,
+        "failedCalls": 0,
+        "modelRounds": 4,
+        "wallMs": 17,
+        "systemChars": 1771
+      },
+      "warm": {
+        "mcpToolCalls": 2,
+        "indexDiscoveryCalls": 0,
+        "mappingDiscoveryCalls": 0,
+        "probeSearchCalls": 1,
+        "answerSearchCalls": 1,
+        "failedCalls": 0,
+        "modelRounds": 2,
+        "wallMs": 9,
+        "systemChars": 3375
+      }
+    },
+    {
+      "id": "q2-failed-relvals",
+      "question": "Which RelVals failed in the latest CMSSW_20_1_X IB?",
+      "cold": {
+        "mcpToolCalls": 4,
+        "indexDiscoveryCalls": 1,
+        "mappingDiscoveryCalls": 1,
+        "probeSearchCalls": 0,
+        "answerSearchCalls": 2,
+        "failedCalls": 0,
+        "modelRounds": 5,
+        "wallMs": 6,
+        "systemChars": 1771
+      },
+      "warm": {
+        "mcpToolCalls": 1,
+        "indexDiscoveryCalls": 0,
+        "mappingDiscoveryCalls": 0,
+        "probeSearchCalls": 0,
+        "answerSearchCalls": 1,
+        "failedCalls": 0,
+        "modelRounds": 2,
+        "wallMs": 6,
+        "systemChars": 3389
+      }
+    },
+    {
+      "id": "q3-failures-by-arch",
+      "question": "Which architectures have failures in the latest CMSSW_20_1_X IB?",
+      "cold": {
+        "mcpToolCalls": 4,
+        "indexDiscoveryCalls": 1,
+        "mappingDiscoveryCalls": 1,
+        "probeSearchCalls": 0,
+        "answerSearchCalls": 2,
+        "failedCalls": 0,
+        "modelRounds": 5,
+        "wallMs": 5,
+        "systemChars": 1771
+      },
+      "warm": {
+        "mcpToolCalls": 1,
+        "indexDiscoveryCalls": 0,
+        "mappingDiscoveryCalls": 0,
+        "probeSearchCalls": 0,
+        "answerSearchCalls": 1,
+        "failedCalls": 0,
+        "modelRounds": 2,
+        "wallMs": 6,
+        "systemChars": 3438
+      }
+    },
+    {
+      "id": "q4-default-vs-root642",
+      "question": "Compare DEFAULT vs ROOT642 for CMSSW_20_1_X",
+      "cold": {
+        "mcpToolCalls": 3,
+        "indexDiscoveryCalls": 1,
+        "mappingDiscoveryCalls": 1,
+        "probeSearchCalls": 0,
+        "answerSearchCalls": 1,
+        "failedCalls": 0,
+        "modelRounds": 4,
+        "wallMs": 5,
+        "systemChars": 1771
+      },
+      "warm": {
+        "mcpToolCalls": 1,
+        "indexDiscoveryCalls": 0,
+        "mappingDiscoveryCalls": 0,
+        "probeSearchCalls": 0,
+        "answerSearchCalls": 1,
+        "failedCalls": 0,
+        "modelRounds": 2,
+        "wallMs": 5,
+        "systemChars": 3034
+      }
+    },
+    {
+      "id": "q5-unit-tests",
+      "question": "Which unit tests failed in the latest CMSSW_20_1_X IB?",
+      "cold": {
+        "mcpToolCalls": 2,
+        "indexDiscoveryCalls": 1,
+        "mappingDiscoveryCalls": 1,
+        "probeSearchCalls": 0,
+        "answerSearchCalls": 0,
+        "failedCalls": 0,
+        "modelRounds": 3,
+        "wallMs": 4,
+        "systemChars": 1771
+      },
+      "warm": {
+        "mcpToolCalls": 2,
+        "indexDiscoveryCalls": 1,
+        "mappingDiscoveryCalls": 1,
+        "probeSearchCalls": 0,
+        "answerSearchCalls": 0,
+        "failedCalls": 0,
+        "modelRounds": 3,
+        "wallMs": 5,
+        "systemChars": 3689
+      }
+    }
+  ],
+  "totals": {
+    "cold": {
+      "mcpToolCalls": 16,
+      "modelRounds": 21,
+      "mappingDiscoveryCalls": 5,
+      "failedCalls": 0
+    },
+    "warm": {
+      "mcpToolCalls": 7,
+      "modelRounds": 11,
+      "mappingDiscoveryCalls": 1,
+      "failedCalls": 0,
+      "probeSearchCalls": 1
+    }
+  }
+}
