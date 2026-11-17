@@ -81,16 +81,25 @@ jobs:
           else
             runtime_args+=(-v "$trust_dir:/run/cmssdt-trust:ro")
           fi
+          data_dir="$HOME/.local/share/cmssdt-chat/data"
+          mkdir -p "$data_dir"
+          chmod 700 "$data_dir"
+          runtime_args+=(-e CHAT_DATA_DIR=/run/cmssdt-data --user "$(id -u):$(id -g)")
+          if docker --version | grep -qi podman; then
+            runtime_args+=(--userns keep-id -v "$data_dir:/run/cmssdt-data:rw,Z")
+          else
+            runtime_args+=(-v "$data_dir:/run/cmssdt-data:rw")
+          fi
           if [ "$OPENSEARCH_AUTH_MODE" = kerberos ]; then
             umask 077
             cache_dir="$HOME/.local/share/cmssdt-chat/krb5"
             mkdir -p "$cache_dir"
             chmod 700 "$cache_dir"
             export OPENSEARCH_KRB5CCNAME=FILE:/run/cmssdt-krb5/ccache
-            runtime_args+=(--user "$(id -u):$(id -g)" -e OPENSEARCH_KRB5CCNAME
+            runtime_args+=(-e OPENSEARCH_KRB5CCNAME
               -e KRB5_CONFIG=/app/server/chat/krb5.conf)
             if docker --version | grep -qi podman; then
-              runtime_args+=(--userns keep-id -v "$cache_dir:/run/cmssdt-krb5:rw,Z")
+              runtime_args+=(-v "$cache_dir:/run/cmssdt-krb5:rw,Z")
             else
               runtime_args+=(-v "$cache_dir:/run/cmssdt-krb5:rw")
             fi
