@@ -61,7 +61,7 @@ jobs:
           CERN_OIDC_CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CERN_OIDC_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           CHAT_BACKEND_URL: ${{ vars.CHAT_BACKEND_URL }}
-          CERN_AI_MODEL: ${{ vars.CERN_AI_MODEL || 'MiMo-V2.6-Pro-MOPD-FLATIRON' }}
+          CERN_AI_MODEL: ${{ vars.CERN_AI_MODEL || 'qwen3.8-27b-fp16' }}
         run: |
           set -eu
           export CERN_OIDC_REDIRECT_URI="$CHAT_BACKEND_URL/auth/callback"
