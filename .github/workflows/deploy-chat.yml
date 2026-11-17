@@ -62,9 +62,18 @@ jobs:
           CERN_OIDC_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           CHAT_BACKEND_URL: ${{ vars.CHAT_BACKEND_URL }}
           CERN_AI_MODEL: ${{ vars.CERN_AI_MODEL || 'qwen3.8-27b-fp16' }}
+          # Set to 'false' in the github-pages environment to roll back to the
+          # discovery-per-question baseline behaviour (also used by benchmarks).
+          CHAT_OPTIMIZE: ${{ vars.CHAT_OPTIMIZE || 'true' }}
         run: |
           set -eu
           export CERN_OIDC_REDIRECT_URI="$CHAT_BACKEND_URL/auth/callback"
+          # Persistent knowledge registry (schema registry, tool fingerprints,
+          # query-template validation state). The container stays read-only;
+          # only this directory and the credential caches below are writable.
+          data_dir="$HOME/.local/share/cmssdt-chat/data"
+          mkdir -p "$data_dir"
+          chmod 700 "$data_dir"
           # Reuse the host's public CA trust without mounting private keys or
           # relabeling system certificate directories for rootless Podman.
           trust_dir="$HOME/.local/share/cmssdt-chat/tls"
@@ -75,11 +84,15 @@ jobs:
           cp "$host_bundle" "$trust_dir/ca-bundle.pem"
           chmod 644 "$trust_dir/ca-bundle.pem"
           runtime_args=(-e CURL_CA_BUNDLE=/run/cmssdt-trust/ca-bundle.pem
-            -e NODE_EXTRA_CA_CERTS=/run/cmssdt-trust/ca-bundle.pem)
+            -e NODE_EXTRA_CA_CERTS=/run/cmssdt-trust/ca-bundle.pem
+            -e CHAT_DATA_DIR=/var/lib/cmssdt-chat
+            --user "$(id -u):$(id -g)")
           if docker --version | grep -qi podman; then
-            runtime_args+=(-v "$trust_dir:/run/cmssdt-trust:ro,Z")
+            runtime_args+=(-v "$trust_dir:/run/cmssdt-trust:ro,Z"
+              --userns keep-id -v "$data_dir:/var/lib/cmssdt-chat:rw,Z")
           else
-            runtime_args+=(-v "$trust_dir:/run/cmssdt-trust:ro")
+            runtime_args+=(-v "$trust_dir:/run/cmssdt-trust:ro"
+              -v "$data_dir:/var/lib/cmssdt-chat:rw")
           fi
           if [ "$OPENSEARCH_AUTH_MODE" = kerberos ]; then
             umask 077
@@ -87,10 +100,10 @@ jobs:
             mkdir -p "$cache_dir"
             chmod 700 "$cache_dir"
             export OPENSEARCH_KRB5CCNAME=FILE:/run/cmssdt-krb5/ccache
-            runtime_args+=(--user "$(id -u):$(id -g)" -e OPENSEARCH_KRB5CCNAME
+            runtime_args+=(-e OPENSEARCH_KRB5CCNAME
               -e KRB5_CONFIG=/app/server/chat/krb5.conf)
             if docker --version | grep -qi podman; then
-              runtime_args+=(--userns keep-id -v "$cache_dir:/run/cmssdt-krb5:rw,Z")
+              runtime_args+=(-v "$cache_dir:/run/cmssdt-krb5:rw,Z")
             else
               runtime_args+=(-v "$cache_dir:/run/cmssdt-krb5:rw")
             fi
@@ -106,6 +119,7 @@ jobs:
             -p 127.0.0.1:8787:8787 \
             -e CERN_AI_KEY -e CERN_AI_MODEL \
             -e CERN_OIDC_CLIENT_ID -e CERN_OIDC_CLIENT_SECRET -e CERN_OIDC_REDIRECT_URI \
+            -e CHAT_OPTIMIZE \
             -e CHAT_ALLOWED_ORIGINS=https://akritkbehera.github.io \
             cmssdt-chat:${{ github.sha }}
       - name: Check backend health

@@ -21,7 +21,8 @@ export const makeDedupe = () => {
 
 function familyForTemplate(template, families) {
   const hint = template.familyHint;
-  return families.find(family => String(family.id).toLowerCase().includes(hint === 'build' ? 'ibs' : hint === 'unit' ? 'unit' : 'relval'))
+  const want = hint === 'build' ? /ib/i : hint === 'unit' ? /unit|utest/i : /relval/i;
+  return families.find(family => want.test(String(family.id)))
     || families.find(family => Object.keys(family.roles || {}).some(role => template.needs.includes(role)))
     || families[0];
 }
