@@ -17,7 +17,7 @@ export async function openMcp(config, signal) {
     ...(config.kerberosCache ? { fetch: createKerberosFetch(config) } : {}),
   });
   try {
-    await client.connect(transport, { signal, timeout: 30000 });
+    await client.connect(transport, { signal, timeout: 180000 });
     return client;
   } catch (error) { await client.close().catch(() => {}); throw publicError(error); }
 }
