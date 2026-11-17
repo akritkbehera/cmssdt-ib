@@ -1,0 +1,1206 @@
+# 21 — All records for the selected IB
+GET cmssdt-ib-matrix-*/_search
+{
+  "size": 10,
+  "query": {
+    "term": {
+      "release": "CMSSW_20_1_X_2026-11-16-2300"
+    }
+  }
+}
+
+# 22 — Failure distribution per architecture
+GET cmssdt-ib-matrix-*/_search
+{
+  "size": 0,
+  "query": {
+    "bool": {
+      "filter": [
+        {
+          "term": {
+            "release": "CMSSW_20_1_X_2026-11-16-2300"
+          }
+        },
+        {
+          "exists": {
+            "field": "exitcode"
+          }
+        }
+      ],
+      "must_not": [
+        {
+          "term": {
+            "exitcode": 0
+          }
+        }
+      ]
+    }
+  },
+  "aggs": {
+    "architectures": {
+      "terms": {
+        "field": "architecture",
+        "size": 50
+      },
+      "aggs": {
+        "workflows": {
+          "terms": {
+            "field": "workflow",
+            "size": 100
+          }
+        }
+      }
+    }
+  }
+}
+
+# GET cmssdt-ib-matrix-*/_search
+{
+  "took": 3,
+  "timed_out": false,
+  "_shards": {
+    "total": 2,
+    "successful": 2,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 8735,
+      "relation": "eq"
+    },
+    "max_score": 1,
+    "hits": [
+      {
+        "_index": "cmssdt-ib-matrix-2968",
+        "_id": "10401f60df8f3ed1266b4ad0a38fd8fb10e5b9a3",
+        "_score": 1,
+        "_source": {
+          "command": """cmsDriver.py step4  -s HARVESTING:@rerecoZeroBiasFakeHLT+@miniAODDQM+@nanoAODDQM --conditions auto:run3_data --data  --filetype DQM --scenario pp --era Run3_2023  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbld/jenkins/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 9000 '  -n 100  --filein file:step3_inDQM.root --fileout file:step4.root  --suffix "-j JobReport4.xml "  > step4_RunZeroBias2023C.log  2>&1""",
+          "exitcode": 0,
+          "workflow": "141.032",
+          "release": "CMSSW_20_1_X_2026-11-16-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step4",
+          "@timestamp": 1794906797233,
+          "hostname": "cmsbuild976.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/141.032_RunZeroBias2023C/step4_RunZeroBias2023C.log",
+          "errors": [
+            {
+              "error": """%MSG-e DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlJpsiMuMuMassBiasClient@endProcessBlock  17-Nov-2026 10:13:09 CET post-eventscould not find input MonitorElement: AlCaReco/TkAlJpsiMuMu/DiMuonMassBiasMonitor/MassBias/DiMuMassVsMuMuPhi
+""",
+              "kind": "DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlJpsiMuMuMassBiasClient@endProcessBlock "
+            },
+            {
+              "error": """%MSG-e DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlJpsiMuMuMassBiasClient@endProcessBlock  17-Nov-2026 10:13:09 CET post-eventscould not find input MonitorElement: AlCaReco/TkAlJpsiMuMu/DiMuonMassBiasMonitor/MassBias/DiMuMassVsMuMuEta
+""",
+              "kind": "DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlJpsiMuMuMassBiasClient@endProcessBlock "
+            },
+            {
+              "error": """%MSG-e DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlJpsiMuMuMassBiasClient@endProcessBlock  17-Nov-2026 10:13:09 CET post-eventscould not find input MonitorElement: AlCaReco/TkAlJpsiMuMu/DiMuonMassBiasMonitor/MassBias/DiMuMassVsMuPlusPhi
+""",
+              "kind": "DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlJpsiMuMuMassBiasClient@endProcessBlock "
+            },
+            {
+              "error": """%MSG-e DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlJpsiMuMuMassBiasClient@endProcessBlock  17-Nov-2026 10:13:09 CET post-eventscould not find input MonitorElement: AlCaReco/TkAlJpsiMuMu/DiMuonMassBiasMonitor/MassBias/DiMuMassVsMuPlusEta
+""",
+              "kind": "DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlJpsiMuMuMassBiasClient@endProcessBlock "
+            },
+            {
+              "error": """%MSG-e DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlJpsiMuMuMassBiasClient@endProcessBlock  17-Nov-2026 10:13:09 CET post-eventscould not find input MonitorElement: AlCaReco/TkAlJpsiMuMu/DiMuonMassBiasMonitor/MassBias/DiMuMassVsMuMinusPhi
+""",
+              "kind": "DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlJpsiMuMuMassBiasClient@endProcessBlock "
+            },
+            {
+              "error": """%MSG-e DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlJpsiMuMuMassBiasClient@endProcessBlock  17-Nov-2026 10:13:09 CET post-eventscould not find input MonitorElement: AlCaReco/TkAlJpsiMuMu/DiMuonMassBiasMonitor/MassBias/DiMuMassVsMuMinusEta
+""",
+              "kind": "DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlJpsiMuMuMassBiasClient@endProcessBlock "
+            },
+            {
+              "error": """%MSG-e DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlJpsiMuMuMassBiasClient@endProcessBlock  17-Nov-2026 10:13:09 CET post-eventscould not find input MonitorElement: AlCaReco/TkAlJpsiMuMu/DiMuonMassBiasMonitor/MassBias/DiMuMassVsMuMuDeltaEta
+""",
+              "kind": "DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlJpsiMuMuMassBiasClient@endProcessBlock "
+            },
+            {
+              "error": """%MSG-e DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlJpsiMuMuMassBiasClient@endProcessBlock  17-Nov-2026 10:13:09 CET post-eventscould not find input MonitorElement: AlCaReco/TkAlJpsiMuMu/DiMuonMassBiasMonitor/MassBias/DiMuMassVsCosThetaCS
+""",
+              "kind": "DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlJpsiMuMuMassBiasClient@endProcessBlock "
+            },
+            {
+              "error": """%MSG-e DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlUpsilonMuMuMassBiasClient@endProcessBlock  17-Nov-2026 10:13:09 CET post-eventscould not find input MonitorElement: AlCaReco/TkAlUpsilonMuMu/DiMuonMassBiasMonitor/MassBias/DiMuMassVsMuMuPhi
+""",
+              "kind": "DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlUpsilonMuMuMassBiasClient@endProcessBlock "
+            },
+            {
+              "error": """%MSG-e DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlUpsilonMuMuMassBiasClient@endProcessBlock  17-Nov-2026 10:13:09 CET post-eventscould not find input MonitorElement: AlCaReco/TkAlUpsilonMuMu/DiMuonMassBiasMonitor/MassBias/DiMuMassVsMuMuEta
+""",
+              "kind": "DiMuonMassBiasClient:   DiMuonMassBiasClient:ALCARECOTkAlUpsilonMuMuMassBiasClient@endProcessBlock "
+            }
+          ],
+          "error_count": 26,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/141.032_RunZeroBias2023C/JobReport4.xml",
+          "events_read": "0",
+          "AvgEventTime": "0",
+          "EventThroughput": "0",
+          "MaxEventTime": "0",
+          "MinEventTime": 1000000,
+          "NumberOfStreams": "1",
+          "NumberOfThreads": "1",
+          "TotalEventSetupTime": "1.31181",
+          "TotalInitCPU": "7.33284",
+          "TotalInitTime": "8.74026",
+          "TotalJobCPU": "16.4359",
+          "TotalJobChildrenCPU": "0.053585",
+          "TotalJobTime": "18.4289",
+          "TotalLoopCPU": "9.10299",
+          "TotalLoopTime": "9.68851",
+          "TotalNonModuleTime": "0.0737947",
+          "AverageGrowthRateRss": "783.289",
+          "AverageGrowthRateVsize": "821.453",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "PeakValueRss": "0",
+          "PeakValueVsize": "0"
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2968",
+        "_id": "10f5339f9328d6ddf8572f329c26b02b7687af4d",
+        "_score": 1,
+        "_source": {
+          "command": """cmsDriver.py step3  --conditions auto:run2_data_relval -s RAW2DIGI,L1Reco,RECO,PAT,ALCA:SiStripCalZeroBias+SiStripCalMinBias+TkAlMinBias+EcalESAlign,DQM:@standardDQMFakeHLT+@miniAODDQM+@L1TMuon --datatier RECO,MINIAOD,DQMIO --eventcontent RECO,MINIAOD,DQM --data  --process reRECO --scenario pp --era Run2_2016_HIPM --customise Configuration/DataProcessing/RecoTLR.customisePostEra_Run2_2016 --hltProcess reHLT  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbld/jenkins/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 9000 '  -n 100  --filein  file:step2.root  --fileout file:step3.root  --suffix "-j JobReport3.xml "  --nThreads 4 > step3_RunSingleMu2016D.log  2>&1""",
+          "exitcode": 0,
+          "workflow": "136.754",
+          "release": "CMSSW_20_1_X_2026-11-16-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step3",
+          "@timestamp": 1794906855595,
+          "hostname": "cmsbuild976.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/136.754_RunSingleMu2016D/step3_RunSingleMu2016D.log",
+          "errors": [
+            {
+              "error": """%MSG-e HLTConfigProvider:   DQMPFCandidateAnalyzer:packedCandidateDQMAnalyzerMiniAOD@beginRun  17-Nov-2026 10:05:54 CET Run: 276807Falling back to ProcessName-only init using ProcessName 'RECO' !
+""",
+              "kind": "HLTConfigProvider:   DQMPFCandidateAnalyzer:packedCandidateDQMAnalyzerMiniAOD@beginRun "
+            },
+            {
+              "error": """%MSG-e HLTConfigProvider:   DQMPFCandidateAnalyzer:packedCandidateDQMAnalyzerMiniAOD@beginRun  17-Nov-2026 10:05:54 CET Run: 276807Process name 'RECO' not found in registry!
+""",
+              "kind": "HLTConfigProvider:   DQMPFCandidateAnalyzer:packedCandidateDQMAnalyzerMiniAOD@beginRun "
+            },
+            {
+              "error": """%MSG-e HLTConfigProvider:  METAnalyzer:pfPuppiMetDQMAnalyzerMiniAOD@beginRun  17-Nov-2026 10:05:56 CET Run: 276807Falling back to ProcessName-only init using ProcessName 'RECO' !
+""",
+              "kind": "HLTConfigProvider:  METAnalyzer:pfPuppiMetDQMAnalyzerMiniAOD@beginRun "
+            },
+            {
+              "error": """%MSG-e HLTConfigProvider:  METAnalyzer:pfPuppiMetDQMAnalyzerMiniAOD@beginRun  17-Nov-2026 10:05:56 CET Run: 276807Process name 'RECO' not found in registry!
+""",
+              "kind": "HLTConfigProvider:  METAnalyzer:pfPuppiMetDQMAnalyzerMiniAOD@beginRun "
+            },
+            {
+              "error": """%MSG-e HLTConfigProvider:  METAnalyzer:pfMetDQMAnalyzerMiniAOD@beginRun  17-Nov-2026 10:05:57 CET Run: 276807Falling back to ProcessName-only init using ProcessName 'RECO' !
+""",
+              "kind": "HLTConfigProvider:  METAnalyzer:pfMetDQMAnalyzerMiniAOD@beginRun "
+            },
+            {
+              "error": """%MSG-e HLTConfigProvider:  METAnalyzer:pfMetDQMAnalyzerMiniAOD@beginRun  17-Nov-2026 10:05:57 CET Run: 276807Process name 'RECO' not found in registry!
+""",
+              "kind": "HLTConfigProvider:  METAnalyzer:pfMetDQMAnalyzerMiniAOD@beginRun "
+            },
+            {
+              "error": """%MSG-e hltPrescaleTable:  PATTriggerProducer:patTrigger  17-Nov-2026 10:06:00 CET Run: 276807 Event: 26041356No HLT prescale table found
+Using default empty table with all prescales 1
+""",
+              "kind": "hltPrescaleTable:  PATTriggerProducer:patTrigger "
+            },
+            {
+              "error": """%MSG-e hltPrescaleTable:  PATTriggerProducer:patTrigger  17-Nov-2026 10:06:00 CET Run: 276807 Event: 26050682No HLT prescale table found
+Using default empty table with all prescales 1
+""",
+              "kind": "hltPrescaleTable:  PATTriggerProducer:patTrigger "
+            },
+            {
+              "error": """%MSG-e hltPrescaleTable:  PATTriggerProducer:patTrigger  17-Nov-2026 10:06:00 CET Run: 276807 Event: 26043374No HLT prescale table found
+Using default empty table with all prescales 1
+""",
+              "kind": "hltPrescaleTable:  PATTriggerProducer:patTrigger "
+            },
+            {
+              "error": """%MSG-e hltPrescaleTable:  PATTriggerProducer:patTrigger  17-Nov-2026 10:06:00 CET Run: 276807 Event: 26032987No HLT prescale table found
+Using default empty table with all prescales 1
+""",
+              "kind": "hltPrescaleTable:  PATTriggerProducer:patTrigger "
+            }
+          ],
+          "error_count": 136,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/136.754_RunSingleMu2016D/JobReport3.xml",
+          "events_read": "100",
+          "total_events": "89",
+          "AvgEventTime": "3.4249",
+          "EventThroughput": "1.0359",
+          "MaxEventTime": "10.5206",
+          "MinEventTime": "0.582848",
+          "NumberOfStreams": "4",
+          "NumberOfThreads": "4",
+          "TotalEventSetupTime": "12.0937",
+          "TotalInitCPU": "57.69",
+          "TotalInitTime": "59.3938",
+          "TotalJobCPU": "387.981",
+          "TotalJobChildrenCPU": "0.1158",
+          "TotalJobTime": "155.929",
+          "TotalLoopCPU": "330.289",
+          "TotalLoopTime": "96.5347",
+          "TotalNonModuleTime": "28.5585",
+          "AverageGrowthRateRss": "21.607",
+          "AverageGrowthRateVsize": "32.1446",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "LargeVsizeIncreaseEventL1-a-COUNT": "3",
+          "LargeVsizeIncreaseEventL1-b-RUN": "276807",
+          "LargeVsizeIncreaseEventL1-c-EVENT": "2.60876e+07",
+          "LargeVsizeIncreaseEventL1-d-VSIZE": "6635.88",
+          "LargeVsizeIncreaseEventL1-e-DELTV": "160.008",
+          "LargeVsizeIncreaseEventL1-f-RSS": "4876.23",
+          "LargeVsizeIncreaseEventL2-a-COUNT": "27",
+          "LargeVsizeIncreaseEventL2-b-RUN": "276807",
+          "LargeVsizeIncreaseEventL2-c-EVENT": "6.46477e+07",
+          "LargeVsizeIncreaseEventL2-d-VSIZE": "6848.04",
+          "LargeVsizeIncreaseEventL2-e-DELTV": "112",
+          "LargeVsizeIncreaseEventL2-f-RSS": "5309.86",
+          "LargeVsizeIncreaseEventR1-a-COUNT": "37",
+          "LargeVsizeIncreaseEventR1-b-RUN": "276807",
+          "LargeVsizeIncreaseEventR1-c-EVENT": "6.45589e+07",
+          "LargeVsizeIncreaseEventR1-d-VSIZE": "7152.04",
+          "LargeVsizeIncreaseEventR1-e-DELTV": "112",
+          "LargeVsizeIncreaseEventR1-f-RSS": "5552.67",
+          "LargeVsizeIncreaseEventR2-a-COUNT": "45",
+          "LargeVsizeIncreaseEventR2-b-RUN": "276807",
+          "LargeVsizeIncreaseEventR2-c-EVENT": "6.56638e+07",
+          "LargeVsizeIncreaseEventR2-d-VSIZE": "7156.04",
+          "LargeVsizeIncreaseEventR2-e-DELTV": "4",
+          "LargeVsizeIncreaseEventR2-f-RSS": "5485.25",
+          "LargestIncreaseRssEvent-a-COUNT": "20",
+          "LargestIncreaseRssEvent-b-RUN": "276807",
+          "LargestIncreaseRssEvent-c-EVENT": "6.44257e+07",
+          "LargestIncreaseRssEvent-d-VSIZE": "6736.03",
+          "LargestIncreaseRssEvent-e-DELTV": "96.0078",
+          "LargestIncreaseRssEvent-f-RSS": "5154.3",
+          "LargestRssEvent-a-COUNT": "74",
+          "LargestRssEvent-b-RUN": "276807",
+          "LargestRssEvent-c-EVENT": "6.39632e+07",
+          "LargestRssEvent-d-VSIZE": "7156.04",
+          "LargestRssEvent-e-DELTV": "0",
+          "LargestRssEvent-f-RSS": "5586.06",
+          "LargestVsizeEventT1-a-COUNT": "45",
+          "LargestVsizeEventT1-b-RUN": "276807",
+          "LargestVsizeEventT1-c-EVENT": "6.56638e+07",
+          "LargestVsizeEventT1-d-VSIZE": "7156.04",
+          "LargestVsizeEventT1-e-DELTV": "4",
+          "LargestVsizeEventT1-f-RSS": "5485.25",
+          "LargestVsizeIncreaseEvent-a-COUNT": "30",
+          "LargestVsizeIncreaseEvent-b-RUN": "276807",
+          "LargestVsizeIncreaseEvent-c-EVENT": "6.49584e+07",
+          "LargestVsizeIncreaseEvent-d-VSIZE": "7040.04",
+          "LargestVsizeIncreaseEvent-e-DELTV": "192",
+          "LargestVsizeIncreaseEvent-f-RSS": "5389.85",
+          "PeakValueRss": "5586.06",
+          "PeakValueVsize": "7156.04",
+          "SecondLargestIncreaseRssEvent-a-COUNT": "22",
+          "SecondLargestIncreaseRssEvent-b-RUN": "276807",
+          "SecondLargestIncreaseRssEvent-c-EVENT": "6.48463e+07",
+          "SecondLargestIncreaseRssEvent-d-VSIZE": "6736.03",
+          "SecondLargestIncreaseRssEvent-e-DELTV": "0",
+          "SecondLargestIncreaseRssEvent-f-RSS": "5261.77",
+          "SecondLargestRssEvent-a-COUNT": "70",
+          "SecondLargestRssEvent-b-RUN": "276807",
+          "SecondLargestRssEvent-c-EVENT": "6.45776e+07",
+          "SecondLargestRssEvent-d-VSIZE": "7156.04",
+          "SecondLargestRssEvent-e-DELTV": "0",
+          "SecondLargestRssEvent-f-RSS": "5582",
+          "SecondLargestVsizeEventT2-a-COUNT": "46",
+          "SecondLargestVsizeEventT2-b-RUN": "276807",
+          "SecondLargestVsizeEventT2-c-EVENT": "6.43603e+07",
+          "SecondLargestVsizeEventT2-d-VSIZE": "7156.04",
+          "SecondLargestVsizeEventT2-e-DELTV": "0",
+          "SecondLargestVsizeEventT2-f-RSS": "5484.39",
+          "ThirdLargestIncreaseRssEvent-a-COUNT": "36",
+          "ThirdLargestIncreaseRssEvent-b-RUN": "276807",
+          "ThirdLargestIncreaseRssEvent-c-EVENT": "6.4045e+07",
+          "ThirdLargestIncreaseRssEvent-d-VSIZE": "7040.04",
+          "ThirdLargestIncreaseRssEvent-e-DELTV": "0",
+          "ThirdLargestIncreaseRssEvent-f-RSS": "5515.55",
+          "ThirdLargestRssEvent-a-COUNT": "76",
+          "ThirdLargestRssEvent-b-RUN": "276807",
+          "ThirdLargestRssEvent-c-EVENT": "6.41828e+07",
+          "ThirdLargestRssEvent-d-VSIZE": "7156.04",
+          "ThirdLargestRssEvent-e-DELTV": "0",
+          "ThirdLargestRssEvent-f-RSS": "5577.46",
+          "ThirdLargestVsizeEventT3-a-COUNT": "47",
+          "ThirdLargestVsizeEventT3-b-RUN": "276807",
+          "ThirdLargestVsizeEventT3-c-EVENT": "6.55494e+07",
+          "ThirdLargestVsizeEventT3-d-VSIZE": "7156.04",
+          "ThirdLargestVsizeEventT3-e-DELTV": "0",
+          "ThirdLargestVsizeEventT3-f-RSS": "5498.96"
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2968",
+        "_id": "a29d761793e19a8dd2ed18713141b2dbc1c24ea4",
+        "_score": 1,
+        "_source": {
+          "command": """cmsDriver.py step3  -s RAW2DIGI,L1Reco,RECO,RECOSIM,PAT,NANO,VALIDATION:@standardValidationNoHLT+@miniAODValidation,DQM:@standardDQMFakeHLT+@miniAODDQM+@nanoAODDQM --conditions auto:phase1_2022_realistic_ddd --datatier GEN-SIM-RECO,MINIAODSIM,NANOAODSIM,DQMIO -n 10 --eventcontent RECOSIM,MINIAODSIM,NANOEDMAODSIM,DQM --geometry DB:Extended --era Run3_DDD  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbld/jenkins/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 9000 '  --filein  file:step2.root  --fileout file:step3.root  --suffix "-j JobReport3.xml "  --nThreads 4 > step3_TTbar_14TeV+2022_DDDDB.log  2>&1""",
+          "exitcode": 0,
+          "workflow": "11634.914",
+          "release": "CMSSW_20_1_X_2026-11-16-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step3",
+          "@timestamp": 1794906728604,
+          "hostname": "cmsbuild976.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/11634.914_TTbar_14TeV+2022_DDDDB/step3_TTbar_14TeV+2022_DDDDB.log",
+          "errors": [
+            {
+              "error": """%MSG-e PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer 17-Nov-2026 10:09:24 CET  Run: 1 Event: 6invalid collection: PF jets:
+
+""",
+              "kind": "PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer"
+            },
+            {
+              "error": """%MSG-e PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer 17-Nov-2026 10:09:24 CET  Run: 1 Event: 1invalid collection: PF jets:
+
+""",
+              "kind": "PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer"
+            },
+            {
+              "error": """%MSG-e PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer 17-Nov-2026 10:09:24 CET  Run: 1 Event: 4invalid collection: PF jets:
+
+""",
+              "kind": "PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer"
+            },
+            {
+              "error": """%MSG-e PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer 17-Nov-2026 10:09:25 CET  Run: 1 Event: 2invalid collection: PF jets:
+
+""",
+              "kind": "PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer"
+            },
+            {
+              "error": """%MSG-e PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer 17-Nov-2026 10:09:25 CET  Run: 1 Event: 8invalid collection: PF jets:
+
+""",
+              "kind": "PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer"
+            },
+            {
+              "error": """%MSG-e PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer 17-Nov-2026 10:09:26 CET  Run: 1 Event: 5invalid collection: PF jets:
+
+""",
+              "kind": "PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer"
+            },
+            {
+              "error": """%MSG-e PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer 17-Nov-2026 10:09:26 CET  Run: 1 Event: 9invalid collection: PF jets:
+
+""",
+              "kind": "PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer"
+            },
+            {
+              "error": """%MSG-e PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer 17-Nov-2026 10:09:27 CET  Run: 1 Event: 3invalid collection: PF jets:
+
+""",
+              "kind": "PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer"
+            },
+            {
+              "error": """%MSG-e PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer 17-Nov-2026 10:09:27 CET  Run: 1 Event: 10invalid collection: PF jets:
+
+""",
+              "kind": "PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer"
+            },
+            {
+              "error": """%MSG-e PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer 17-Nov-2026 10:09:27 CET  Run: 1 Event: 7invalid collection: PF jets:
+
+""",
+              "kind": "PFAnalyzer:  PFAnalyzer:DQMOfflinePFAnalyzer"
+            }
+          ],
+          "error_count": 10,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/11634.914_TTbar_14TeV+2022_DDDDB/JobReport3.xml",
+          "events_read": "10",
+          "total_events": "10",
+          "AvgEventTime": "6.69639",
+          "EventThroughput": "0.354347",
+          "MaxEventTime": "14.9493",
+          "MinEventTime": "0.992518",
+          "NumberOfStreams": "4",
+          "NumberOfThreads": "4",
+          "TotalEventSetupTime": "15.6663",
+          "TotalInitCPU": "49.1598",
+          "TotalInitTime": "53.29",
+          "TotalJobCPU": "89.933",
+          "TotalJobChildrenCPU": "0.107302",
+          "TotalJobTime": "81.5116",
+          "TotalLoopCPU": "40.7717",
+          "TotalLoopTime": "28.221",
+          "TotalNonModuleTime": "39.2461",
+          "AverageGrowthRateRss": "267.902",
+          "AverageGrowthRateVsize": "368.224",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "LargeVsizeIncreaseEventL1-a-COUNT": "2",
+          "LargeVsizeIncreaseEventL1-b-RUN": "1",
+          "LargeVsizeIncreaseEventL1-c-EVENT": "1",
+          "LargeVsizeIncreaseEventL1-d-VSIZE": "7715.48",
+          "LargeVsizeIncreaseEventL1-e-DELTV": "4",
+          "LargeVsizeIncreaseEventL1-f-RSS": "5815.2",
+          "LargeVsizeIncreaseEventL2-a-COUNT": "4",
+          "LargeVsizeIncreaseEventL2-b-RUN": "1",
+          "LargeVsizeIncreaseEventL2-c-EVENT": "2",
+          "LargeVsizeIncreaseEventL2-d-VSIZE": "7715.49",
+          "LargeVsizeIncreaseEventL2-e-DELTV": "0.0078125",
+          "LargeVsizeIncreaseEventL2-f-RSS": "5818.86",
+          "LargestIncreaseRssEvent-a-COUNT": "2",
+          "LargestIncreaseRssEvent-b-RUN": "1",
+          "LargestIncreaseRssEvent-c-EVENT": "1",
+          "LargestIncreaseRssEvent-d-VSIZE": "7715.48",
+          "LargestIncreaseRssEvent-e-DELTV": "4",
+          "LargestIncreaseRssEvent-f-RSS": "5815.2",
+          "LargestRssEvent-a-COUNT": "5",
+          "LargestRssEvent-b-RUN": "1",
+          "LargestRssEvent-c-EVENT": "8",
+          "LargestRssEvent-d-VSIZE": "7715.49",
+          "LargestRssEvent-e-DELTV": "0",
+          "LargestRssEvent-f-RSS": "5823.28",
+          "LargestVsizeEventT1-a-COUNT": "6",
+          "LargestVsizeEventT1-b-RUN": "1",
+          "LargestVsizeEventT1-c-EVENT": "5",
+          "LargestVsizeEventT1-d-VSIZE": "7847.49",
+          "LargestVsizeEventT1-e-DELTV": "132",
+          "LargestVsizeEventT1-f-RSS": "5821.59",
+          "LargestVsizeIncreaseEvent-a-COUNT": "6",
+          "LargestVsizeIncreaseEvent-b-RUN": "1",
+          "LargestVsizeIncreaseEvent-c-EVENT": "5",
+          "LargestVsizeIncreaseEvent-d-VSIZE": "7847.49",
+          "LargestVsizeIncreaseEvent-e-DELTV": "132",
+          "LargestVsizeIncreaseEvent-f-RSS": "5821.59",
+          "PeakValueRss": "5823.28",
+          "PeakValueVsize": "7847.49",
+          "SecondLargestIncreaseRssEvent-a-COUNT": "5",
+          "SecondLargestIncreaseRssEvent-b-RUN": "1",
+          "SecondLargestIncreaseRssEvent-c-EVENT": "8",
+          "SecondLargestIncreaseRssEvent-d-VSIZE": "7715.49",
+          "SecondLargestIncreaseRssEvent-e-DELTV": "0",
+          "SecondLargestIncreaseRssEvent-f-RSS": "5823.28",
+          "SecondLargestRssEvent-a-COUNT": "6",
+          "SecondLargestRssEvent-b-RUN": "1",
+          "SecondLargestRssEvent-c-EVENT": "5",
+          "SecondLargestRssEvent-d-VSIZE": "7847.49",
+          "SecondLargestRssEvent-e-DELTV": "132",
+          "SecondLargestRssEvent-f-RSS": "5821.59",
+          "SecondLargestVsizeEventT2-a-COUNT": "7",
+          "SecondLargestVsizeEventT2-b-RUN": "1",
+          "SecondLargestVsizeEventT2-c-EVENT": "9",
+          "SecondLargestVsizeEventT2-d-VSIZE": "7847.49",
+          "SecondLargestVsizeEventT2-e-DELTV": "0",
+          "SecondLargestVsizeEventT2-f-RSS": "5815.45",
+          "ThirdLargestIncreaseRssEvent-a-COUNT": "4",
+          "ThirdLargestIncreaseRssEvent-b-RUN": "1",
+          "ThirdLargestIncreaseRssEvent-c-EVENT": "2",
+          "ThirdLargestIncreaseRssEvent-d-VSIZE": "7715.49",
+          "ThirdLargestIncreaseRssEvent-e-DELTV": "0.0078125",
+          "ThirdLargestIncreaseRssEvent-f-RSS": "5818.86",
+          "ThirdLargestRssEvent-a-COUNT": "4",
+          "ThirdLargestRssEvent-b-RUN": "1",
+          "ThirdLargestRssEvent-c-EVENT": "2",
+          "ThirdLargestRssEvent-d-VSIZE": "7715.49",
+          "ThirdLargestRssEvent-e-DELTV": "0.0078125",
+          "ThirdLargestRssEvent-f-RSS": "5818.86",
+          "ThirdLargestVsizeEventT3-a-COUNT": "8",
+          "ThirdLargestVsizeEventT3-b-RUN": "1",
+          "ThirdLargestVsizeEventT3-c-EVENT": "3",
+          "ThirdLargestVsizeEventT3-d-VSIZE": "7847.49",
+          "ThirdLargestVsizeEventT3-e-DELTV": "0",
+          "ThirdLargestVsizeEventT3-f-RSS": "5812.1"
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2968",
+        "_id": "a2092eaf4cbecf8d40a09dad19ed968a35c027ae",
+        "_score": 1,
+        "_source": {
+          "exitcode": 0,
+          "workflow": "1002.4",
+          "release": "CMSSW_20_1_X_2026-11-16-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step1",
+          "@timestamp": 1794906731940,
+          "hostname": "cmsbuild976.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/1002.4_RunDoubleMuon2022B/step1_lumiRanges.log",
+          "error_count": 0
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2968",
+        "_id": "a2ccb0f7f7cf08ef71e69516a83142dbf9aa93f3",
+        "_score": 1,
+        "_source": {
+          "exitcode": 0,
+          "workflow": "2023.0000001",
+          "release": "CMSSW_20_1_X_2026-11-16-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step1",
+          "@timestamp": 1794906816133,
+          "hostname": "cmsbuild976.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/2023.0000001_RunZeroBias2023B_10k/step1_dasquery.log",
+          "error_count": 0
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2968",
+        "_id": "a283015d9db6e166c4fc2e765e90c7748797a859",
+        "_score": 1,
+        "_source": {
+          "command": """cmsDriver.py step4  -s HARVESTING:@commonFakeHLT+@ecal+@egamma --conditions auto:run2_data_relval --data  --filetype DQM --scenario pp  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbld/jenkins/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 9000 '  -n 100  --filein file:step3_inDQM.root --fileout file:step4.root  --suffix "-j JobReport4.xml "  > step4_RunSinglePh2016H.log  2>&1""",
+          "exitcode": 0,
+          "workflow": "136.777",
+          "release": "CMSSW_20_1_X_2026-11-16-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step4",
+          "@timestamp": 1794906889230,
+          "hostname": "cmsbuild976.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/136.777_RunSinglePh2016H/step4_RunSinglePh2016H.log",
+          "errors": [
+            {
+              "error": """%MSG-e DQMGenericClient:  DQMGenericClient:trackingEffFromHitPattern@endRun  17-Nov-2026 10:14:43 CET End Run: 283877DQMGenericClient::findAllSubdirectories ==> Missing folder Muons/Tracking/innerTrack !!!
+""",
+              "kind": "DQMGenericClient:  DQMGenericClient:trackingEffFromHitPattern@endRun "
+            },
+            {
+              "error": """%MSG-e DQMGenericClient:  DQMGenericClient:trackingEffFromHitPattern@endRun  17-Nov-2026 10:14:43 CET End Run: 283877DQMGenericClient::findAllSubdirectories ==> Missing folder Muons/globalMuons !!!
+""",
+              "kind": "DQMGenericClient:  DQMGenericClient:trackingEffFromHitPattern@endRun "
+            }
+          ],
+          "error_count": 2,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/136.777_RunSinglePh2016H/JobReport4.xml",
+          "events_read": "0",
+          "AvgEventTime": "0",
+          "EventThroughput": "0",
+          "MaxEventTime": "0",
+          "MinEventTime": 1000000,
+          "NumberOfStreams": "1",
+          "NumberOfThreads": "1",
+          "TotalEventSetupTime": "0.540043",
+          "TotalInitCPU": "6.76289",
+          "TotalInitTime": "7.82581",
+          "TotalJobCPU": "11.0072",
+          "TotalJobChildrenCPU": "0.05286",
+          "TotalJobTime": "12.5694",
+          "TotalLoopCPU": "4.24424",
+          "TotalLoopTime": "4.74357",
+          "TotalNonModuleTime": "0.0776039",
+          "AverageGrowthRateRss": "510.926",
+          "AverageGrowthRateVsize": "568.141",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "PeakValueRss": "0",
+          "PeakValueVsize": "0"
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2968",
+        "_id": "19965daf6199d00ec188e92d87a56261f69bfd98",
+        "_score": 1,
+        "_source": {
+          "command": """cmsDriver.py step3  --conditions auto:run3_data_relval -s RAW2DIGI,L1Reco,RECO,PAT,NANO,DQM:@standardDQMFakeHLT+@miniAODDQM+@nanoAODDQM --datatier AOD,MINIAOD,NANOAOD,DQMIO --eventcontent AOD,MINIAOD,NANOEDMAOD,DQM --data  --process reRECO --scenario pp --era Run3 --customise Configuration/DataProcessing/RecoTLR.customisePostEra_Run3 --hltProcess reHLT  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbld/jenkins/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 9000 '  -n 100  --filein  file:step2.root  --fileout file:step3.root  --suffix "-j JobReport3.xml "  --nThreads 4 > step3_RunDisplacedJet2022E.log  2>&1""",
+          "exitcode": 0,
+          "workflow": "140.075",
+          "release": "CMSSW_20_1_X_2026-11-16-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step3",
+          "@timestamp": 1794906757746,
+          "hostname": "cmsbuild976.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/140.075_RunDisplacedJet2022E/step3_RunDisplacedJet2022E.log",
+          "errors": [
+            {
+              "error": """%MSG-e HLTConfigProvider:   DQMPFCandidateAnalyzer:packedCandidateDQMAnalyzerMiniAOD@beginRun  17-Nov-2026 09:14:22 CET Run: 359694Falling back to ProcessName-only init using ProcessName 'RECO' !
+""",
+              "kind": "HLTConfigProvider:   DQMPFCandidateAnalyzer:packedCandidateDQMAnalyzerMiniAOD@beginRun "
+            },
+            {
+              "error": """%MSG-e HLTConfigProvider:   DQMPFCandidateAnalyzer:packedCandidateDQMAnalyzerMiniAOD@beginRun  17-Nov-2026 09:14:22 CET Run: 359694Process name 'RECO' not found in registry!
+""",
+              "kind": "HLTConfigProvider:   DQMPFCandidateAnalyzer:packedCandidateDQMAnalyzerMiniAOD@beginRun "
+            },
+            {
+              "error": """%MSG-e TkDetLayers:   TrackerRecoGeometryESProducer:TrackerRecoGeometryESProducer@callESModule  17-Nov-2026 09:14:28 CET Run: 359694 Stream: 3ForwardDiskSectorBuilderFromDet: Trying to build Petal Wedge from Dets at different z positions !! Delta_z = -0.801758
+""",
+              "kind": "TkDetLayers:   TrackerRecoGeometryESProducer:TrackerRecoGeometryESProducer@callESModule "
+            },
+            {
+              "error": """%MSG-e hltPrescaleTable:  PATTriggerProducer:patTrigger  17-Nov-2026 09:14:28 CET Run: 359694 Event: 103940933No HLT prescale table found
+Using default empty table with all prescales 1
+""",
+              "kind": "hltPrescaleTable:  PATTriggerProducer:patTrigger "
+            },
+            {
+              "error": """%MSG-e hltPrescaleTable:  PATTriggerProducer:patTrigger  17-Nov-2026 09:14:29 CET Run: 359694 Event: 103889865No HLT prescale table found
+Using default empty table with all prescales 1
+""",
+              "kind": "hltPrescaleTable:  PATTriggerProducer:patTrigger "
+            },
+            {
+              "error": """%MSG-e hltPrescaleTable:  PATTriggerProducer:patTrigger  17-Nov-2026 09:14:29 CET Run: 359694 Event: 103940949No HLT prescale table found
+Using default empty table with all prescales 1
+""",
+              "kind": "hltPrescaleTable:  PATTriggerProducer:patTrigger "
+            },
+            {
+              "error": """%MSG-e hltPrescaleTable:  PATTriggerProducer:patTrigger  17-Nov-2026 09:14:29 CET Run: 359694 Event: 103309833No HLT prescale table found
+Using default empty table with all prescales 1
+""",
+              "kind": "hltPrescaleTable:  PATTriggerProducer:patTrigger "
+            },
+            {
+              "error": """%MSG-e TotemVFATRawToDigi:  TotemVFATRawToDigi:ctppsDiamondRawToDigi  17-Nov-2026 09:14:40 CET Run: 359694 Event: 103889865No AnalysisMask found for TimingDiamond:
+Note: further warnings of this type will be suppressed (this can be changed by enabling debugging printout)
+""",
+              "kind": "TotemVFATRawToDigi:  TotemVFATRawToDigi:ctppsDiamondRawToDigi "
+            },
+            {
+              "error": """%MSG-e TotemVFATRawToDigi:  TotemVFATRawToDigi:ctppsDiamondRawToDigi  17-Nov-2026 09:14:40 CET Run: 359694 Event: 103940933No AnalysisMask found for TimingDiamond:
+Note: further warnings of this type will be suppressed (this can be changed by enabling debugging printout)
+""",
+              "kind": "TotemVFATRawToDigi:  TotemVFATRawToDigi:ctppsDiamondRawToDigi "
+            },
+            {
+              "error": """%MSG-e TotemVFATRawToDigi:  TotemVFATRawToDigi:ctppsDiamondRawToDigi  17-Nov-2026 09:14:40 CET Run: 359694 Event: 103309833No AnalysisMask found for TimingDiamond:
+Note: further warnings of this type will be suppressed (this can be changed by enabling debugging printout)
+""",
+              "kind": "TotemVFATRawToDigi:  TotemVFATRawToDigi:ctppsDiamondRawToDigi "
+            }
+          ],
+          "error_count": 115,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/140.075_RunDisplacedJet2022E/JobReport3.xml",
+          "events_read": "100",
+          "total_events": "100",
+          "AvgEventTime": "4.82917",
+          "EventThroughput": "0.722363",
+          "MaxEventTime": "19.6453",
+          "MinEventTime": "1.93611",
+          "NumberOfStreams": "4",
+          "NumberOfThreads": "4",
+          "TotalEventSetupTime": "18.4522",
+          "TotalInitCPU": "72.3918",
+          "TotalInitTime": "76.4263",
+          "TotalJobCPU": "552.295",
+          "TotalJobChildrenCPU": "0.143315",
+          "TotalJobTime": "214.862",
+          "TotalLoopCPU": "479.9",
+          "TotalLoopTime": "138.435",
+          "TotalNonModuleTime": "41.7053",
+          "AverageGrowthRateRss": "25.5835",
+          "AverageGrowthRateVsize": "45.3556",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "LargeVsizeIncreaseEventL1-a-COUNT": "3",
+          "LargeVsizeIncreaseEventL1-b-RUN": "359694",
+          "LargeVsizeIncreaseEventL1-c-EVENT": "1.0331e+08",
+          "LargeVsizeIncreaseEventL1-d-VSIZE": "7672.34",
+          "LargeVsizeIncreaseEventL1-e-DELTV": "116.078",
+          "LargeVsizeIncreaseEventL1-f-RSS": "5965.84",
+          "LargeVsizeIncreaseEventL2-a-COUNT": "7",
+          "LargeVsizeIncreaseEventL2-b-RUN": "359694",
+          "LargeVsizeIncreaseEventL2-c-EVENT": "1.03981e+08",
+          "LargeVsizeIncreaseEventL2-d-VSIZE": "7680.45",
+          "LargeVsizeIncreaseEventL2-e-DELTV": "4.10547",
+          "LargeVsizeIncreaseEventL2-f-RSS": "6066.31",
+          "LargeVsizeIncreaseEventR1-a-COUNT": "88",
+          "LargeVsizeIncreaseEventR1-b-RUN": "359694",
+          "LargeVsizeIncreaseEventR1-c-EVENT": "1.03748e+08",
+          "LargeVsizeIncreaseEventR1-d-VSIZE": "8232.45",
+          "LargeVsizeIncreaseEventR1-e-DELTV": "224",
+          "LargeVsizeIncreaseEventR1-f-RSS": "6090.45",
+          "LargeVsizeIncreaseEventR2-a-COUNT": "43",
+          "LargeVsizeIncreaseEventR2-b-RUN": "359694",
+          "LargeVsizeIncreaseEventR2-c-EVENT": "1.03139e+08",
+          "LargeVsizeIncreaseEventR2-d-VSIZE": "8008.45",
+          "LargeVsizeIncreaseEventR2-e-DELTV": "4",
+          "LargeVsizeIncreaseEventR2-f-RSS": "6071.77",
+          "LargestIncreaseRssEvent-a-COUNT": "3",
+          "LargestIncreaseRssEvent-b-RUN": "359694",
+          "LargestIncreaseRssEvent-c-EVENT": "1.0331e+08",
+          "LargestIncreaseRssEvent-d-VSIZE": "7672.34",
+          "LargestIncreaseRssEvent-e-DELTV": "116.078",
+          "LargestIncreaseRssEvent-f-RSS": "5965.84",
+          "LargestRssEvent-a-COUNT": "83",
+          "LargestRssEvent-b-RUN": "359694",
+          "LargestRssEvent-c-EVENT": "1.04283e+08",
+          "LargestRssEvent-d-VSIZE": "8008.45",
+          "LargestRssEvent-e-DELTV": "0",
+          "LargestRssEvent-f-RSS": "6118.92",
+          "LargestVsizeEventT1-a-COUNT": "88",
+          "LargestVsizeEventT1-b-RUN": "359694",
+          "LargestVsizeEventT1-c-EVENT": "1.03748e+08",
+          "LargestVsizeEventT1-d-VSIZE": "8232.45",
+          "LargestVsizeEventT1-e-DELTV": "224",
+          "LargestVsizeEventT1-f-RSS": "6090.45",
+          "LargestVsizeIncreaseEvent-a-COUNT": "22",
+          "LargestVsizeIncreaseEvent-b-RUN": "359694",
+          "LargestVsizeIncreaseEvent-c-EVENT": "1.04925e+08",
+          "LargestVsizeIncreaseEvent-d-VSIZE": "8004.45",
+          "LargestVsizeIncreaseEvent-e-DELTV": "320",
+          "LargestVsizeIncreaseEvent-f-RSS": "6082.32",
+          "PeakValueRss": "6118.92",
+          "PeakValueVsize": "8232.45",
+          "SecondLargestIncreaseRssEvent-a-COUNT": "6",
+          "SecondLargestIncreaseRssEvent-b-RUN": "359694",
+          "SecondLargestIncreaseRssEvent-c-EVENT": "1.043e+08",
+          "SecondLargestIncreaseRssEvent-d-VSIZE": "7676.34",
+          "SecondLargestIncreaseRssEvent-e-DELTV": "0",
+          "SecondLargestIncreaseRssEvent-f-RSS": "6064.87",
+          "SecondLargestRssEvent-a-COUNT": "84",
+          "SecondLargestRssEvent-b-RUN": "359694",
+          "SecondLargestRssEvent-c-EVENT": "1.03644e+08",
+          "SecondLargestRssEvent-d-VSIZE": "8008.45",
+          "SecondLargestRssEvent-e-DELTV": "0",
+          "SecondLargestRssEvent-f-RSS": "6114.64",
+          "SecondLargestVsizeEventT2-a-COUNT": "89",
+          "SecondLargestVsizeEventT2-b-RUN": "359694",
+          "SecondLargestVsizeEventT2-c-EVENT": "1.04504e+08",
+          "SecondLargestVsizeEventT2-d-VSIZE": "8232.45",
+          "SecondLargestVsizeEventT2-e-DELTV": "0",
+          "SecondLargestVsizeEventT2-f-RSS": "6096.04",
+          "ThirdLargestIncreaseRssEvent-a-COUNT": "4",
+          "ThirdLargestIncreaseRssEvent-b-RUN": "359694",
+          "ThirdLargestIncreaseRssEvent-c-EVENT": "1.03941e+08",
+          "ThirdLargestIncreaseRssEvent-d-VSIZE": "7676.34",
+          "ThirdLargestIncreaseRssEvent-e-DELTV": "4",
+          "ThirdLargestIncreaseRssEvent-f-RSS": "6001.89",
+          "ThirdLargestRssEvent-a-COUNT": "76",
+          "ThirdLargestRssEvent-b-RUN": "359694",
+          "ThirdLargestRssEvent-c-EVENT": "1.04165e+08",
+          "ThirdLargestRssEvent-d-VSIZE": "8008.45",
+          "ThirdLargestRssEvent-e-DELTV": "0",
+          "ThirdLargestRssEvent-f-RSS": "6100.84",
+          "ThirdLargestVsizeEventT3-a-COUNT": "90",
+          "ThirdLargestVsizeEventT3-b-RUN": "359694",
+          "ThirdLargestVsizeEventT3-c-EVENT": "1.03281e+08",
+          "ThirdLargestVsizeEventT3-d-VSIZE": "8232.45",
+          "ThirdLargestVsizeEventT3-e-DELTV": "0",
+          "ThirdLargestVsizeEventT3-f-RSS": "6079.31"
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2968",
+        "_id": "19d9aafe17fd296234c6dea4a21643dd59acc976",
+        "_score": 1,
+        "_source": {
+          "command": """cmsDriver.py step2  --process reHLT -s L1REPACK:Full,HLT:@relval2018 --conditions auto:run2_hlt_relval --data  --eventcontent FEVTDEBUGHLT --datatier FEVTDEBUGHLT --era Run2_2018  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbld/jenkins/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 9000 '  -n 100  --filein filelist:step1_dasquery.log --lumiToProcess step1_lumiRanges.log --fileout file:step2.root  --suffix "-j JobReport2.xml "  --nThreads 4 > step2_RunMuOnia2018C.log  2>&1""",
+          "exitcode": 0,
+          "workflow": "136.881",
+          "release": "CMSSW_20_1_X_2026-11-16-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step2",
+          "@timestamp": 1794906831279,
+          "hostname": "cmsbuild976.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/136.881_RunMuOnia2018C/step2_RunMuOnia2018C.log",
+          "error_count": 0,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/136.881_RunMuOnia2018C/JobReport2.xml",
+          "events_read": "100",
+          "total_events": "100",
+          "AvgEventTime": "0.229775",
+          "EventThroughput": "11.8077",
+          "MaxEventTime": "0.815401",
+          "MinEventTime": "0.0457075",
+          "NumberOfStreams": "4",
+          "NumberOfThreads": "4",
+          "TotalEventSetupTime": "2.41628",
+          "TotalInitCPU": "6.80013",
+          "TotalInitTime": "9.69907",
+          "TotalJobCPU": "23.0882",
+          "TotalJobChildrenCPU": "0.072664",
+          "TotalJobTime": "18.1685",
+          "TotalLoopCPU": "16.2865",
+          "TotalLoopTime": "8.46903",
+          "TotalNonModuleTime": "15.0295",
+          "AverageGrowthRateRss": "7.24523",
+          "AverageGrowthRateVsize": "8.25359",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "LargeVsizeIncreaseEventL1-a-COUNT": "2",
+          "LargeVsizeIncreaseEventL1-b-RUN": "319450",
+          "LargeVsizeIncreaseEventL1-c-EVENT": "1.09954e+08",
+          "LargeVsizeIncreaseEventL1-d-VSIZE": "2934.37",
+          "LargeVsizeIncreaseEventL1-e-DELTV": "28",
+          "LargeVsizeIncreaseEventL1-f-RSS": "1543.48",
+          "LargeVsizeIncreaseEventL2-a-COUNT": "1",
+          "LargeVsizeIncreaseEventL2-b-RUN": "319450",
+          "LargeVsizeIncreaseEventL2-c-EVENT": "1.10691e+08",
+          "LargeVsizeIncreaseEventL2-d-VSIZE": "2906.37",
+          "LargeVsizeIncreaseEventL2-e-DELTV": "0",
+          "LargeVsizeIncreaseEventL2-f-RSS": "1516.93",
+          "LargeVsizeIncreaseEventR1-a-COUNT": "29",
+          "LargeVsizeIncreaseEventR1-b-RUN": "319450",
+          "LargeVsizeIncreaseEventR1-c-EVENT": "1.10392e+08",
+          "LargeVsizeIncreaseEventR1-d-VSIZE": "3078.37",
+          "LargeVsizeIncreaseEventR1-e-DELTV": "32",
+          "LargeVsizeIncreaseEventR1-f-RSS": "1624",
+          "LargeVsizeIncreaseEventR2-a-COUNT": "13",
+          "LargeVsizeIncreaseEventR2-b-RUN": "319450",
+          "LargeVsizeIncreaseEventR2-c-EVENT": "1.1059e+08",
+          "LargeVsizeIncreaseEventR2-d-VSIZE": "3042.37",
+          "LargeVsizeIncreaseEventR2-e-DELTV": "28",
+          "LargeVsizeIncreaseEventR2-f-RSS": "1589.27",
+          "LargestIncreaseRssEvent-a-COUNT": "2",
+          "LargestIncreaseRssEvent-b-RUN": "319450",
+          "LargestIncreaseRssEvent-c-EVENT": "1.09954e+08",
+          "LargestIncreaseRssEvent-d-VSIZE": "2934.37",
+          "LargestIncreaseRssEvent-e-DELTV": "28",
+          "LargestIncreaseRssEvent-f-RSS": "1543.48",
+          "LargestRssEvent-a-COUNT": "43",
+          "LargestRssEvent-b-RUN": "319450",
+          "LargestRssEvent-c-EVENT": "1.09846e+08",
+          "LargestRssEvent-d-VSIZE": "3078.37",
+          "LargestRssEvent-e-DELTV": "0",
+          "LargestRssEvent-f-RSS": "1642.92",
+          "LargestVsizeEventT1-a-COUNT": "29",
+          "LargestVsizeEventT1-b-RUN": "319450",
+          "LargestVsizeEventT1-c-EVENT": "1.10392e+08",
+          "LargestVsizeEventT1-d-VSIZE": "3078.37",
+          "LargestVsizeEventT1-e-DELTV": "32",
+          "LargestVsizeEventT1-f-RSS": "1624",
+          "LargestVsizeIncreaseEvent-a-COUNT": "6",
+          "LargestVsizeIncreaseEvent-b-RUN": "319450",
+          "LargestVsizeIncreaseEvent-c-EVENT": "1.10146e+08",
+          "LargestVsizeIncreaseEvent-d-VSIZE": "3014.37",
+          "LargestVsizeIncreaseEvent-e-DELTV": "80",
+          "LargestVsizeIncreaseEvent-f-RSS": "1572.79",
+          "PeakValueRss": "1642.92",
+          "PeakValueVsize": "3078.37",
+          "SecondLargestIncreaseRssEvent-a-COUNT": "19",
+          "SecondLargestIncreaseRssEvent-b-RUN": "319450",
+          "SecondLargestIncreaseRssEvent-c-EVENT": "1.10777e+08",
+          "SecondLargestIncreaseRssEvent-d-VSIZE": "3046.37",
+          "SecondLargestIncreaseRssEvent-e-DELTV": "0",
+          "SecondLargestIncreaseRssEvent-f-RSS": "1613.72",
+          "SecondLargestRssEvent-a-COUNT": "52",
+          "SecondLargestRssEvent-b-RUN": "319450",
+          "SecondLargestRssEvent-c-EVENT": "1.09842e+08",
+          "SecondLargestRssEvent-d-VSIZE": "3078.37",
+          "SecondLargestRssEvent-e-DELTV": "0",
+          "SecondLargestRssEvent-f-RSS": "1642.82",
+          "SecondLargestVsizeEventT2-a-COUNT": "30",
+          "SecondLargestVsizeEventT2-b-RUN": "319450",
+          "SecondLargestVsizeEventT2-c-EVENT": "1.10769e+08",
+          "SecondLargestVsizeEventT2-d-VSIZE": "3078.37",
+          "SecondLargestVsizeEventT2-e-DELTV": "0",
+          "SecondLargestVsizeEventT2-f-RSS": "1625.5",
+          "ThirdLargestIncreaseRssEvent-a-COUNT": "31",
+          "ThirdLargestIncreaseRssEvent-b-RUN": "319450",
+          "ThirdLargestIncreaseRssEvent-c-EVENT": "1.10961e+08",
+          "ThirdLargestIncreaseRssEvent-d-VSIZE": "3078.37",
+          "ThirdLargestIncreaseRssEvent-e-DELTV": "0",
+          "ThirdLargestIncreaseRssEvent-f-RSS": "1637.5",
+          "ThirdLargestRssEvent-a-COUNT": "60",
+          "ThirdLargestRssEvent-b-RUN": "319450",
+          "ThirdLargestRssEvent-c-EVENT": "1.09925e+08",
+          "ThirdLargestRssEvent-d-VSIZE": "3078.37",
+          "ThirdLargestRssEvent-e-DELTV": "0",
+          "ThirdLargestRssEvent-f-RSS": "1641.7",
+          "ThirdLargestVsizeEventT3-a-COUNT": "31",
+          "ThirdLargestVsizeEventT3-b-RUN": "319450",
+          "ThirdLargestVsizeEventT3-c-EVENT": "1.10961e+08",
+          "ThirdLargestVsizeEventT3-d-VSIZE": "3078.37",
+          "ThirdLargestVsizeEventT3-e-DELTV": "0",
+          "ThirdLargestVsizeEventT3-f-RSS": "1637.5"
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2968",
+        "_id": "9ef95b3e82d304acbe33ee41faab16f721a334c8",
+        "_score": 1,
+        "_source": {
+          "command": """cmsDriver.py step3  --conditions auto:run2_data_relval -s RAW2DIGI,L1Reco,RECO,SKIM:HighMET+EXOMONOPOLE,PAT,ALCA:SiStripCalZeroBias+SiStripCalMinBias+TkAlMinBias+EcalESAlign,DQM:@commonFakeHLT+@jetmet+@hcalOnly --datatier RECO,MINIAOD,DQMIO --eventcontent RECO,MINIAOD,DQM --data  --process reRECO --scenario pp --era Run2_2016_HIPM --customise Configuration/DataProcessing/RecoTLR.customisePostEra_Run2_2016 --hltProcess reHLT  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbld/jenkins/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 9000 '  -n 100  --filein  file:step2.root  --fileout file:step3.root  --suffix "-j JobReport3.xml "  --nThreads 4 > step3_RunMET2016D.log  2>&1""",
+          "exitcode": 0,
+          "workflow": "136.751",
+          "release": "CMSSW_20_1_X_2026-11-16-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step3",
+          "@timestamp": 1794906877498,
+          "hostname": "cmsbuild976.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/136.751_RunMET2016D/step3_RunMET2016D.log",
+          "errors": [
+            {
+              "error": """%MSG-e hltPrescaleTable:  PATTriggerProducer:patTrigger  17-Nov-2026 08:44:21 CET Run: 276807 Event: 43706791No HLT prescale table found
+Using default empty table with all prescales 1
+""",
+              "kind": "hltPrescaleTable:  PATTriggerProducer:patTrigger "
+            },
+            {
+              "error": """%MSG-e hltPrescaleTable:  PATTriggerProducer:patTrigger  17-Nov-2026 08:44:21 CET Run: 276807 Event: 43697442No HLT prescale table found
+Using default empty table with all prescales 1
+""",
+              "kind": "hltPrescaleTable:  PATTriggerProducer:patTrigger "
+            },
+            {
+              "error": """%MSG-e hltPrescaleTable:  PATTriggerProducer:patTrigger  17-Nov-2026 08:44:21 CET Run: 276807 Event: 44517368No HLT prescale table found
+Using default empty table with all prescales 1
+""",
+              "kind": "hltPrescaleTable:  PATTriggerProducer:patTrigger "
+            },
+            {
+              "error": """%MSG-e hltPrescaleTable:  PATTriggerProducer:patTrigger  17-Nov-2026 08:44:21 CET Run: 276807 Event: 43863300No HLT prescale table found
+Using default empty table with all prescales 1
+""",
+              "kind": "hltPrescaleTable:  PATTriggerProducer:patTrigger "
+            },
+            {
+              "error": """%MSG-e TrajectoryNotPosDef:  TrackRefitter:refittedForPixelDQM  17-Nov-2026 08:44:32 CET Run: 276807 Event: 43697442Trajectory covariance is not positive-definite
+""",
+              "kind": "TrajectoryNotPosDef:  TrackRefitter:refittedForPixelDQM "
+            },
+            {
+              "error": """%MSG-e TrajectoryNotPosDef:  TrackRefitter:refittedForPixelDQM  17-Nov-2026 08:44:48 CET Run: 276807 Event: 43172183Trajectory covariance is not positive-definite
+""",
+              "kind": "TrajectoryNotPosDef:  TrackRefitter:refittedForPixelDQM "
+            }
+          ],
+          "error_count": 6,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/136.751_RunMET2016D/JobReport3.xml",
+          "events_read": "100",
+          "total_events": "99",
+          "AvgEventTime": "5.00003",
+          "EventThroughput": "0.743626",
+          "MaxEventTime": "16.4658",
+          "MinEventTime": "0.942168",
+          "NumberOfStreams": "4",
+          "NumberOfThreads": "4",
+          "TotalEventSetupTime": "11.7761",
+          "TotalInitCPU": "61.9398",
+          "TotalInitTime": "64.064",
+          "TotalJobCPU": "548.833",
+          "TotalJobChildrenCPU": "0.125416",
+          "TotalJobTime": "198.541",
+          "TotalLoopCPU": "486.892",
+          "TotalLoopTime": "134.476",
+          "TotalNonModuleTime": "34.23",
+          "AverageGrowthRateRss": "19.4895",
+          "AverageGrowthRateVsize": "37.3718",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "LargeVsizeIncreaseEventR1-a-COUNT": "18",
+          "LargeVsizeIncreaseEventR1-b-RUN": "276807",
+          "LargeVsizeIncreaseEventR1-c-EVENT": "4.46786e+07",
+          "LargeVsizeIncreaseEventR1-d-VSIZE": "6280.08",
+          "LargeVsizeIncreaseEventR1-e-DELTV": "502",
+          "LargeVsizeIncreaseEventR1-f-RSS": "4733.48",
+          "LargeVsizeIncreaseEventR2-a-COUNT": "58",
+          "LargeVsizeIncreaseEventR2-b-RUN": "276807",
+          "LargeVsizeIncreaseEventR2-c-EVENT": "4.38806e+07",
+          "LargeVsizeIncreaseEventR2-d-VSIZE": "6600.08",
+          "LargeVsizeIncreaseEventR2-e-DELTV": "224",
+          "LargeVsizeIncreaseEventR2-f-RSS": "4566.38",
+          "LargestIncreaseRssEvent-a-COUNT": "2",
+          "LargestIncreaseRssEvent-b-RUN": "276807",
+          "LargestIncreaseRssEvent-c-EVENT": "4.45174e+07",
+          "LargestIncreaseRssEvent-d-VSIZE": "5442.08",
+          "LargestIncreaseRssEvent-e-DELTV": "5442.08",
+          "LargestIncreaseRssEvent-f-RSS": "3966.47",
+          "LargestRssEvent-a-COUNT": "20",
+          "LargestRssEvent-b-RUN": "276807",
+          "LargestRssEvent-c-EVENT": "4.40689e+07",
+          "LargestRssEvent-d-VSIZE": "6280.08",
+          "LargestRssEvent-e-DELTV": "0",
+          "LargestRssEvent-f-RSS": "4821.34",
+          "LargestVsizeEventT1-a-COUNT": "88",
+          "LargestVsizeEventT1-b-RUN": "276807",
+          "LargestVsizeEventT1-c-EVENT": "4.34775e+07",
+          "LargestVsizeEventT1-d-VSIZE": "6792.08",
+          "LargestVsizeEventT1-e-DELTV": "192",
+          "LargestVsizeEventT1-f-RSS": "4542.18",
+          "LargestVsizeIncreaseEvent-a-COUNT": "2",
+          "LargestVsizeIncreaseEvent-b-RUN": "276807",
+          "LargestVsizeIncreaseEvent-c-EVENT": "4.45174e+07",
+          "LargestVsizeIncreaseEvent-d-VSIZE": "5442.08",
+          "LargestVsizeIncreaseEvent-e-DELTV": "5442.08",
+          "LargestVsizeIncreaseEvent-f-RSS": "3966.47",
+          "PeakValueRss": "4821.34",
+          "PeakValueVsize": "6792.08",
+          "SecondLargestIncreaseRssEvent-a-COUNT": "18",
+          "SecondLargestIncreaseRssEvent-b-RUN": "276807",
+          "SecondLargestIncreaseRssEvent-c-EVENT": "4.46786e+07",
+          "SecondLargestIncreaseRssEvent-d-VSIZE": "6280.08",
+          "SecondLargestIncreaseRssEvent-e-DELTV": "502",
+          "SecondLargestIncreaseRssEvent-f-RSS": "4733.48",
+          "SecondLargestRssEvent-a-COUNT": "21",
+          "SecondLargestRssEvent-b-RUN": "276807",
+          "SecondLargestRssEvent-c-EVENT": "4.38053e+07",
+          "SecondLargestRssEvent-d-VSIZE": "6280.08",
+          "SecondLargestRssEvent-e-DELTV": "0",
+          "SecondLargestRssEvent-f-RSS": "4805.73",
+          "SecondLargestVsizeEventT2-a-COUNT": "89",
+          "SecondLargestVsizeEventT2-b-RUN": "276807",
+          "SecondLargestVsizeEventT2-c-EVENT": "4.47366e+07",
+          "SecondLargestVsizeEventT2-d-VSIZE": "6792.08",
+          "SecondLargestVsizeEventT2-e-DELTV": "0",
+          "SecondLargestVsizeEventT2-f-RSS": "4535.78",
+          "ThirdLargestIncreaseRssEvent-a-COUNT": "6",
+          "ThirdLargestIncreaseRssEvent-b-RUN": "276807",
+          "ThirdLargestIncreaseRssEvent-c-EVENT": "4.37068e+07",
+          "ThirdLargestIncreaseRssEvent-d-VSIZE": "5614.08",
+          "ThirdLargestIncreaseRssEvent-e-DELTV": "0",
+          "ThirdLargestIncreaseRssEvent-f-RSS": "4136.88",
+          "ThirdLargestRssEvent-a-COUNT": "22",
+          "ThirdLargestRssEvent-b-RUN": "276807",
+          "ThirdLargestRssEvent-c-EVENT": "4.31932e+07",
+          "ThirdLargestRssEvent-d-VSIZE": "6280.08",
+          "ThirdLargestRssEvent-e-DELTV": "0",
+          "ThirdLargestRssEvent-f-RSS": "4803.68",
+          "ThirdLargestVsizeEventT3-a-COUNT": "90",
+          "ThirdLargestVsizeEventT3-b-RUN": "276807",
+          "ThirdLargestVsizeEventT3-c-EVENT": "4.43652e+07",
+          "ThirdLargestVsizeEventT3-d-VSIZE": "6792.08",
+          "ThirdLargestVsizeEventT3-e-DELTV": "0",
+          "ThirdLargestVsizeEventT3-f-RSS": "4534.95"
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2968",
+        "_id": "8305d08dc8f4d36a846b4a909dc57219ee7c77f4",
+        "_score": 1,
+        "_source": {
+          "exitcode": 0,
+          "workflow": "140.101",
+          "release": "CMSSW_20_1_X_2026-11-16-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step1",
+          "@timestamp": 1794906812176,
+          "hostname": "cmsbuild976.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-16-2300/pyRelValMatrixLogs/run/140.101_RunZeroBias2022D/step1_lumiRanges.log",
+          "error_count": 0
+        }
+      }
+    ]
+  }
+}
+# GET cmssdt-ib-matrix-*/_search
+{
+  "took": 3,
+  "timed_out": false,
+  "_shards": {
+    "total": 2,
+    "successful": 2,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 15,
+      "relation": "eq"
+    },
+    "max_score": null,
+    "hits": []
+  },
+  "aggregations": {
+    "architectures": {
+      "doc_count_error_upper_bound": 0,
+      "sum_other_doc_count": 0,
+      "buckets": [
+        {
+          "key": "el9_amd64_gcc14",
+          "doc_count": 12,
+          "workflows": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "38634.422",
+                "doc_count": 3
+              },
+              {
+                "key": "38634.423",
+                "doc_count": 3
+              },
+              {
+                "key": "36434.0",
+                "doc_count": 2
+              },
+              {
+                "key": "36834.0",
+                "doc_count": 2
+              },
+              {
+                "key": "38551.85",
+                "doc_count": 2
+              }
+            ]
+          }
+        },
+        {
+          "key": "el9_aarch64_gcc14",
+          "doc_count": 2,
+          "workflows": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "10804.31",
+                "doc_count": 1
+              },
+              {
+                "key": "38551.85",
+                "doc_count": 1
+              }
+            ]
+          }
+        },
+        {
+          "key": "el8_amd64_gcc14",
+          "doc_count": 1,
+          "workflows": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "38551.85",
+                "doc_count": 1
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

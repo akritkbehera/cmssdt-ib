@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "snapshot": "2026-11-17",
+  "note": "Parameterized OpenSearch query bodies for SearchIndexTool. Placeholders are ${param}. Every clause is composed only from behaviours verified in the discovery session (provenance per template). Templates flagged verified_clauses_complete:false contain at least one clause not exercised in discovery; run the matching gap query from discovery-gaps.md before relying on it. Validate arguments with server/chat/knowledge.mjs validateTemplateArgs — never send a field that is not in schema-registry.json.",
+  "param_types": {
+    "release": { "type": "string", "pattern": "^CMSSW_[0-9]+_[0-9]+(_[A-Z0-9]+)?_X_[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{4}$", "field": "release", "description": "exact release/IB name" },
+    "cycle": { "type": "string", "pattern": "^CMSSW_[0-9]+_[0-9]+(_[A-Z0-9]+)?_X$", "field": "release", "description": "release cycle prefix, e.g. CMSSW_20_1_X or CMSSW_20_1_ROOT6_X" },
+    "architecture": { "type": "string", "pattern": "^[a-z0-9]+_[a-z0-9]+_[a-z0-9]+$", "field": "architecture", "description": "e.g. el9_amd64_gcc14" },
+    "workflow": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+$", "field": "workflow", "description": "dotted-decimal workflow id" },
+    "size": { "type": "integer", "min": 0, "max": 100, "description": "hit count; use 0 with aggregations" },
+    "from_ms": { "type": "integer", "field": "@timestamp", "description": "epoch millis lower bound (unverified field type)" },
+    "to_ms": { "type": "integer", "field": "@timestamp", "description": "epoch millis upper bound (unverified field type)" }
+  },
+  "templates": [
+    {
+      "id": "release_doc_counts",
+      "description": "Document counts per release name, newest-first per cycle. Correct way to find the latest IB of a cycle: pick the first bucket whose key starts with the cycle prefix; the date suffix sorts lexicographically = chronologically within a cycle. Never treat the first bucket overall as latest.",
+      "index": "cmssdt-ib-matrix-*",
+      "params": { "size": { "type": "integer", "min": 10, "max": 1000, "default": 200 } },
+      "body": {
+        "size": 0,
+        "aggs": {
+          "releases": {
+            "terms": {
+              "field": "release",
+              "size": "${size}",
+              "order": { "_key": "desc" }
+            }
+          }
+        }
+      },
+      "verified_clauses_complete": true,
+      "provenance": { "file": "context3.txt", "query": "10", "lines": [86, 513] }
+    },
+    {
+      "id": "latest_release_for_cycle",
+      "description": "Two-part recipe. Part 1: run release_doc_counts. Part 2 (client side): take the first bucket key starting with '${cycle}_' — that is the latest IB of the cycle. Report the retrieval time; counts drift while an IB is running.",
+      "index": "cmssdt-ib-matrix-*",
+      "params": { "cycle": { "type": "cycle" } },
+      "body_template": "release_doc_counts",
+      "selection": "first key with prefix '${cycle}_' in _key-desc order",
+      "verified_clauses_complete": true,
+      "provenance": { "file": "context3.txt", "query": "10", "lines": [86, 513] }
+    },
+    {
+      "id": "architecture_list",
+      "description": "All architectures present with document counts (complete: sum_other_doc_count was 0 in the verified run).",
+      "index": "cmssdt-ib-matrix-*",
+      "params": { "size": { "type": "integer", "min": 10, "max": 100, "default": 100 } },
+      "body": {
+        "size": 0,
+        "aggs": {
+          "architectures": { "terms": { "field": "architecture", "size": "${size}" } }
+        }
+      },
+      "verified_clauses_complete": true,
+      "provenance": { "file": "context3.txt", "query": "11", "lines": [514, 641] }
+    },
+    {
+      "id": "workflow_list",
+      "description": "Top workflows by document count. The verified run had doc_count_error_upper_bound 5126 — treat as approximate and say so.",
+      "index": "cmssdt-ib-matrix-*",
+      "params": { "size": { "type": "integer", "min": 10, "max": 100, "default": 100 } },
+      "body": {
+        "size": 0,
+        "aggs": {
+          "workflows": { "terms": { "field": "workflow", "size": "${size}" } }
+        }
+      },
+      "verified_clauses_complete": true,
+      "provenance": { "file": "context3.txt", "query": "12", "lines": [642, 1069] }
+    },
+    {
+      "id": "exitcode_distribution",
+      "description": "Exit-code histogram (integer keys). Add a term filter on release to scope it to one IB.",
+      "index": "cmssdt-ib-matrix-*",
+      "params": { "release": { "type": "release", "optional": true }, "size": { "type": "integer", "min": 10, "max": 50, "default": 50 } },
+      "body": {
+        "size": 0,
+        "query": { "bool": { "filter": [ { "term": { "release": "${release}" } } ] } },
+        "aggs": {
+          "exit_codes": { "terms": { "field": "exitcode", "size": "${size}" } }
+        }
+      },
+      "verified_clauses_complete": true,
+      "provenance": { "file": "context3.txt", "query": "13", "lines": [1070, 1209] }
+    },
+    {
+      "id": "failed_steps",
+      "description": "Failed step documents (exitcode exists and != 0), optionally scoped to one release/architecture/workflow. Do not filter on exists(exception): failed steps often have no exception field. Exclude noisy fields from _source.",
+      "index": "cmssdt-ib-matrix-*",
+      "params": {
+        "release": { "type": "release", "optional": true },
+        "architecture": { "type": "architecture", "optional": true },
+        "workflow": { "type": "workflow", "optional": true },
+        "size": { "type": "integer", "min": 1, "max": 100, "default": 10 }
+      },
+      "body": {
+        "size": "${size}",
+        "_source": { "excludes": ["command"] },
+        "query": {
+          "bool": {
+            "filter": [
+              { "exists": { "field": "exitcode" } },
+              { "term": { "release": "${release}" } },
+              { "term": { "architecture": "${architecture}" } },
+              { "term": { "workflow": "${workflow}" } }
+            ],
+            "must_not": [ { "term": { "exitcode": 0 } } ]
+          }
+        },
+        "sort": [ { "@timestamp": { "order": "desc", "unmapped_type": "long" } } ]
+      },
+      "optional_clause_note": "Remove filter clauses whose parameter is not supplied (an empty term would match nothing). The sort clause is UNVERIFIED (no sort was executed on @timestamp in the discovery); drop it if the query is rejected and re-run unsorted.",
+      "verified_clauses_complete": false,
+      "provenance": { "file": "context3.txt", "query": "15", "lines": [1832, 2537] }
+    },
+    {
+      "id": "failure_distribution_by_arch",
+      "description": "For one IB: failed steps grouped by architecture, with failing workflows per architecture. Verified result shape for CMSSW_20_1_X_2026-11-16-2300: 15 failed steps (el9_amd64_gcc14: 12, el9_aarch64_gcc14: 2, el8_amd64_gcc14: 1) — a snapshot of a possibly still-running IB.",
+      "index": "cmssdt-ib-matrix-*",
+      "params": {
+        "release": { "type": "release" },
+        "arch_size": { "type": "integer", "min": 10, "max": 50, "default": 50 },
+        "workflow_size": { "type": "integer", "min": 10, "max": 100, "default": 100 }
+      },
+      "body": {
+        "size": 0,
+        "query": {
+          "bool": {
+            "filter": [
+              { "term": { "release": "${release}" } },
+              { "exists": { "field": "exitcode" } }
+            ],
+            "must_not": [ { "term": { "exitcode": 0 } } ]
+          }
+        },
+        "aggs": {
+          "architectures": {
+            "terms": { "field": "architecture", "size": "${arch_size}" },
+            "aggs": {
+              "workflows": { "terms": { "field": "workflow", "size": "${workflow_size}" } }
+            }
+          }
+        }
+      },
+      "verified_clauses_complete": true,
+      "provenance": { "file": "context4.txt", "query": "22", "lines": [1118, 1206] }
+    },
+    {
+      "id": "release_sample",
+      "description": "Sample documents of one IB (one release across all generations/architectures). Use _source excludes to keep responses small; metrics fields make full documents huge.",
+      "index": "cmssdt-ib-matrix-*",
+      "params": {
+        "release": { "type": "release" },
+        "size": { "type": "integer", "min": 1, "max": 100, "default": 10 },
+        "architecture": { "type": "architecture", "optional": true }
+      },
+      "body": {
+        "size": "${size}",
+        "_source": { "excludes": ["command"] },
+        "query": {
+          "bool": {
+            "filter": [
+              { "term": { "release": "${release}" } },
+              { "term": { "architecture": "${architecture}" } }
+            ]
+          }
+        }
+      },
+      "optional_clause_note": "Remove the architecture clause when not supplied.",
+      "verified_clauses_complete": true,
+      "provenance": { "file": "context4.txt", "query": "21", "lines": [57, 1117] }
+    },
+    {
+      "id": "exception_docs",
+      "description": "Documents carrying an exception field, optionally scoped to one release. Remember: absence of exception does not mean success and presence does not mean failure.",
+      "index": "cmssdt-ib-matrix-*",
+      "params": {
+        "release": { "type": "release", "optional": true },
+        "size": { "type": "integer", "min": 1, "max": 100, "default": 5 }
+      },
+      "body": {
+        "size": "${size}",
+        "_source": { "excludes": ["command"] },
+        "query": {
+          "bool": {
+            "filter": [
+              { "exists": { "field": "exception" } },
+              { "term": { "release": "${release}" } }
+            ]
+          }
+        }
+      },
+      "optional_clause_note": "Remove the release clause when not supplied.",
+      "verified_clauses_complete": true,
+      "provenance": { "file": "context3.txt", "query": "14", "lines": [1210, 1831] }
+    },
+    {
+      "id": "docs_in_time_range",
+      "description": "Documents in an epoch-millis window on @timestamp. The range clause is UNVERIFIED: no range query appears in the discovery and @timestamp is an observed integer, not a confirmed date mapping. Run gap query G4 first.",
+      "index": "cmssdt-ib-matrix-*",
+      "params": {
+        "from_ms": { "type": "from_ms" },
+        "to_ms": { "type": "to_ms" },
+        "size": { "type": "integer", "min": 1, "max": 100, "default": 10 }
+      },
+      "body": {
+        "size": "${size}",
+        "_source": { "excludes": ["command"] },
+        "query": {
+          "range": { "@timestamp": { "gte": "${from_ms}", "lte": "${to_ms}" } }
+        }
+      },
+      "verified_clauses_complete": false,
+      "provenance": null,
+      "gap": "G4"
+    }
+  ]
+}

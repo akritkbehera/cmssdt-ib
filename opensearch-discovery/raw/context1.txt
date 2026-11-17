@@ -1,0 +1,309 @@
+# 01 — All accessible indices and document counts
+GET _cat/indices?v&h=index,status,docs.count,store.size&s=index
+
+# 02 — Aliases
+GET _cat/aliases?v
+
+# 03 — Index names and metadata
+GET _cluster/state/metadata?filter_path=metadata.indices.*.aliases,metadata.indices.*.settings.index.creation_date
+
+# 04 — All CMSSDT index mappings
+GET cmssdt-*/_mapping
+
+# 05 — Field types across CMSSDT indices
+GET cmssdt-*/_field_caps?fields=*
+
+# 06 — All CMSSDT index settings relevant to structure
+GET cmssdt-*/_settings?filter_path=*.settings.index.number_of_shards,*.settings.index.number_of_replicas,*.settings.index.creation_date
+
+
+{
+  "cmssdt-cmspkg-access-2968": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1794700817435",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-externals_stats_summary-2968": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1794702519837",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-jenkins-jobs-2964": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1792281730691",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-jenkins-jobs-2968": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1794700931373",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-jenkins-ibs-2964": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1792282344617",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-externals_stats_summary-2964": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1792283733037",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-cmspkg-access-2964": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1792281661938",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-jenkins-offline-nodes": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1747932904048",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-jenkins-ibs-2968": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1794703342851",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-externals_stats_avgs": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1763564230750",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-git-repository-size": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1761820565215",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-apache-cmsrep-2968": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1794700817328",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-cmssw-afs-eos-2968": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1794808800782",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-relvals_stats_summary-2968": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1794710940664",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-ib-dataset-2968": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1794710062998",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-github-api-2964": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1792281603986",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-apache-cmsrep-2964": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1792281661801",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-relvals_stats_summary-2964": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1792294140771",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-cmssw-afs-eos-2964": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1792386000739",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-ib-dataset-2964": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1792292114367",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-ibs-2964": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1792295322677",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-apache-cmssdt-2964": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1792281608368",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-ibs-2968": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1794710062554",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-jenkins-queue-2964": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1792282320893",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-ib-matrix-2964": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1792292940715",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-jenkins-queue-2968": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1794701520884",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-apache-cmssdt-2968": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1794700810921",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-ib-matrix-2968": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1794710940762",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-scram-access-2964": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1792281608460",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-cmssw-pkginfo-2968": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1794711397346",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-cmssw-pkginfo-2964": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1792288369463",
+        "number_of_replicas": "1"
+      }
+    }
+  },
+  "cmssdt-github-api-2968": {
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "creation_date": "1794700803988",
+        "number_of_replicas": "1"
+      }
+    }
+  }
+}

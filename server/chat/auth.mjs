@@ -57,8 +57,9 @@ export function createAuth(config, dependencies = {}) {
     if (mode === 'oidc') {
       const id = bearer(req), session = sessions.get(id);
       if (!session) throw authRequired();
-      if (config.kerberosCache) return config;
-      if (session.target.expires < Date.now() + 30000) {
+      if (config.kerberosCache) return { ...config, authRefresh: async () => null };
+      const renew = force => {
+        if (!force && session.target.expires >= Date.now() + 30000) return Promise.resolve();
         session.refresh ||= (async () => {
           const provider = await getProvider();
           if (!session.tokens.refresh_token) throw authRequired();
@@ -66,18 +67,31 @@ export function createAuth(config, dependencies = {}) {
           session.tokens = { ...refreshed, refresh_token: refreshed.refresh_token || session.tokens.refresh_token };
           session.target = await exchangeTokens(provider, session.tokens);
         })().catch(error => { sessions.delete(id); throw error instanceof ChatError ? error : authRequired(); }).finally(() => { session.refresh = undefined; });
-        await session.refresh;
-      }
-      return { ...config, mcpHeaders: { ...config.mcpHeaders, Authorization: `Bearer ${session.target.accessToken}` } };
+        return session.refresh;
+      };
+      await renew(false);
+      const build = () => ({ ...config, mcpHeaders: { ...config.mcpHeaders, Authorization: `Bearer ${session.target.accessToken}` } });
+      const runtime = build();
+      // Mid-investigation recovery: force a token refresh and return fresh
+      // headers so the MCP session can be reinitialized with a valid token.
+      runtime.authRefresh = async () => {
+        if (!sessions.has(id)) return null;
+        await renew(true).catch(() => null);
+        return sessions.has(id) ? build() : null;
+      };
+      return runtime;
     }
     if (config.accessToken && !equals(bearer(req), config.accessToken)) throw new ChatError('backend_authentication_required', 'Chat backend access token required.', 401, 'backend');
     if (config.mcpTokenFile) {
-      let token;
-      try { token = (await readFile(config.mcpTokenFile, 'utf8')).trim(); await verify(token); }
+      const readToken = async () => {
+        const token = (await readFile(config.mcpTokenFile, 'utf8')).trim();
+        await verify(token);
+        return { ...config, mcpHeaders: { ...config.mcpHeaders, Authorization: `Bearer ${token}` } };
+      };
+      try { return await readToken(); }
       catch { throw new ChatError('authentication_required', 'The OpenSearch token file is missing, expired or has the wrong issuer/audience. Obtain a fresh token for itos_cmssdt using CERN’s supported CLI.', 401, 'opensearch'); }
-      return { ...config, mcpHeaders: { ...config.mcpHeaders, Authorization: `Bearer ${token}` } };
     }
-    return config;
+    return { ...config, authRefresh: async () => null };
   }
   return {
     mode, resolve,

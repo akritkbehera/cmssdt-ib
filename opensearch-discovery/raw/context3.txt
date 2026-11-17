@@ -1,0 +1,2537 @@
+# 10 — Release names and document counts
+GET cmssdt-ib-matrix-*/_search
+{
+  "size": 0,
+  "aggs": {
+    "releases": {
+      "terms": {
+        "field": "release",
+        "size": 100,
+        "order": {"_key": "desc"}
+      }
+    }
+  }
+}
+
+# 11 — Architecture names
+GET cmssdt-ib-matrix-*/_search
+{
+  "size": 0,
+  "aggs": {
+    "architectures": {
+      "terms": {
+        "field": "architecture",
+        "size": 100
+      }
+    }
+  }
+}
+
+# 12 — Workflow names
+GET cmssdt-ib-matrix-*/_search
+{
+  "size": 0,
+  "aggs": {
+    "workflows": {
+      "terms": {
+        "field": "workflow",
+        "size": 100
+      }
+    }
+  }
+}
+
+# 13 — Exit code distribution
+GET cmssdt-ib-matrix-*/_search
+{
+  "size": 0,
+  "aggs": {
+    "exit_codes": {
+      "terms": {
+        "field": "exitcode",
+        "size": 50
+      }
+    }
+  }
+}
+
+# 14 — Documents containing exceptions
+GET cmssdt-ib-matrix-*/_search
+{
+  "size": 5,
+  "query": {
+    "exists": {
+      "field": "exception"
+    }
+  }
+}
+
+# 15 — Sample failed steps
+GET cmssdt-ib-matrix-*/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "filter": [
+        {"exists": {"field": "exitcode"}}
+      ],
+      "must_not": [
+        {"term": {"exitcode": 0}}
+      ]
+    }
+  }
+}
+
+
+# GET cmssdt-ib-matrix-*/_search
+{
+  "took": 11,
+  "timed_out": false,
+  "terminated_early": true,
+  "_shards": {
+    "total": 2,
+    "successful": 2,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 10000,
+      "relation": "gte"
+    },
+    "max_score": null,
+    "hits": []
+  },
+  "aggregations": {
+    "releases": {
+      "doc_count_error_upper_bound": 0,
+      "sum_other_doc_count": 4119399,
+      "buckets": [
+        {
+          "key": "CMSSW_9_4_X_2026-11-15-0000",
+          "doc_count": 4134
+        },
+        {
+          "key": "CMSSW_9_4_X_2026-11-08-0000",
+          "doc_count": 4134
+        },
+        {
+          "key": "CMSSW_9_4_X_2026-11-01-0000",
+          "doc_count": 4134
+        },
+        {
+          "key": "CMSSW_9_4_X_2026-10-25-0000",
+          "doc_count": 4134
+        },
+        {
+          "key": "CMSSW_9_4_X_2026-10-18-0000",
+          "doc_count": 4134
+        },
+        {
+          "key": "CMSSW_8_0_X_2026-11-15-0000",
+          "doc_count": 2436
+        },
+        {
+          "key": "CMSSW_8_0_X_2026-11-08-0000",
+          "doc_count": 2436
+        },
+        {
+          "key": "CMSSW_8_0_X_2026-11-01-0000",
+          "doc_count": 2436
+        },
+        {
+          "key": "CMSSW_8_0_X_2026-10-25-0000",
+          "doc_count": 2436
+        },
+        {
+          "key": "CMSSW_8_0_X_2026-10-18-0000",
+          "doc_count": 2436
+        },
+        {
+          "key": "CMSSW_5_3_X_2026-11-15-0000",
+          "doc_count": 431
+        },
+        {
+          "key": "CMSSW_5_3_X_2026-11-08-0000",
+          "doc_count": 431
+        },
+        {
+          "key": "CMSSW_5_3_X_2026-11-01-0000",
+          "doc_count": 431
+        },
+        {
+          "key": "CMSSW_5_3_X_2026-10-25-0000",
+          "doc_count": 431
+        },
+        {
+          "key": "CMSSW_5_3_X_2026-10-18-0000",
+          "doc_count": 431
+        },
+        {
+          "key": "CMSSW_5_3_HI_X_2026-11-15-0000",
+          "doc_count": 389
+        },
+        {
+          "key": "CMSSW_5_3_HI_X_2026-11-08-0000",
+          "doc_count": 389
+        },
+        {
+          "key": "CMSSW_5_3_HI_X_2026-11-01-0000",
+          "doc_count": 389
+        },
+        {
+          "key": "CMSSW_5_3_HI_X_2026-10-25-0000",
+          "doc_count": 389
+        },
+        {
+          "key": "CMSSW_5_3_HI_X_2026-10-18-0000",
+          "doc_count": 389
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-16-2300",
+          "doc_count": 8239
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-16-1400",
+          "doc_count": 8713
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-16-1100",
+          "doc_count": 12495
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-15-2300",
+          "doc_count": 16154
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-15-0000",
+          "doc_count": 12491
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-14-1100",
+          "doc_count": 12495
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-13-2300",
+          "doc_count": 16158
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-13-1100",
+          "doc_count": 8715
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-12-2300",
+          "doc_count": 28964
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-12-1100",
+          "doc_count": 12497
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-11-2300",
+          "doc_count": 16154
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-11-1100",
+          "doc_count": 3780
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-10-2300",
+          "doc_count": 28951
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-10-1600",
+          "doc_count": 8708
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-10-1100",
+          "doc_count": 12488
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-09-2300",
+          "doc_count": 16150
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-09-1100",
+          "doc_count": 12573
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-08-2300",
+          "doc_count": 16074
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-08-0000",
+          "doc_count": 12500
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-07-1100",
+          "doc_count": 12498
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-06-2300",
+          "doc_count": 16135
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-06-1100",
+          "doc_count": 12503
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-05-2300",
+          "doc_count": 29022
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-05-1100",
+          "doc_count": 12573
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-04-2300",
+          "doc_count": 16231
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-04-1100",
+          "doc_count": 12575
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-03-2300",
+          "doc_count": 27554
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-03-1100",
+          "doc_count": 12573
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-02-2300",
+          "doc_count": 16231
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-02-1100",
+          "doc_count": 12568
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-01-2300",
+          "doc_count": 16232
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-11-01-0000",
+          "doc_count": 12575
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-31-1100",
+          "doc_count": 12574
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-30-2300",
+          "doc_count": 12575
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-30-1100",
+          "doc_count": 16353
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-29-2300",
+          "doc_count": 29320
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-29-1100",
+          "doc_count": 14333
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-28-2300",
+          "doc_count": 12576
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-28-1100",
+          "doc_count": 12576
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-27-2300",
+          "doc_count": 27555
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-27-1100",
+          "doc_count": 12575
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-26-2300",
+          "doc_count": 16230
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-26-1100",
+          "doc_count": 23907
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-25-2300",
+          "doc_count": 16232
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-25-0000",
+          "doc_count": 12576
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-24-1100",
+          "doc_count": 12574
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-23-2300",
+          "doc_count": 16230
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-23-1100",
+          "doc_count": 12575
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-22-2300",
+          "doc_count": 23905
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-22-1100",
+          "doc_count": 12370
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-21-2300",
+          "doc_count": 16022
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-21-1100",
+          "doc_count": 12370
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-20-2300",
+          "doc_count": 27564
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-20-1100",
+          "doc_count": 13818
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-19-2300",
+          "doc_count": 30044
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-19-1100",
+          "doc_count": 17473
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-18-2300",
+          "doc_count": 17474
+        },
+        {
+          "key": "CMSSW_20_1_X_2026-10-18-0000",
+          "doc_count": 13812
+        },
+        {
+          "key": "CMSSW_20_1_UBSAN_X_2026-11-13-2300",
+          "doc_count": 3782
+        },
+        {
+          "key": "CMSSW_20_1_UBSAN_X_2026-11-11-2300",
+          "doc_count": 3781
+        },
+        {
+          "key": "CMSSW_20_1_UBSAN_X_2026-11-09-2300",
+          "doc_count": 3780
+        },
+        {
+          "key": "CMSSW_20_1_UBSAN_X_2026-11-06-2300",
+          "doc_count": 3754
+        },
+        {
+          "key": "CMSSW_20_1_UBSAN_X_2026-11-04-2300",
+          "doc_count": 3778
+        },
+        {
+          "key": "CMSSW_20_1_UBSAN_X_2026-11-02-2300",
+          "doc_count": 3778
+        },
+        {
+          "key": "CMSSW_20_1_UBSAN_X_2026-10-30-2300",
+          "doc_count": 3777
+        },
+        {
+          "key": "CMSSW_20_1_UBSAN_X_2026-10-28-2300",
+          "doc_count": 3778
+        },
+        {
+          "key": "CMSSW_20_1_UBSAN_X_2026-10-26-2300",
+          "doc_count": 3778
+        },
+        {
+          "key": "CMSSW_20_1_UBSAN_X_2026-10-23-2300",
+          "doc_count": 3777
+        },
+        {
+          "key": "CMSSW_20_1_UBSAN_X_2026-10-21-2300",
+          "doc_count": 3778
+        },
+        {
+          "key": "CMSSW_20_1_UBSAN_X_2026-10-19-2300",
+          "doc_count": 3778
+        },
+        {
+          "key": "CMSSW_20_1_ROOT6_X_2026-11-16-2300",
+          "doc_count": 4597
+        },
+        {
+          "key": "CMSSW_20_1_ROOT6_X_2026-11-15-2300",
+          "doc_count": 14871
+        },
+        {
+          "key": "CMSSW_20_1_ROOT6_X_2026-11-13-2300",
+          "doc_count": 14881
+        },
+        {
+          "key": "CMSSW_20_1_ROOT6_X_2026-11-12-2300",
+          "doc_count": 14874
+        },
+        {
+          "key": "CMSSW_20_1_ROOT6_X_2026-11-11-2300",
+          "doc_count": 14878
+        },
+        {
+          "key": "CMSSW_20_1_ROOT6_X_2026-11-10-2300",
+          "doc_count": 14867
+        },
+        {
+          "key": "CMSSW_20_1_ROOT6_X_2026-11-09-2300",
+          "doc_count": 14870
+        },
+        {
+          "key": "CMSSW_20_1_ROOT6_X_2026-11-08-2300",
+          "doc_count": 14671
+        },
+        {
+          "key": "CMSSW_20_1_ROOT6_X_2026-11-06-2300",
+          "doc_count": 14769
+        },
+        {
+          "key": "CMSSW_20_1_ROOT6_X_2026-11-05-2300",
+          "doc_count": 14855
+        }
+      ]
+    }
+  }
+}
+# GET cmssdt-ib-matrix-*/_search
+{
+  "took": 8,
+  "timed_out": false,
+  "terminated_early": true,
+  "_shards": {
+    "total": 2,
+    "successful": 2,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 10000,
+      "relation": "gte"
+    },
+    "max_score": null,
+    "hits": []
+  },
+  "aggregations": {
+    "architectures": {
+      "doc_count_error_upper_bound": 0,
+      "sum_other_doc_count": 0,
+      "buckets": [
+        {
+          "key": "el9_amd64_gcc14",
+          "doc_count": 1616990
+        },
+        {
+          "key": "el8_amd64_gcc13",
+          "doc_count": 1258956
+        },
+        {
+          "key": "el8_amd64_gcc12",
+          "doc_count": 249841
+        },
+        {
+          "key": "el9_amd64_gcc13",
+          "doc_count": 249030
+        },
+        {
+          "key": "el9_aarch64_gcc14",
+          "doc_count": 244861
+        },
+        {
+          "key": "el8_aarch64_gcc13",
+          "doc_count": 228638
+        },
+        {
+          "key": "el8_amd64_gcc11",
+          "doc_count": 216321
+        },
+        {
+          "key": "el8_amd64_gcc14",
+          "doc_count": 210117
+        },
+        {
+          "key": "el9_amd64_gcc12",
+          "doc_count": 202877
+        },
+        {
+          "key": "slc7_amd64_gcc12",
+          "doc_count": 124992
+        },
+        {
+          "key": "el9_amd64_gcc15",
+          "doc_count": 114709
+        },
+        {
+          "key": "slc7_amd64_gcc11",
+          "doc_count": 95846
+        },
+        {
+          "key": "el8_aarch64_gcc12",
+          "doc_count": 82811
+        },
+        {
+          "key": "el9_amd64_gcc11",
+          "doc_count": 79162
+        },
+        {
+          "key": "el8_amd64_gcc10",
+          "doc_count": 73012
+        },
+        {
+          "key": "el9_amd64_gcc16",
+          "doc_count": 66935
+        },
+        {
+          "key": "el10_amd64_gcc15",
+          "doc_count": 41556
+        },
+        {
+          "key": "slc7_amd64_gcc10",
+          "doc_count": 32868
+        },
+        {
+          "key": "slc7_amd64_gcc700",
+          "doc_count": 24616
+        },
+        {
+          "key": "slc6_amd64_gcc630",
+          "doc_count": 10335
+        },
+        {
+          "key": "slc7_amd64_gcc630",
+          "doc_count": 10335
+        },
+        {
+          "key": "fc42_riscv64_gcc15",
+          "doc_count": 7895
+        },
+        {
+          "key": "slc6_amd64_gcc530",
+          "doc_count": 6090
+        },
+        {
+          "key": "slc7_amd64_gcc530",
+          "doc_count": 6090
+        },
+        {
+          "key": "slc6_amd64_gcc472",
+          "doc_count": 4100
+        }
+      ]
+    }
+  }
+}
+# GET cmssdt-ib-matrix-*/_search
+{
+  "took": 29,
+  "timed_out": false,
+  "terminated_early": true,
+  "_shards": {
+    "total": 2,
+    "successful": 2,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 10000,
+      "relation": "gte"
+    },
+    "max_score": null,
+    "hits": []
+  },
+  "aggregations": {
+    "workflows": {
+      "doc_count_error_upper_bound": 5126,
+      "sum_other_doc_count": 4598345,
+      "buckets": [
+        {
+          "key": "1001.0",
+          "doc_count": 10753
+        },
+        {
+          "key": "163.03",
+          "doc_count": 9205
+        },
+        {
+          "key": "136.902",
+          "doc_count": 8316
+        },
+        {
+          "key": "136.906",
+          "doc_count": 8314
+        },
+        {
+          "key": "136.903",
+          "doc_count": 8296
+        },
+        {
+          "key": "136.905",
+          "doc_count": 8288
+        },
+        {
+          "key": "136.901",
+          "doc_count": 8224
+        },
+        {
+          "key": "136.904",
+          "doc_count": 8196
+        },
+        {
+          "key": "137.8",
+          "doc_count": 8187
+        },
+        {
+          "key": "1001.2",
+          "doc_count": 8171
+        },
+        {
+          "key": "160.03502",
+          "doc_count": 7429
+        },
+        {
+          "key": "1325.0",
+          "doc_count": 7131
+        },
+        {
+          "key": "10024.0",
+          "doc_count": 7126
+        },
+        {
+          "key": "10025.0",
+          "doc_count": 7114
+        },
+        {
+          "key": "10001.0",
+          "doc_count": 7099
+        },
+        {
+          "key": "10826.0",
+          "doc_count": 7095
+        },
+        {
+          "key": "10003.0",
+          "doc_count": 7093
+        },
+        {
+          "key": "10059.0",
+          "doc_count": 7093
+        },
+        {
+          "key": "10825.0",
+          "doc_count": 7089
+        },
+        {
+          "key": "10842.0",
+          "doc_count": 7089
+        },
+        {
+          "key": "10006.0",
+          "doc_count": 7087
+        },
+        {
+          "key": "10008.0",
+          "doc_count": 7087
+        },
+        {
+          "key": "10824.0",
+          "doc_count": 7087
+        },
+        {
+          "key": "10007.0",
+          "doc_count": 7086
+        },
+        {
+          "key": "10009.0",
+          "doc_count": 7086
+        },
+        {
+          "key": "10823.0",
+          "doc_count": 7086
+        },
+        {
+          "key": "10002.0",
+          "doc_count": 7081
+        },
+        {
+          "key": "10004.0",
+          "doc_count": 7081
+        },
+        {
+          "key": "10042.0",
+          "doc_count": 7081
+        },
+        {
+          "key": "10071.0",
+          "doc_count": 7080
+        },
+        {
+          "key": "10005.0",
+          "doc_count": 7075
+        },
+        {
+          "key": "10804.0",
+          "doc_count": 7051
+        },
+        {
+          "key": "10807.0",
+          "doc_count": 7051
+        },
+        {
+          "key": "10859.0",
+          "doc_count": 7050
+        },
+        {
+          "key": "10803.0",
+          "doc_count": 7045
+        },
+        {
+          "key": "10806.0",
+          "doc_count": 7045
+        },
+        {
+          "key": "10809.0",
+          "doc_count": 7045
+        },
+        {
+          "key": "10871.0",
+          "doc_count": 7045
+        },
+        {
+          "key": "10801.0",
+          "doc_count": 7043
+        },
+        {
+          "key": "10808.0",
+          "doc_count": 7039
+        },
+        {
+          "key": "10824.8",
+          "doc_count": 7038
+        },
+        {
+          "key": "10802.0",
+          "doc_count": 7037
+        },
+        {
+          "key": "10805.0",
+          "doc_count": 7032
+        },
+        {
+          "key": "10824.6",
+          "doc_count": 7032
+        },
+        {
+          "key": "1370.18",
+          "doc_count": 6993
+        },
+        {
+          "key": "1370.17",
+          "doc_count": 6987
+        },
+        {
+          "key": "1370.0",
+          "doc_count": 6981
+        },
+        {
+          "key": "159.02",
+          "doc_count": 6707
+        },
+        {
+          "key": "160.02",
+          "doc_count": 6411
+        },
+        {
+          "key": "10805.31",
+          "doc_count": 6202
+        },
+        {
+          "key": "10804.31",
+          "doc_count": 6178
+        },
+        {
+          "key": "1001.4",
+          "doc_count": 6088
+        },
+        {
+          "key": "4.17",
+          "doc_count": 6009
+        },
+        {
+          "key": "4.29",
+          "doc_count": 6009
+        },
+        {
+          "key": "1102.0",
+          "doc_count": 5992
+        },
+        {
+          "key": "11.0",
+          "doc_count": 5982
+        },
+        {
+          "key": "25.0",
+          "doc_count": 5982
+        },
+        {
+          "key": "7.1",
+          "doc_count": 5972
+        },
+        {
+          "key": "1356.0",
+          "doc_count": 5971
+        },
+        {
+          "key": "1311.0",
+          "doc_count": 5962
+        },
+        {
+          "key": "18434.402",
+          "doc_count": 5936
+        },
+        {
+          "key": "18434.403",
+          "doc_count": 5936
+        },
+        {
+          "key": "18434.412",
+          "doc_count": 5936
+        },
+        {
+          "key": "1308.0",
+          "doc_count": 5935
+        },
+        {
+          "key": "1318.0",
+          "doc_count": 5934
+        },
+        {
+          "key": "1320.0",
+          "doc_count": 5919
+        },
+        {
+          "key": "1322.0",
+          "doc_count": 5919
+        },
+        {
+          "key": "1338.0",
+          "doc_count": 5919
+        },
+        {
+          "key": "1317.0",
+          "doc_count": 5914
+        },
+        {
+          "key": "1331.0",
+          "doc_count": 5909
+        },
+        {
+          "key": "1329.0",
+          "doc_count": 5904
+        },
+        {
+          "key": "161.02",
+          "doc_count": 5896
+        },
+        {
+          "key": "1325.9",
+          "doc_count": 5887
+        },
+        {
+          "key": "1030.0",
+          "doc_count": 5879
+        },
+        {
+          "key": "7.22",
+          "doc_count": 5872
+        },
+        {
+          "key": "8.0",
+          "doc_count": 5865
+        },
+        {
+          "key": "1325.91",
+          "doc_count": 5862
+        },
+        {
+          "key": "1304.18",
+          "doc_count": 5849
+        },
+        {
+          "key": "1304.181",
+          "doc_count": 5844
+        },
+        {
+          "key": "11634.601",
+          "doc_count": 5821
+        },
+        {
+          "key": "1307.0",
+          "doc_count": 5817
+        },
+        {
+          "key": "11602.0",
+          "doc_count": 5812
+        },
+        {
+          "key": "141.044406",
+          "doc_count": 5800
+        },
+        {
+          "key": "141.044407",
+          "doc_count": 5800
+        },
+        {
+          "key": "141.044412",
+          "doc_count": 5800
+        },
+        {
+          "key": "141.044413",
+          "doc_count": 5800
+        },
+        {
+          "key": "141.044422",
+          "doc_count": 5800
+        },
+        {
+          "key": "141.044423",
+          "doc_count": 5800
+        },
+        {
+          "key": "18434.413",
+          "doc_count": 5776
+        },
+        {
+          "key": "18434.422",
+          "doc_count": 5776
+        },
+        {
+          "key": "18434.423",
+          "doc_count": 5776
+        },
+        {
+          "key": "18450.402",
+          "doc_count": 5776
+        },
+        {
+          "key": "18450.403",
+          "doc_count": 5776
+        },
+        {
+          "key": "18461.402",
+          "doc_count": 5776
+        },
+        {
+          "key": "4.22",
+          "doc_count": 5746
+        },
+        {
+          "key": "7.21",
+          "doc_count": 5737
+        },
+        {
+          "key": "1000.0",
+          "doc_count": 5736
+        },
+        {
+          "key": "1302.18",
+          "doc_count": 5733
+        },
+        {
+          "key": "11604.0",
+          "doc_count": 5732
+        },
+        {
+          "key": "11608.0",
+          "doc_count": 5732
+        }
+      ]
+    }
+  }
+}
+# GET cmssdt-ib-matrix-*/_search
+{
+  "took": 127,
+  "timed_out": false,
+  "terminated_early": true,
+  "_shards": {
+    "total": 2,
+    "successful": 2,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 10000,
+      "relation": "gte"
+    },
+    "max_score": null,
+    "hits": []
+  },
+  "aggregations": {
+    "exit_codes": {
+      "doc_count_error_upper_bound": 0,
+      "sum_other_doc_count": 0,
+      "buckets": [
+        {
+          "key": 0,
+          "doc_count": 5241487
+        },
+        {
+          "key": 16640,
+          "doc_count": 8092
+        },
+        {
+          "key": 256,
+          "doc_count": 4781
+        },
+        {
+          "key": 23552,
+          "doc_count": 973
+        },
+        {
+          "key": 1,
+          "doc_count": 650
+        },
+        {
+          "key": 62720,
+          "doc_count": 504
+        },
+        {
+          "key": 16896,
+          "doc_count": 501
+        },
+        {
+          "key": 64000,
+          "doc_count": 440
+        },
+        {
+          "key": 21504,
+          "doc_count": 389
+        },
+        {
+          "key": 17152,
+          "doc_count": 269
+        },
+        {
+          "key": 31744,
+          "doc_count": 234
+        },
+        {
+          "key": 25600,
+          "doc_count": 149
+        },
+        {
+          "key": 13568,
+          "doc_count": 135
+        },
+        {
+          "key": 17920,
+          "doc_count": 125
+        },
+        {
+          "key": 18688,
+          "doc_count": 58
+        },
+        {
+          "key": 35584,
+          "doc_count": 56
+        },
+        {
+          "key": 63744,
+          "doc_count": 50
+        },
+        {
+          "key": 63232,
+          "doc_count": 33
+        },
+        {
+          "key": 34304,
+          "doc_count": 24
+        },
+        {
+          "key": 18176,
+          "doc_count": 7
+        },
+        {
+          "key": 19456,
+          "doc_count": 7
+        },
+        {
+          "key": 21760,
+          "doc_count": 7
+        },
+        {
+          "key": 32512,
+          "doc_count": 5
+        },
+        {
+          "key": 22016,
+          "doc_count": 2
+        },
+        {
+          "key": 24832,
+          "doc_count": 2
+        },
+        {
+          "key": 32256,
+          "doc_count": 2
+        },
+        {
+          "key": 512,
+          "doc_count": 1
+        },
+        {
+          "key": 23040,
+          "doc_count": 1
+        }
+      ]
+    }
+  }
+}
+# GET cmssdt-ib-matrix-*/_search
+{
+  "took": 2,
+  "timed_out": false,
+  "_shards": {
+    "total": 2,
+    "successful": 2,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 10000,
+      "relation": "gte"
+    },
+    "max_score": 1,
+    "hits": [
+      {
+        "_index": "cmssdt-ib-matrix-2964",
+        "_id": "21b5fa78f48ac8a39dac41cfc9873efa9e9c0889",
+        "_score": 1,
+        "_source": {
+          "command": """cmsDriver.py sherpa_ttbar_2j_MENLOPS_13TeV_MASTER_ExtGen_cff  --relval 250000,5000 -s GEN,VALIDATION:genvalid_all -n 50 --conditions auto:run2_mc --beamspot Realistic8TeVCollision --datatier GEN,DQMIO --eventcontent RAWSIM,DQM  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbld/jenkins/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 14400 '  --fileout file:step1.root  --suffix "-j JobReport1.xml "  --nThreads 4 > step1_sherpa_ttbar_2j_MENLOPS_13TeV_MASTER_ExtGen.log  2>&1""",
+          "exitcode": 13568,
+          "workflow": "573.0",
+          "release": "CMSSW_20_1_X_2026-11-13-2300",
+          "architecture": "el9_aarch64_gcc14",
+          "step": "step1",
+          "@timestamp": 1794629490898,
+          "hostname": "arm-cmsbuild002.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_aarch64_gcc14/CMSSW_20_1_X_2026-11-13-2300/pyRelValMatrixLogs/run/573.0_sherpa_ttbar_2j_MENLOPS_13TeV_MASTER_ExtGen/step1_sherpa_ttbar_2j_MENLOPS_13TeV_MASTER_ExtGen.log",
+          "exception": """An exception of category 'Unknown' occurred while
+[0] Processing global begin LuminosityBlock run: 1 luminosityBlock: 1
+[1] Calling method for module SherpaGeneratorFilter/'generator'
+Exception Message:
+An exception of unknown type was thrown.
+An exception of category 'EventGenerationFailure' occurred while
+[0] Processing global begin LuminosityBlock run: 1 luminosityBlock: 1
+[1] Calling method for module ExternalGeneratorFilter/'generator'
+Exception Message:
+failed waiting for external process 4172057_0. Timed out after 300 seconds.
+""",
+          "error_count": 0,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_aarch64_gcc14/CMSSW_20_1_X_2026-11-13-2300/pyRelValMatrixLogs/run/573.0_sherpa_ttbar_2j_MENLOPS_13TeV_MASTER_ExtGen/JobReport1.xml",
+          "total_events": "0",
+          "AvgEventTime": "0",
+          "EventThroughput": "0",
+          "MaxEventTime": "0",
+          "MinEventTime": 1000000,
+          "NumberOfStreams": "4",
+          "NumberOfThreads": "4",
+          "TotalEventSetupTime": "0.00286933",
+          "TotalInitCPU": "7.11658",
+          "TotalInitTime": "17.699",
+          "TotalJobCPU": "17.826",
+          "TotalJobChildrenCPU": "10.0739",
+          "TotalJobTime": "318.649",
+          "TotalLoopCPU": "10.7082",
+          "TotalLoopTime": "300.95",
+          "TotalNonModuleTime": "902.213",
+          "AverageGrowthRateRss": "72.6641",
+          "AverageGrowthRateVsize": "93.0234",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "PeakValueRss": "0",
+          "PeakValueVsize": "0"
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2964",
+        "_id": "14d39dc15221db14ac0e46a165cc6d3edc91d6df",
+        "_score": 1,
+        "_source": {
+          "test_type": "gpu",
+          "gpu": "nvidia_t4",
+          "command": """CUDA_VISIBLE_DEVICES=1 HIP_VISIBLE_DEVICES= cmsDriver.py step3  -s RAW2DIGI:RawToDigi_hcalOnly,RECO:reconstruction_hcalOnly,VALIDATION:@hcalOnlyValidation,DQM:@hcalOnly+@hcal2Only+@hltGPUvsCPU --conditions auto:phase2_realistic_T35 --datatier GEN-SIM-RECO,MINIAODSIM,DQMIO -n 10 --eventcontent FEVTDEBUGHLT,MINIAODSIM,DQM --geometry ExtendedRun4D128 --era Phase2C26I13M9 --procModifiers alpaka --customise HeterogeneousCore/AlpakaServices/customiseAlpakaServiceMemoryFilling.customiseAlpakaServiceMemoryFilling --pileup AVE_200_BX_25ns --pileup_input das:/RelValMinBias_14TeV/CMSSW_20_1_0_pre3-150X_mcRun4_realistic_v1_STD_D128_GSOnly_GSInputs-v1/GEN-SIM  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbuild/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 9000 '  --filein  file:step2.root  --fileout file:step3.root  --suffix "-j JobReport3.xml "  --nThreads 4 > step3_TTbar_14TeV+Run4D128PU_Patatrack_HCALOnlyAlpaka_Validation.log  2>&1""",
+          "exitcode": 16896,
+          "workflow": "38634.422",
+          "release": "CMSSW_20_1_X_2026-11-13-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step3",
+          "@timestamp": 1794630009070,
+          "hostname": "srv-b1b07-18-01.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-13-2300/pyRelValMatrixLogs/run/38634.422_TTbar_14TeV+Run4D128PU_Patatrack_HCALOnlyAlpaka_Validation/step3_TTbar_14TeV+Run4D128PU_Patatrack_HCALOnlyAlpaka_Validation.log",
+          "exception": """An exception of category 'StdException' occurred while
+[0] Processing  Event run: 1 lumi: 1 event: 3 stream: 0
+[1] Running path 'validation_step'
+[2] Prefetching for module PFClusterValidation/'pfClusterCaloOnlyValidation'
+[3] Prefetching for module LegacyMultiDepthPFClusterProducer/'particleFlowClusterHCALOnly'
+[4] Prefetching for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+[5] Calling method for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+Exception Message:
+A std::exception was thrown.
+/data/cmsbld/jenkins/workspace/build-any-ib/w/el9_amd64_gcc14/external/alpaka/2.2.0-c1a89ea8b4356661b99dbb7a692fcd4f/include/alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp(380) 'TApi::setDevice(queue.m_spQueueImpl->m_dev.getNativeHandle())' A previous API call (not this one) set the error  : 'cudaErrorLaunchOutOfResources': 'too many resources requested for launch'!
+An exception of category 'StdException' occurred while
+[0] Processing  Event run: 1 lumi: 1 event: 4 stream: 3
+[1] Running path 'validation_step'
+[2] Prefetching for module PFClusterValidation/'pfClusterCaloOnlyValidation'
+[3] Prefetching for module LegacyMultiDepthPFClusterProducer/'particleFlowClusterHCALOnly'
+[4] Prefetching for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+[5] Calling method for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+Exception Message:
+A std::exception was thrown.
+/data/cmsbld/jenkins/workspace/build-any-ib/w/el9_amd64_gcc14/external/alpaka/2.2.0-c1a89ea8b4356661b99dbb7a692fcd4f/include/alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp(380) 'TApi::setDevice(queue.m_spQueueImpl->m_dev.getNativeHandle())' A previous API call (not this one) set the error  : 'cudaErrorLaunchOutOfResources': 'too many resources requested for launch'!
+An exception of category 'StdException' occurred while
+[0] Processing  Event run: 1 lumi: 1 event: 2 stream: 1
+[1] Running path 'validation_step'
+[2] Prefetching for module PFClusterValidation/'pfClusterCaloOnlyValidation'
+[3] Prefetching for module LegacyMultiDepthPFClusterProducer/'particleFlowClusterHCALOnly'
+[4] Prefetching for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+[5] Calling method for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+Exception Message:
+A std::exception was thrown.
+/data/cmsbld/jenkins/workspace/build-any-ib/w/el9_amd64_gcc14/external/alpaka/2.2.0-c1a89ea8b4356661b99dbb7a692fcd4f/include/alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp(380) 'TApi::setDevice(queue.m_spQueueImpl->m_dev.getNativeHandle())' A previous API call (not this one) set the error  : 'cudaErrorLaunchOutOfResources': 'too many resources requested for launch'!
+An exception of category 'StdException' occurred while
+[0] Processing  Event run: 1 lumi: 1 event: 1 stream: 2
+[1] Running path 'validation_step'
+[2] Prefetching for module PFClusterValidation/'pfClusterCaloOnlyValidation'
+[3] Prefetching for module LegacyMultiDepthPFClusterProducer/'particleFlowClusterHCALOnly'
+[4] Prefetching for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+[5] Calling method for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+Exception Message:
+A std::exception was thrown.
+/data/cmsbld/jenkins/workspace/build-any-ib/w/el9_amd64_gcc14/external/alpaka/2.2.0-c1a89ea8b4356661b99dbb7a692fcd4f/include/alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp(380) 'TApi::setDevice(queue.m_spQueueImpl->m_dev.getNativeHandle())' A previous API call (not this one) set the error  : 'cudaErrorLaunchOutOfResources': 'too many resources requested for launch'!
+""",
+          "error_count": 0,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-13-2300/pyRelValMatrixLogs/run/38634.422_TTbar_14TeV+Run4D128PU_Patatrack_HCALOnlyAlpaka_Validation/JobReport3.xml",
+          "events_read": "4",
+          "total_events": "4",
+          "AvgEventTime": "30.5234",
+          "EventThroughput": "0.0932258",
+          "MaxEventTime": "35.5193",
+          "MinEventTime": "25.291",
+          "NumberOfStreams": "4",
+          "NumberOfThreads": "4",
+          "TotalEventSetupTime": "3.27738",
+          "TotalInitCPU": "18.1218",
+          "TotalInitTime": "23.7299",
+          "TotalJobCPU": "104.464",
+          "TotalJobChildrenCPU": "0.443099",
+          "TotalJobTime": "66.6365",
+          "TotalLoopCPU": "86.3419",
+          "TotalLoopTime": "42.9066",
+          "TotalNonModuleTime": "38.084",
+          "AverageGrowthRateRss": "2602.9",
+          "AverageGrowthRateVsize": "3799.82",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "LargeVsizeIncreaseEventL1-a-COUNT": "2",
+          "LargeVsizeIncreaseEventL1-b-RUN": "1",
+          "LargeVsizeIncreaseEventL1-c-EVENT": "4",
+          "LargeVsizeIncreaseEventL1-d-VSIZE": "22360.9",
+          "LargeVsizeIncreaseEventL1-e-DELTV": "768",
+          "LargeVsizeIncreaseEventL1-f-RSS": "14078.4",
+          "LargeVsizeIncreaseEventL2-a-COUNT": "1",
+          "LargeVsizeIncreaseEventL2-b-RUN": "1",
+          "LargeVsizeIncreaseEventL2-c-EVENT": "3",
+          "LargeVsizeIncreaseEventL2-d-VSIZE": "21592.9",
+          "LargeVsizeIncreaseEventL2-e-DELTV": "0",
+          "LargeVsizeIncreaseEventL2-f-RSS": "13598.4",
+          "LargestIncreaseRssEvent-a-COUNT": "3",
+          "LargestIncreaseRssEvent-b-RUN": "1",
+          "LargestIncreaseRssEvent-c-EVENT": "2",
+          "LargestIncreaseRssEvent-d-VSIZE": "23416.9",
+          "LargestIncreaseRssEvent-e-DELTV": "1056",
+          "LargestIncreaseRssEvent-f-RSS": "14960.9",
+          "LargestRssEvent-a-COUNT": "4",
+          "LargestRssEvent-b-RUN": "1",
+          "LargestRssEvent-c-EVENT": "1",
+          "LargestRssEvent-d-VSIZE": "23416.9",
+          "LargestRssEvent-e-DELTV": "0",
+          "LargestRssEvent-f-RSS": "15038.9",
+          "LargestVsizeEventT1-a-COUNT": "3",
+          "LargestVsizeEventT1-b-RUN": "1",
+          "LargestVsizeEventT1-c-EVENT": "2",
+          "LargestVsizeEventT1-d-VSIZE": "23416.9",
+          "LargestVsizeEventT1-e-DELTV": "1056",
+          "LargestVsizeEventT1-f-RSS": "14960.9",
+          "LargestVsizeIncreaseEvent-a-COUNT": "3",
+          "LargestVsizeIncreaseEvent-b-RUN": "1",
+          "LargestVsizeIncreaseEvent-c-EVENT": "2",
+          "LargestVsizeIncreaseEvent-d-VSIZE": "23416.9",
+          "LargestVsizeIncreaseEvent-e-DELTV": "1056",
+          "LargestVsizeIncreaseEvent-f-RSS": "14960.9",
+          "PeakValueRss": "15038.9",
+          "PeakValueVsize": "23416.9",
+          "SecondLargestIncreaseRssEvent-a-COUNT": "2",
+          "SecondLargestIncreaseRssEvent-b-RUN": "1",
+          "SecondLargestIncreaseRssEvent-c-EVENT": "4",
+          "SecondLargestIncreaseRssEvent-d-VSIZE": "22360.9",
+          "SecondLargestIncreaseRssEvent-e-DELTV": "768",
+          "SecondLargestIncreaseRssEvent-f-RSS": "14078.4",
+          "SecondLargestRssEvent-a-COUNT": "3",
+          "SecondLargestRssEvent-b-RUN": "1",
+          "SecondLargestRssEvent-c-EVENT": "2",
+          "SecondLargestRssEvent-d-VSIZE": "23416.9",
+          "SecondLargestRssEvent-e-DELTV": "1056",
+          "SecondLargestRssEvent-f-RSS": "14960.9",
+          "SecondLargestVsizeEventT2-a-COUNT": "4",
+          "SecondLargestVsizeEventT2-b-RUN": "1",
+          "SecondLargestVsizeEventT2-c-EVENT": "1",
+          "SecondLargestVsizeEventT2-d-VSIZE": "23416.9",
+          "SecondLargestVsizeEventT2-e-DELTV": "0",
+          "SecondLargestVsizeEventT2-f-RSS": "15038.9",
+          "ThirdLargestIncreaseRssEvent-a-COUNT": "4",
+          "ThirdLargestIncreaseRssEvent-b-RUN": "1",
+          "ThirdLargestIncreaseRssEvent-c-EVENT": "1",
+          "ThirdLargestIncreaseRssEvent-d-VSIZE": "23416.9",
+          "ThirdLargestIncreaseRssEvent-e-DELTV": "0",
+          "ThirdLargestIncreaseRssEvent-f-RSS": "15038.9",
+          "ThirdLargestRssEvent-a-COUNT": "2",
+          "ThirdLargestRssEvent-b-RUN": "1",
+          "ThirdLargestRssEvent-c-EVENT": "4",
+          "ThirdLargestRssEvent-d-VSIZE": "22360.9",
+          "ThirdLargestRssEvent-e-DELTV": "768",
+          "ThirdLargestRssEvent-f-RSS": "14078.4",
+          "ThirdLargestVsizeEventT3-a-COUNT": "2",
+          "ThirdLargestVsizeEventT3-b-RUN": "1",
+          "ThirdLargestVsizeEventT3-c-EVENT": "4",
+          "ThirdLargestVsizeEventT3-d-VSIZE": "22360.9",
+          "ThirdLargestVsizeEventT3-e-DELTV": "768",
+          "ThirdLargestVsizeEventT3-f-RSS": "14078.4"
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2964",
+        "_id": "75fa9602494e88e7fffb4d1ec84c3c37297ff1ee",
+        "_score": 1,
+        "_source": {
+          "test_type": "gpu",
+          "gpu": "nvidia_t4",
+          "command": """CUDA_VISIBLE_DEVICES=0 HIP_VISIBLE_DEVICES= cmsDriver.py step3  -s RAW2DIGI:RawToDigi_hcalOnly,RECO:reconstruction_hcalOnlyLegacy+reconstruction_hcalOnly,VALIDATION:@hcalOnlyValidation+pfClusterHBHEOnlyAlpakaComparisonSequence,DQM:@hcalOnly+@hcal2Only+hcalOnlyOfflineSourceSequenceAlpaka+@hltGPUvsCPU --conditions auto:phase2_realistic_T35 --datatier GEN-SIM-RECO,MINIAODSIM,DQMIO -n 10 --eventcontent FEVTDEBUGHLT,MINIAODSIM,DQM --geometry ExtendedRun4D128 --era Phase2C26I13M9 --procModifiers alpaka --customise HeterogeneousCore/AlpakaServices/customiseAlpakaServiceMemoryFilling.customiseAlpakaServiceMemoryFilling --pileup AVE_200_BX_25ns --pileup_input das:/RelValMinBias_14TeV/CMSSW_20_1_0_pre3-150X_mcRun4_realistic_v1_STD_D128_GSOnly_GSInputs-v1/GEN-SIM  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbuild/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 9000 '  --filein  file:step2.root  --fileout file:step3.root  --suffix "-j JobReport3.xml "  --nThreads 4 > step3_TTbar_14TeV+Run4D128PU_Patatrack_HCALOnlyGPUandAlpaka_Validation.log  2>&1""",
+          "exitcode": 16896,
+          "workflow": "38634.423",
+          "release": "CMSSW_20_1_X_2026-11-13-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step3",
+          "@timestamp": 1794629915316,
+          "hostname": "srv-b1b07-18-01.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-13-2300/pyRelValMatrixLogs/run/38634.423_TTbar_14TeV+Run4D128PU_Patatrack_HCALOnlyGPUandAlpaka_Validation/step3_TTbar_14TeV+Run4D128PU_Patatrack_HCALOnlyGPUandAlpaka_Validation.log",
+          "exception": """An exception of category 'StdException' occurred while
+[0] Processing  Event run: 1 lumi: 1 event: 4 stream: 0
+[1] Running path 'validation_step1'
+[2] Prefetching for module PFClusterValidation/'pfClusterCaloOnlyValidation'
+[3] Prefetching for module LegacyMultiDepthPFClusterProducer/'particleFlowClusterHCALOnly'
+[4] Prefetching for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+[5] Calling method for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+Exception Message:
+A std::exception was thrown.
+/data/cmsbld/jenkins/workspace/build-any-ib/w/el9_amd64_gcc14/external/alpaka/2.2.0-c1a89ea8b4356661b99dbb7a692fcd4f/include/alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp(380) 'TApi::setDevice(queue.m_spQueueImpl->m_dev.getNativeHandle())' A previous API call (not this one) set the error  : 'cudaErrorLaunchOutOfResources': 'too many resources requested for launch'!
+An exception of category 'StdException' occurred while
+[0] Processing  Event run: 1 lumi: 1 event: 2 stream: 2
+[1] Running path 'validation_step1'
+[2] Prefetching for module PFClusterValidation/'pfClusterCaloOnlyValidation'
+[3] Prefetching for module LegacyMultiDepthPFClusterProducer/'particleFlowClusterHCALOnly'
+[4] Prefetching for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+[5] Calling method for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+Exception Message:
+A std::exception was thrown.
+/data/cmsbld/jenkins/workspace/build-any-ib/w/el9_amd64_gcc14/external/alpaka/2.2.0-c1a89ea8b4356661b99dbb7a692fcd4f/include/alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp(380) 'TApi::setDevice(queue.m_spQueueImpl->m_dev.getNativeHandle())' A previous API call (not this one) set the error  : 'cudaErrorLaunchOutOfResources': 'too many resources requested for launch'!
+An exception of category 'StdException' occurred while
+[0] Processing  Event run: 1 lumi: 1 event: 1 stream: 3
+[1] Running path 'validation_step1'
+[2] Prefetching for module PFClusterValidation/'pfClusterCaloOnlyValidation'
+[3] Prefetching for module LegacyMultiDepthPFClusterProducer/'particleFlowClusterHCALOnly'
+[4] Prefetching for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+[5] Calling method for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+Exception Message:
+A std::exception was thrown.
+/data/cmsbld/jenkins/workspace/build-any-ib/w/el9_amd64_gcc14/external/alpaka/2.2.0-c1a89ea8b4356661b99dbb7a692fcd4f/include/alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp(380) 'TApi::setDevice(queue.m_spQueueImpl->m_dev.getNativeHandle())' A previous API call (not this one) set the error  : 'cudaErrorLaunchOutOfResources': 'too many resources requested for launch'!
+An exception of category 'StdException' occurred while
+[0] Processing  Event run: 1 lumi: 1 event: 3 stream: 1
+[1] Running path 'validation_step1'
+[2] Prefetching for module PFClusterValidation/'pfClusterCaloOnlyValidation'
+[3] Prefetching for module LegacyMultiDepthPFClusterProducer/'particleFlowClusterHCALOnly'
+[4] Prefetching for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+[5] Calling method for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+Exception Message:
+A std::exception was thrown.
+/data/cmsbld/jenkins/workspace/build-any-ib/w/el9_amd64_gcc14/external/alpaka/2.2.0-c1a89ea8b4356661b99dbb7a692fcd4f/include/alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp(380) 'TApi::setDevice(queue.m_spQueueImpl->m_dev.getNativeHandle())' A previous API call (not this one) set the error  : 'cudaErrorLaunchOutOfResources': 'too many resources requested for launch'!
+""",
+          "error_count": 0,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-13-2300/pyRelValMatrixLogs/run/38634.423_TTbar_14TeV+Run4D128PU_Patatrack_HCALOnlyGPUandAlpaka_Validation/JobReport3.xml",
+          "events_read": "4",
+          "total_events": "4",
+          "AvgEventTime": "30.2296",
+          "EventThroughput": "0.0905765",
+          "MaxEventTime": "34.1048",
+          "MinEventTime": "27.2985",
+          "NumberOfStreams": "4",
+          "NumberOfThreads": "4",
+          "TotalEventSetupTime": "3.27858",
+          "TotalInitCPU": "18.6148",
+          "TotalInitTime": "24.1449",
+          "TotalJobCPU": "108.646",
+          "TotalJobChildrenCPU": "0.449885",
+          "TotalJobTime": "68.3065",
+          "TotalLoopCPU": "90.0311",
+          "TotalLoopTime": "44.1616",
+          "TotalNonModuleTime": "40.7968",
+          "AverageGrowthRateRss": "2669.73",
+          "AverageGrowthRateVsize": "3970.33",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "LargeVsizeIncreaseEventL1-a-COUNT": "1",
+          "LargeVsizeIncreaseEventL1-b-RUN": "1",
+          "LargeVsizeIncreaseEventL1-c-EVENT": "4",
+          "LargeVsizeIncreaseEventL1-d-VSIZE": "22407",
+          "LargeVsizeIncreaseEventL1-e-DELTV": "0",
+          "LargeVsizeIncreaseEventL1-f-RSS": "14227.9",
+          "LargestIncreaseRssEvent-a-COUNT": "3",
+          "LargestIncreaseRssEvent-b-RUN": "1",
+          "LargestIncreaseRssEvent-c-EVENT": "1",
+          "LargestIncreaseRssEvent-d-VSIZE": "24099",
+          "LargestIncreaseRssEvent-e-DELTV": "0",
+          "LargestIncreaseRssEvent-f-RSS": "15014.4",
+          "LargestRssEvent-a-COUNT": "3",
+          "LargestRssEvent-b-RUN": "1",
+          "LargestRssEvent-c-EVENT": "1",
+          "LargestRssEvent-d-VSIZE": "24099",
+          "LargestRssEvent-e-DELTV": "0",
+          "LargestRssEvent-f-RSS": "15014.4",
+          "LargestVsizeEventT1-a-COUNT": "2",
+          "LargestVsizeEventT1-b-RUN": "1",
+          "LargestVsizeEventT1-c-EVENT": "2",
+          "LargestVsizeEventT1-d-VSIZE": "24099",
+          "LargestVsizeEventT1-e-DELTV": "1692",
+          "LargestVsizeEventT1-f-RSS": "14519.7",
+          "LargestVsizeIncreaseEvent-a-COUNT": "2",
+          "LargestVsizeIncreaseEvent-b-RUN": "1",
+          "LargestVsizeIncreaseEvent-c-EVENT": "2",
+          "LargestVsizeIncreaseEvent-d-VSIZE": "24099",
+          "LargestVsizeIncreaseEvent-e-DELTV": "1692",
+          "LargestVsizeIncreaseEvent-f-RSS": "14519.7",
+          "PeakValueRss": "15014.4",
+          "PeakValueVsize": "24099",
+          "SecondLargestIncreaseRssEvent-a-COUNT": "2",
+          "SecondLargestIncreaseRssEvent-b-RUN": "1",
+          "SecondLargestIncreaseRssEvent-c-EVENT": "2",
+          "SecondLargestIncreaseRssEvent-d-VSIZE": "24099",
+          "SecondLargestIncreaseRssEvent-e-DELTV": "1692",
+          "SecondLargestIncreaseRssEvent-f-RSS": "14519.7",
+          "SecondLargestRssEvent-a-COUNT": "4",
+          "SecondLargestRssEvent-b-RUN": "1",
+          "SecondLargestRssEvent-c-EVENT": "3",
+          "SecondLargestRssEvent-d-VSIZE": "24099",
+          "SecondLargestRssEvent-e-DELTV": "0",
+          "SecondLargestRssEvent-f-RSS": "15011.1",
+          "SecondLargestVsizeEventT2-a-COUNT": "3",
+          "SecondLargestVsizeEventT2-b-RUN": "1",
+          "SecondLargestVsizeEventT2-c-EVENT": "1",
+          "SecondLargestVsizeEventT2-d-VSIZE": "24099",
+          "SecondLargestVsizeEventT2-e-DELTV": "0",
+          "SecondLargestVsizeEventT2-f-RSS": "15014.4",
+          "ThirdLargestRssEvent-a-COUNT": "2",
+          "ThirdLargestRssEvent-b-RUN": "1",
+          "ThirdLargestRssEvent-c-EVENT": "2",
+          "ThirdLargestRssEvent-d-VSIZE": "24099",
+          "ThirdLargestRssEvent-e-DELTV": "1692",
+          "ThirdLargestRssEvent-f-RSS": "14519.7",
+          "ThirdLargestVsizeEventT3-a-COUNT": "4",
+          "ThirdLargestVsizeEventT3-b-RUN": "1",
+          "ThirdLargestVsizeEventT3-c-EVENT": "3",
+          "ThirdLargestVsizeEventT3-d-VSIZE": "24099",
+          "ThirdLargestVsizeEventT3-e-DELTV": "0",
+          "ThirdLargestVsizeEventT3-f-RSS": "15011.1"
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2964",
+        "_id": "2076537135b088b85cb79730d16e8c5f55525345",
+        "_score": 1,
+        "_source": {
+          "test_type": "other",
+          "other": "rntuple",
+          "command": """cmsDriver.py step3  -s RAW2DIGI,L1Reco,RECO,RECOSIM,PAT,VALIDATION:@standardValidationNoHLT+@miniAODValidation,DQM:@standardDQMFakeHLT+@miniAODDQM --conditions auto:phase1_2018_realistic --datatier GEN-SIM-RECO,MINIAODSIM,DQMIO -n 10 --eventcontent RECOSIM,MINIAODSIM,DQM --geometry DB:Extended --era Run2_2018 --procModifiers enableSonicTriton,photonDRN  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbld/jenkins/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 14400 cmsTraceFunction --abort --startAfterFunction ScheduleItems::initMisc setenv '  --rntuple_out --filein  file:step2.rntpl  --fileout file:step3.rntpl  --suffix "-j JobReport3.xml "  --nThreads 4 > step3_SingleGammaPt10+2018_photonDRN.log  2>&1""",
+          "exitcode": 256,
+          "workflow": "10804.31",
+          "release": "CMSSW_20_1_ROOT6_X_2026-11-13-2300",
+          "architecture": "el9_aarch64_gcc14",
+          "step": "step3",
+          "@timestamp": 1794626920783,
+          "hostname": "arm-cmsbuild004.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_aarch64_gcc14/CMSSW_20_1_ROOT6_X_2026-11-13-2300/pyRelValMatrixLogs/run/10804.31_SingleGammaPt10+2018_photonDRN/step3_SingleGammaPt10+2018_photonDRN.log",
+          "exception": """An exception of category 'ExternalFailure' occurred while
+[0] Processing begin Job
+[1] Handling pre signal, likely in a service function
+Exception Message:
+TritonService: Starting the fallback server failed with exit code 65280
+""",
+          "errors": [
+            {
+              "error": """%MSG-e TritonService:  AfterModDestruction 14-Nov-2026 04:28:37 CET pre-eventsCMS_TRITON_CHOSEN_DEVICE: cpu
+CMS_TRITON_GRPC_PORT: 8001
+INFO:    Instance stats will not be available - cannot use systemd cgroups manager, systemd not running as init on this host
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/hostname: exec format error
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/cut: exec format error
+fork/exec /usr/bin/cat: exec format error
+FATAL:   exec /bin/sh failed: fork/exec /bin/sh: exec format error
+ERROR:   container cleanup failed: no instance found with name triton_server_instance_7fe720e2-9028-46e3-ac6b-ffe0266372e2
+
+FATAL:   while executing starter: failed to start instance: while running /cvmfs/oasis.opensciencegrid.org/mis/apptainer/1.5.5/aarch64/libexec/apptainer/bin/starter: exit status 255
+Error for command "stop": no instance found
+
+Usage:
+apptainer [global options...] instance stop [stop options...] [instance]
+
+Run 'apptainer --help' for more detailed usage information.
+Retrying after container issue...
+INFO:    Instance stats will not be available - cannot use systemd cgroups manager, systemd not running as init on this host
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/hostname: exec format error
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/cut: exec format error
+fork/exec /usr/bin/cat: exec format error
+FATAL:   exec /bin/sh failed: fork/exec /bin/sh: exec format error
+ERROR:   container cleanup failed: no instance found with name triton_server_instance_7fe720e2-9028-46e3-ac6b-ffe0266372e2
+
+FATAL:   while executing starter: failed to start instance: while running /cvmfs/oasis.opensciencegrid.org/mis/apptainer/1.5.5/aarch64/libexec/apptainer/bin/starter: exit status 255
+Error for command "stop": no instance found
+
+Usage:
+apptainer [global options...] instance stop [stop options...] [instance]
+
+Run 'apptainer --help' for more detailed usage information.
+Retrying after container issue...
+INFO:    Instance stats will not be available - cannot use systemd cgroups manager, systemd not running as init on this host
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/hostname: exec format error
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/cut: exec format error
+fork/exec /usr/bin/cat: exec format error
+FATAL:   exec /bin/sh failed: fork/exec /bin/sh: exec format error
+ERROR:   container cleanup failed: no instance found with name triton_server_instance_7fe720e2-9028-46e3-ac6b-ffe0266372e2
+
+FATAL:   while executing starter: failed to start instance: while running /cvmfs/oasis.opensciencegrid.org/mis/apptainer/1.5.5/aarch64/libexec/apptainer/bin/starter: exit status 255
+Error for command "stop": no instance found
+
+Usage:
+apptainer [global options...] instance stop [stop options...] [instance]
+
+Run 'apptainer --help' for more detailed usage information.
+Retrying after container issue...
+Error from apptainer
+
+""",
+              "kind": "TritonService:  AfterModDestruction"
+            },
+            {
+              "error": """%MSG-e TritonService:  AfterModDestruction 14-Nov-2026 04:28:37 CET pre-eventsTritonService: could not find server log log_triton_server_instance_7fe720e2-9028-46e3-ac6b-ffe0266372e2.log in current directory or /tmp/f12a89e7-245c-4695-9156-320f3158fb9f
+""",
+              "kind": "TritonService:  AfterModDestruction"
+            }
+          ],
+          "error_count": 2,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_aarch64_gcc14/CMSSW_20_1_ROOT6_X_2026-11-13-2300/pyRelValMatrixLogs/run/10804.31_SingleGammaPt10+2018_photonDRN/JobReport3.xml",
+          "AvgEventTime": "0",
+          "EventThroughput": "0",
+          "MaxEventTime": "0",
+          "MinEventTime": 1000000,
+          "NumberOfStreams": "4",
+          "NumberOfThreads": "4",
+          "TotalEventSetupTime": "0",
+          "TotalInitCPU": "0",
+          "TotalInitTime": -3786700,
+          "TotalJobCPU": "102.077",
+          "TotalJobChildrenCPU": "2.27338",
+          "TotalJobTime": "180.745",
+          "TotalLoopCPU": "102.075",
+          "TotalLoopTime": 3786880,
+          "TotalNonModuleTime": "0",
+          "AverageGrowthRateRss": "92.3281",
+          "AverageGrowthRateVsize": "112.41",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "PeakValueRss": "0",
+          "PeakValueVsize": "0"
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2964",
+        "_id": "6e1bad56e3bc24ce14b4c11562af6ca8fdca39fd",
+        "_score": 1,
+        "_source": {
+          "test_type": "other",
+          "other": "rntuple",
+          "command": """cmsDriver.py step3  -s RAW2DIGI,L1Reco,RECO,RECOSIM,PAT,VALIDATION:@standardValidationNoHLT+@miniAODValidation,DQM:@standardDQMFakeHLT+@miniAODDQM --conditions auto:phase1_2018_realistic --datatier GEN-SIM-RECO,MINIAODSIM,DQMIO -n 10 --eventcontent RECOSIM,MINIAODSIM,DQM --geometry DB:Extended --era Run2_2018 --procModifiers enableSonicTriton,photonDRN  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbld/jenkins/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 14400 cmsTraceFunction --abort --startAfterFunction ScheduleItems::initMisc setenv '  --rntuple_out --filein  file:step2.rntpl  --fileout file:step3.rntpl  --suffix "-j JobReport3.xml "  --nThreads 4 > step3_SingleGammaPt35+2018_photonDRN.log  2>&1""",
+          "exitcode": 256,
+          "workflow": "10805.31",
+          "release": "CMSSW_20_1_ROOT6_X_2026-11-13-2300",
+          "architecture": "el9_aarch64_gcc14",
+          "step": "step3",
+          "@timestamp": 1794626898856,
+          "hostname": "arm-cmsbuild004.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_aarch64_gcc14/CMSSW_20_1_ROOT6_X_2026-11-13-2300/pyRelValMatrixLogs/run/10805.31_SingleGammaPt35+2018_photonDRN/step3_SingleGammaPt35+2018_photonDRN.log",
+          "exception": """An exception of category 'ExternalFailure' occurred while
+[0] Processing begin Job
+[1] Handling pre signal, likely in a service function
+Exception Message:
+TritonService: Starting the fallback server failed with exit code 65280
+""",
+          "errors": [
+            {
+              "error": """%MSG-e TritonService:  AfterModDestruction 14-Nov-2026 04:28:14 CET pre-eventsCMS_TRITON_CHOSEN_DEVICE: cpu
+CMS_TRITON_GRPC_PORT: 8001
+INFO:    Instance stats will not be available - cannot use systemd cgroups manager, systemd not running as init on this host
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/hostname: exec format error
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/cut: exec format error
+fork/exec /usr/bin/cat: exec format error
+FATAL:   exec /bin/sh failed: fork/exec /bin/sh: exec format error
+ERROR:   container cleanup failed: no instance found with name triton_server_instance_78d4b8c6-9602-44b0-810c-6434fa892e26
+
+FATAL:   while executing starter: failed to start instance: while running /cvmfs/oasis.opensciencegrid.org/mis/apptainer/1.5.5/aarch64/libexec/apptainer/bin/starter: exit status 255
+Error for command "stop": no instance found
+
+Usage:
+apptainer [global options...] instance stop [stop options...] [instance]
+
+Run 'apptainer --help' for more detailed usage information.
+Retrying after container issue...
+INFO:    Instance stats will not be available - cannot use systemd cgroups manager, systemd not running as init on this host
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/hostname: exec format error
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/cut: exec format error
+fork/exec /usr/bin/cat: exec format error
+FATAL:   exec /bin/sh failed: fork/exec /bin/sh: exec format error
+ERROR:   container cleanup failed: no instance found with name triton_server_instance_78d4b8c6-9602-44b0-810c-6434fa892e26
+
+FATAL:   while executing starter: failed to start instance: while running /cvmfs/oasis.opensciencegrid.org/mis/apptainer/1.5.5/aarch64/libexec/apptainer/bin/starter: exit status 255
+Error for command "stop": no instance found
+
+Usage:
+apptainer [global options...] instance stop [stop options...] [instance]
+
+Run 'apptainer --help' for more detailed usage information.
+Retrying after container issue...
+INFO:    Instance stats will not be available - cannot use systemd cgroups manager, systemd not running as init on this host
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/hostname: exec format error
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/cut: exec format error
+fork/exec /usr/bin/cat: exec format error
+FATAL:   exec /bin/sh failed: fork/exec /bin/sh: exec format error
+ERROR:   container cleanup failed: no instance found with name triton_server_instance_78d4b8c6-9602-44b0-810c-6434fa892e26
+
+FATAL:   while executing starter: failed to start instance: while running /cvmfs/oasis.opensciencegrid.org/mis/apptainer/1.5.5/aarch64/libexec/apptainer/bin/starter: exit status 255
+Error for command "stop": no instance found
+
+Usage:
+apptainer [global options...] instance stop [stop options...] [instance]
+
+Run 'apptainer --help' for more detailed usage information.
+Retrying after container issue...
+Error from apptainer
+
+""",
+              "kind": "TritonService:  AfterModDestruction"
+            },
+            {
+              "error": """%MSG-e TritonService:  AfterModDestruction 14-Nov-2026 04:28:14 CET pre-eventsTritonService: could not find server log log_triton_server_instance_78d4b8c6-9602-44b0-810c-6434fa892e26.log in current directory or /tmp/c0fc05fe-985e-4fff-a991-848ce007a4f4
+""",
+              "kind": "TritonService:  AfterModDestruction"
+            }
+          ],
+          "error_count": 2,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_aarch64_gcc14/CMSSW_20_1_ROOT6_X_2026-11-13-2300/pyRelValMatrixLogs/run/10805.31_SingleGammaPt35+2018_photonDRN/JobReport3.xml",
+          "AvgEventTime": "0",
+          "EventThroughput": "0",
+          "MaxEventTime": "0",
+          "MinEventTime": 1000000,
+          "NumberOfStreams": "4",
+          "NumberOfThreads": "4",
+          "TotalEventSetupTime": "0",
+          "TotalInitCPU": "0",
+          "TotalInitTime": -3786680,
+          "TotalJobCPU": "101.861",
+          "TotalJobChildrenCPU": "2.43334",
+          "TotalJobTime": "178.426",
+          "TotalLoopCPU": "101.86",
+          "TotalLoopTime": 3786860,
+          "TotalNonModuleTime": "0",
+          "AverageGrowthRateRss": "98.0234",
+          "AverageGrowthRateVsize": "112.41",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "PeakValueRss": "0",
+          "PeakValueVsize": "0"
+        }
+      }
+    ]
+  }
+}
+# GET cmssdt-ib-matrix-*/_search
+{
+  "took": 14,
+  "timed_out": false,
+  "_shards": {
+    "total": 2,
+    "successful": 2,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 10000,
+      "relation": "gte"
+    },
+    "max_score": 0,
+    "hits": [
+      {
+        "_index": "cmssdt-ib-matrix-2964",
+        "_id": "a528917a51f9c2fb15a778b9e18073e04b963528",
+        "_score": 0,
+        "_source": {
+          "exitcode": 1,
+          "workflow": "38551.85",
+          "release": "CMSSW_20_1_X_2026-11-13-2300",
+          "architecture": "el8_amd64_gcc14",
+          "step": "step1",
+          "@timestamp": 1794629401111,
+          "hostname": "cmsbuild962.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el8_amd64_gcc14/CMSSW_20_1_X_2026-11-13-2300/pyRelValMatrixLogs/run/38551.85_HydjetQMinBias_5519GeV+Run4D128_hi/step1_dasquery.log",
+          "error_count": 0
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2964",
+        "_id": "21b5fa78f48ac8a39dac41cfc9873efa9e9c0889",
+        "_score": 0,
+        "_source": {
+          "command": """cmsDriver.py sherpa_ttbar_2j_MENLOPS_13TeV_MASTER_ExtGen_cff  --relval 250000,5000 -s GEN,VALIDATION:genvalid_all -n 50 --conditions auto:run2_mc --beamspot Realistic8TeVCollision --datatier GEN,DQMIO --eventcontent RAWSIM,DQM  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbld/jenkins/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 14400 '  --fileout file:step1.root  --suffix "-j JobReport1.xml "  --nThreads 4 > step1_sherpa_ttbar_2j_MENLOPS_13TeV_MASTER_ExtGen.log  2>&1""",
+          "exitcode": 13568,
+          "workflow": "573.0",
+          "release": "CMSSW_20_1_X_2026-11-13-2300",
+          "architecture": "el9_aarch64_gcc14",
+          "step": "step1",
+          "@timestamp": 1794629490898,
+          "hostname": "arm-cmsbuild002.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_aarch64_gcc14/CMSSW_20_1_X_2026-11-13-2300/pyRelValMatrixLogs/run/573.0_sherpa_ttbar_2j_MENLOPS_13TeV_MASTER_ExtGen/step1_sherpa_ttbar_2j_MENLOPS_13TeV_MASTER_ExtGen.log",
+          "exception": """An exception of category 'Unknown' occurred while
+[0] Processing global begin LuminosityBlock run: 1 luminosityBlock: 1
+[1] Calling method for module SherpaGeneratorFilter/'generator'
+Exception Message:
+An exception of unknown type was thrown.
+An exception of category 'EventGenerationFailure' occurred while
+[0] Processing global begin LuminosityBlock run: 1 luminosityBlock: 1
+[1] Calling method for module ExternalGeneratorFilter/'generator'
+Exception Message:
+failed waiting for external process 4172057_0. Timed out after 300 seconds.
+""",
+          "error_count": 0,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_aarch64_gcc14/CMSSW_20_1_X_2026-11-13-2300/pyRelValMatrixLogs/run/573.0_sherpa_ttbar_2j_MENLOPS_13TeV_MASTER_ExtGen/JobReport1.xml",
+          "total_events": "0",
+          "AvgEventTime": "0",
+          "EventThroughput": "0",
+          "MaxEventTime": "0",
+          "MinEventTime": 1000000,
+          "NumberOfStreams": "4",
+          "NumberOfThreads": "4",
+          "TotalEventSetupTime": "0.00286933",
+          "TotalInitCPU": "7.11658",
+          "TotalInitTime": "17.699",
+          "TotalJobCPU": "17.826",
+          "TotalJobChildrenCPU": "10.0739",
+          "TotalJobTime": "318.649",
+          "TotalLoopCPU": "10.7082",
+          "TotalLoopTime": "300.95",
+          "TotalNonModuleTime": "902.213",
+          "AverageGrowthRateRss": "72.6641",
+          "AverageGrowthRateVsize": "93.0234",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "PeakValueRss": "0",
+          "PeakValueVsize": "0"
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2964",
+        "_id": "14d39dc15221db14ac0e46a165cc6d3edc91d6df",
+        "_score": 0,
+        "_source": {
+          "test_type": "gpu",
+          "gpu": "nvidia_t4",
+          "command": """CUDA_VISIBLE_DEVICES=1 HIP_VISIBLE_DEVICES= cmsDriver.py step3  -s RAW2DIGI:RawToDigi_hcalOnly,RECO:reconstruction_hcalOnly,VALIDATION:@hcalOnlyValidation,DQM:@hcalOnly+@hcal2Only+@hltGPUvsCPU --conditions auto:phase2_realistic_T35 --datatier GEN-SIM-RECO,MINIAODSIM,DQMIO -n 10 --eventcontent FEVTDEBUGHLT,MINIAODSIM,DQM --geometry ExtendedRun4D128 --era Phase2C26I13M9 --procModifiers alpaka --customise HeterogeneousCore/AlpakaServices/customiseAlpakaServiceMemoryFilling.customiseAlpakaServiceMemoryFilling --pileup AVE_200_BX_25ns --pileup_input das:/RelValMinBias_14TeV/CMSSW_20_1_0_pre3-150X_mcRun4_realistic_v1_STD_D128_GSOnly_GSInputs-v1/GEN-SIM  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbuild/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 9000 '  --filein  file:step2.root  --fileout file:step3.root  --suffix "-j JobReport3.xml "  --nThreads 4 > step3_TTbar_14TeV+Run4D128PU_Patatrack_HCALOnlyAlpaka_Validation.log  2>&1""",
+          "exitcode": 16896,
+          "workflow": "38634.422",
+          "release": "CMSSW_20_1_X_2026-11-13-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step3",
+          "@timestamp": 1794630009070,
+          "hostname": "srv-b1b07-18-01.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-13-2300/pyRelValMatrixLogs/run/38634.422_TTbar_14TeV+Run4D128PU_Patatrack_HCALOnlyAlpaka_Validation/step3_TTbar_14TeV+Run4D128PU_Patatrack_HCALOnlyAlpaka_Validation.log",
+          "exception": """An exception of category 'StdException' occurred while
+[0] Processing  Event run: 1 lumi: 1 event: 3 stream: 0
+[1] Running path 'validation_step'
+[2] Prefetching for module PFClusterValidation/'pfClusterCaloOnlyValidation'
+[3] Prefetching for module LegacyMultiDepthPFClusterProducer/'particleFlowClusterHCALOnly'
+[4] Prefetching for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+[5] Calling method for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+Exception Message:
+A std::exception was thrown.
+/data/cmsbld/jenkins/workspace/build-any-ib/w/el9_amd64_gcc14/external/alpaka/2.2.0-c1a89ea8b4356661b99dbb7a692fcd4f/include/alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp(380) 'TApi::setDevice(queue.m_spQueueImpl->m_dev.getNativeHandle())' A previous API call (not this one) set the error  : 'cudaErrorLaunchOutOfResources': 'too many resources requested for launch'!
+An exception of category 'StdException' occurred while
+[0] Processing  Event run: 1 lumi: 1 event: 4 stream: 3
+[1] Running path 'validation_step'
+[2] Prefetching for module PFClusterValidation/'pfClusterCaloOnlyValidation'
+[3] Prefetching for module LegacyMultiDepthPFClusterProducer/'particleFlowClusterHCALOnly'
+[4] Prefetching for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+[5] Calling method for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+Exception Message:
+A std::exception was thrown.
+/data/cmsbld/jenkins/workspace/build-any-ib/w/el9_amd64_gcc14/external/alpaka/2.2.0-c1a89ea8b4356661b99dbb7a692fcd4f/include/alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp(380) 'TApi::setDevice(queue.m_spQueueImpl->m_dev.getNativeHandle())' A previous API call (not this one) set the error  : 'cudaErrorLaunchOutOfResources': 'too many resources requested for launch'!
+An exception of category 'StdException' occurred while
+[0] Processing  Event run: 1 lumi: 1 event: 2 stream: 1
+[1] Running path 'validation_step'
+[2] Prefetching for module PFClusterValidation/'pfClusterCaloOnlyValidation'
+[3] Prefetching for module LegacyMultiDepthPFClusterProducer/'particleFlowClusterHCALOnly'
+[4] Prefetching for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+[5] Calling method for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+Exception Message:
+A std::exception was thrown.
+/data/cmsbld/jenkins/workspace/build-any-ib/w/el9_amd64_gcc14/external/alpaka/2.2.0-c1a89ea8b4356661b99dbb7a692fcd4f/include/alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp(380) 'TApi::setDevice(queue.m_spQueueImpl->m_dev.getNativeHandle())' A previous API call (not this one) set the error  : 'cudaErrorLaunchOutOfResources': 'too many resources requested for launch'!
+An exception of category 'StdException' occurred while
+[0] Processing  Event run: 1 lumi: 1 event: 1 stream: 2
+[1] Running path 'validation_step'
+[2] Prefetching for module PFClusterValidation/'pfClusterCaloOnlyValidation'
+[3] Prefetching for module LegacyMultiDepthPFClusterProducer/'particleFlowClusterHCALOnly'
+[4] Prefetching for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+[5] Calling method for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+Exception Message:
+A std::exception was thrown.
+/data/cmsbld/jenkins/workspace/build-any-ib/w/el9_amd64_gcc14/external/alpaka/2.2.0-c1a89ea8b4356661b99dbb7a692fcd4f/include/alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp(380) 'TApi::setDevice(queue.m_spQueueImpl->m_dev.getNativeHandle())' A previous API call (not this one) set the error  : 'cudaErrorLaunchOutOfResources': 'too many resources requested for launch'!
+""",
+          "error_count": 0,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-13-2300/pyRelValMatrixLogs/run/38634.422_TTbar_14TeV+Run4D128PU_Patatrack_HCALOnlyAlpaka_Validation/JobReport3.xml",
+          "events_read": "4",
+          "total_events": "4",
+          "AvgEventTime": "30.5234",
+          "EventThroughput": "0.0932258",
+          "MaxEventTime": "35.5193",
+          "MinEventTime": "25.291",
+          "NumberOfStreams": "4",
+          "NumberOfThreads": "4",
+          "TotalEventSetupTime": "3.27738",
+          "TotalInitCPU": "18.1218",
+          "TotalInitTime": "23.7299",
+          "TotalJobCPU": "104.464",
+          "TotalJobChildrenCPU": "0.443099",
+          "TotalJobTime": "66.6365",
+          "TotalLoopCPU": "86.3419",
+          "TotalLoopTime": "42.9066",
+          "TotalNonModuleTime": "38.084",
+          "AverageGrowthRateRss": "2602.9",
+          "AverageGrowthRateVsize": "3799.82",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "LargeVsizeIncreaseEventL1-a-COUNT": "2",
+          "LargeVsizeIncreaseEventL1-b-RUN": "1",
+          "LargeVsizeIncreaseEventL1-c-EVENT": "4",
+          "LargeVsizeIncreaseEventL1-d-VSIZE": "22360.9",
+          "LargeVsizeIncreaseEventL1-e-DELTV": "768",
+          "LargeVsizeIncreaseEventL1-f-RSS": "14078.4",
+          "LargeVsizeIncreaseEventL2-a-COUNT": "1",
+          "LargeVsizeIncreaseEventL2-b-RUN": "1",
+          "LargeVsizeIncreaseEventL2-c-EVENT": "3",
+          "LargeVsizeIncreaseEventL2-d-VSIZE": "21592.9",
+          "LargeVsizeIncreaseEventL2-e-DELTV": "0",
+          "LargeVsizeIncreaseEventL2-f-RSS": "13598.4",
+          "LargestIncreaseRssEvent-a-COUNT": "3",
+          "LargestIncreaseRssEvent-b-RUN": "1",
+          "LargestIncreaseRssEvent-c-EVENT": "2",
+          "LargestIncreaseRssEvent-d-VSIZE": "23416.9",
+          "LargestIncreaseRssEvent-e-DELTV": "1056",
+          "LargestIncreaseRssEvent-f-RSS": "14960.9",
+          "LargestRssEvent-a-COUNT": "4",
+          "LargestRssEvent-b-RUN": "1",
+          "LargestRssEvent-c-EVENT": "1",
+          "LargestRssEvent-d-VSIZE": "23416.9",
+          "LargestRssEvent-e-DELTV": "0",
+          "LargestRssEvent-f-RSS": "15038.9",
+          "LargestVsizeEventT1-a-COUNT": "3",
+          "LargestVsizeEventT1-b-RUN": "1",
+          "LargestVsizeEventT1-c-EVENT": "2",
+          "LargestVsizeEventT1-d-VSIZE": "23416.9",
+          "LargestVsizeEventT1-e-DELTV": "1056",
+          "LargestVsizeEventT1-f-RSS": "14960.9",
+          "LargestVsizeIncreaseEvent-a-COUNT": "3",
+          "LargestVsizeIncreaseEvent-b-RUN": "1",
+          "LargestVsizeIncreaseEvent-c-EVENT": "2",
+          "LargestVsizeIncreaseEvent-d-VSIZE": "23416.9",
+          "LargestVsizeIncreaseEvent-e-DELTV": "1056",
+          "LargestVsizeIncreaseEvent-f-RSS": "14960.9",
+          "PeakValueRss": "15038.9",
+          "PeakValueVsize": "23416.9",
+          "SecondLargestIncreaseRssEvent-a-COUNT": "2",
+          "SecondLargestIncreaseRssEvent-b-RUN": "1",
+          "SecondLargestIncreaseRssEvent-c-EVENT": "4",
+          "SecondLargestIncreaseRssEvent-d-VSIZE": "22360.9",
+          "SecondLargestIncreaseRssEvent-e-DELTV": "768",
+          "SecondLargestIncreaseRssEvent-f-RSS": "14078.4",
+          "SecondLargestRssEvent-a-COUNT": "3",
+          "SecondLargestRssEvent-b-RUN": "1",
+          "SecondLargestRssEvent-c-EVENT": "2",
+          "SecondLargestRssEvent-d-VSIZE": "23416.9",
+          "SecondLargestRssEvent-e-DELTV": "1056",
+          "SecondLargestRssEvent-f-RSS": "14960.9",
+          "SecondLargestVsizeEventT2-a-COUNT": "4",
+          "SecondLargestVsizeEventT2-b-RUN": "1",
+          "SecondLargestVsizeEventT2-c-EVENT": "1",
+          "SecondLargestVsizeEventT2-d-VSIZE": "23416.9",
+          "SecondLargestVsizeEventT2-e-DELTV": "0",
+          "SecondLargestVsizeEventT2-f-RSS": "15038.9",
+          "ThirdLargestIncreaseRssEvent-a-COUNT": "4",
+          "ThirdLargestIncreaseRssEvent-b-RUN": "1",
+          "ThirdLargestIncreaseRssEvent-c-EVENT": "1",
+          "ThirdLargestIncreaseRssEvent-d-VSIZE": "23416.9",
+          "ThirdLargestIncreaseRssEvent-e-DELTV": "0",
+          "ThirdLargestIncreaseRssEvent-f-RSS": "15038.9",
+          "ThirdLargestRssEvent-a-COUNT": "2",
+          "ThirdLargestRssEvent-b-RUN": "1",
+          "ThirdLargestRssEvent-c-EVENT": "4",
+          "ThirdLargestRssEvent-d-VSIZE": "22360.9",
+          "ThirdLargestRssEvent-e-DELTV": "768",
+          "ThirdLargestRssEvent-f-RSS": "14078.4",
+          "ThirdLargestVsizeEventT3-a-COUNT": "2",
+          "ThirdLargestVsizeEventT3-b-RUN": "1",
+          "ThirdLargestVsizeEventT3-c-EVENT": "4",
+          "ThirdLargestVsizeEventT3-d-VSIZE": "22360.9",
+          "ThirdLargestVsizeEventT3-e-DELTV": "768",
+          "ThirdLargestVsizeEventT3-f-RSS": "14078.4"
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2964",
+        "_id": "75fa9602494e88e7fffb4d1ec84c3c37297ff1ee",
+        "_score": 0,
+        "_source": {
+          "test_type": "gpu",
+          "gpu": "nvidia_t4",
+          "command": """CUDA_VISIBLE_DEVICES=0 HIP_VISIBLE_DEVICES= cmsDriver.py step3  -s RAW2DIGI:RawToDigi_hcalOnly,RECO:reconstruction_hcalOnlyLegacy+reconstruction_hcalOnly,VALIDATION:@hcalOnlyValidation+pfClusterHBHEOnlyAlpakaComparisonSequence,DQM:@hcalOnly+@hcal2Only+hcalOnlyOfflineSourceSequenceAlpaka+@hltGPUvsCPU --conditions auto:phase2_realistic_T35 --datatier GEN-SIM-RECO,MINIAODSIM,DQMIO -n 10 --eventcontent FEVTDEBUGHLT,MINIAODSIM,DQM --geometry ExtendedRun4D128 --era Phase2C26I13M9 --procModifiers alpaka --customise HeterogeneousCore/AlpakaServices/customiseAlpakaServiceMemoryFilling.customiseAlpakaServiceMemoryFilling --pileup AVE_200_BX_25ns --pileup_input das:/RelValMinBias_14TeV/CMSSW_20_1_0_pre3-150X_mcRun4_realistic_v1_STD_D128_GSOnly_GSInputs-v1/GEN-SIM  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbuild/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 9000 '  --filein  file:step2.root  --fileout file:step3.root  --suffix "-j JobReport3.xml "  --nThreads 4 > step3_TTbar_14TeV+Run4D128PU_Patatrack_HCALOnlyGPUandAlpaka_Validation.log  2>&1""",
+          "exitcode": 16896,
+          "workflow": "38634.423",
+          "release": "CMSSW_20_1_X_2026-11-13-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step3",
+          "@timestamp": 1794629915316,
+          "hostname": "srv-b1b07-18-01.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-13-2300/pyRelValMatrixLogs/run/38634.423_TTbar_14TeV+Run4D128PU_Patatrack_HCALOnlyGPUandAlpaka_Validation/step3_TTbar_14TeV+Run4D128PU_Patatrack_HCALOnlyGPUandAlpaka_Validation.log",
+          "exception": """An exception of category 'StdException' occurred while
+[0] Processing  Event run: 1 lumi: 1 event: 4 stream: 0
+[1] Running path 'validation_step1'
+[2] Prefetching for module PFClusterValidation/'pfClusterCaloOnlyValidation'
+[3] Prefetching for module LegacyMultiDepthPFClusterProducer/'particleFlowClusterHCALOnly'
+[4] Prefetching for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+[5] Calling method for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+Exception Message:
+A std::exception was thrown.
+/data/cmsbld/jenkins/workspace/build-any-ib/w/el9_amd64_gcc14/external/alpaka/2.2.0-c1a89ea8b4356661b99dbb7a692fcd4f/include/alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp(380) 'TApi::setDevice(queue.m_spQueueImpl->m_dev.getNativeHandle())' A previous API call (not this one) set the error  : 'cudaErrorLaunchOutOfResources': 'too many resources requested for launch'!
+An exception of category 'StdException' occurred while
+[0] Processing  Event run: 1 lumi: 1 event: 2 stream: 2
+[1] Running path 'validation_step1'
+[2] Prefetching for module PFClusterValidation/'pfClusterCaloOnlyValidation'
+[3] Prefetching for module LegacyMultiDepthPFClusterProducer/'particleFlowClusterHCALOnly'
+[4] Prefetching for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+[5] Calling method for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+Exception Message:
+A std::exception was thrown.
+/data/cmsbld/jenkins/workspace/build-any-ib/w/el9_amd64_gcc14/external/alpaka/2.2.0-c1a89ea8b4356661b99dbb7a692fcd4f/include/alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp(380) 'TApi::setDevice(queue.m_spQueueImpl->m_dev.getNativeHandle())' A previous API call (not this one) set the error  : 'cudaErrorLaunchOutOfResources': 'too many resources requested for launch'!
+An exception of category 'StdException' occurred while
+[0] Processing  Event run: 1 lumi: 1 event: 1 stream: 3
+[1] Running path 'validation_step1'
+[2] Prefetching for module PFClusterValidation/'pfClusterCaloOnlyValidation'
+[3] Prefetching for module LegacyMultiDepthPFClusterProducer/'particleFlowClusterHCALOnly'
+[4] Prefetching for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+[5] Calling method for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+Exception Message:
+A std::exception was thrown.
+/data/cmsbld/jenkins/workspace/build-any-ib/w/el9_amd64_gcc14/external/alpaka/2.2.0-c1a89ea8b4356661b99dbb7a692fcd4f/include/alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp(380) 'TApi::setDevice(queue.m_spQueueImpl->m_dev.getNativeHandle())' A previous API call (not this one) set the error  : 'cudaErrorLaunchOutOfResources': 'too many resources requested for launch'!
+An exception of category 'StdException' occurred while
+[0] Processing  Event run: 1 lumi: 1 event: 3 stream: 1
+[1] Running path 'validation_step1'
+[2] Prefetching for module PFClusterValidation/'pfClusterCaloOnlyValidation'
+[3] Prefetching for module LegacyMultiDepthPFClusterProducer/'particleFlowClusterHCALOnly'
+[4] Prefetching for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+[5] Calling method for module PFMultiDepthClusterSoAProducer@alpaka/'pfMultiDepthClusterSoAProducerHCALOnly'
+Exception Message:
+A std::exception was thrown.
+/data/cmsbld/jenkins/workspace/build-any-ib/w/el9_amd64_gcc14/external/alpaka/2.2.0-c1a89ea8b4356661b99dbb7a692fcd4f/include/alpaka/kernel/TaskKernelGpuUniformCudaHipRt.hpp(380) 'TApi::setDevice(queue.m_spQueueImpl->m_dev.getNativeHandle())' A previous API call (not this one) set the error  : 'cudaErrorLaunchOutOfResources': 'too many resources requested for launch'!
+""",
+          "error_count": 0,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-13-2300/pyRelValMatrixLogs/run/38634.423_TTbar_14TeV+Run4D128PU_Patatrack_HCALOnlyGPUandAlpaka_Validation/JobReport3.xml",
+          "events_read": "4",
+          "total_events": "4",
+          "AvgEventTime": "30.2296",
+          "EventThroughput": "0.0905765",
+          "MaxEventTime": "34.1048",
+          "MinEventTime": "27.2985",
+          "NumberOfStreams": "4",
+          "NumberOfThreads": "4",
+          "TotalEventSetupTime": "3.27858",
+          "TotalInitCPU": "18.6148",
+          "TotalInitTime": "24.1449",
+          "TotalJobCPU": "108.646",
+          "TotalJobChildrenCPU": "0.449885",
+          "TotalJobTime": "68.3065",
+          "TotalLoopCPU": "90.0311",
+          "TotalLoopTime": "44.1616",
+          "TotalNonModuleTime": "40.7968",
+          "AverageGrowthRateRss": "2669.73",
+          "AverageGrowthRateVsize": "3970.33",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "LargeVsizeIncreaseEventL1-a-COUNT": "1",
+          "LargeVsizeIncreaseEventL1-b-RUN": "1",
+          "LargeVsizeIncreaseEventL1-c-EVENT": "4",
+          "LargeVsizeIncreaseEventL1-d-VSIZE": "22407",
+          "LargeVsizeIncreaseEventL1-e-DELTV": "0",
+          "LargeVsizeIncreaseEventL1-f-RSS": "14227.9",
+          "LargestIncreaseRssEvent-a-COUNT": "3",
+          "LargestIncreaseRssEvent-b-RUN": "1",
+          "LargestIncreaseRssEvent-c-EVENT": "1",
+          "LargestIncreaseRssEvent-d-VSIZE": "24099",
+          "LargestIncreaseRssEvent-e-DELTV": "0",
+          "LargestIncreaseRssEvent-f-RSS": "15014.4",
+          "LargestRssEvent-a-COUNT": "3",
+          "LargestRssEvent-b-RUN": "1",
+          "LargestRssEvent-c-EVENT": "1",
+          "LargestRssEvent-d-VSIZE": "24099",
+          "LargestRssEvent-e-DELTV": "0",
+          "LargestRssEvent-f-RSS": "15014.4",
+          "LargestVsizeEventT1-a-COUNT": "2",
+          "LargestVsizeEventT1-b-RUN": "1",
+          "LargestVsizeEventT1-c-EVENT": "2",
+          "LargestVsizeEventT1-d-VSIZE": "24099",
+          "LargestVsizeEventT1-e-DELTV": "1692",
+          "LargestVsizeEventT1-f-RSS": "14519.7",
+          "LargestVsizeIncreaseEvent-a-COUNT": "2",
+          "LargestVsizeIncreaseEvent-b-RUN": "1",
+          "LargestVsizeIncreaseEvent-c-EVENT": "2",
+          "LargestVsizeIncreaseEvent-d-VSIZE": "24099",
+          "LargestVsizeIncreaseEvent-e-DELTV": "1692",
+          "LargestVsizeIncreaseEvent-f-RSS": "14519.7",
+          "PeakValueRss": "15014.4",
+          "PeakValueVsize": "24099",
+          "SecondLargestIncreaseRssEvent-a-COUNT": "2",
+          "SecondLargestIncreaseRssEvent-b-RUN": "1",
+          "SecondLargestIncreaseRssEvent-c-EVENT": "2",
+          "SecondLargestIncreaseRssEvent-d-VSIZE": "24099",
+          "SecondLargestIncreaseRssEvent-e-DELTV": "1692",
+          "SecondLargestIncreaseRssEvent-f-RSS": "14519.7",
+          "SecondLargestRssEvent-a-COUNT": "4",
+          "SecondLargestRssEvent-b-RUN": "1",
+          "SecondLargestRssEvent-c-EVENT": "3",
+          "SecondLargestRssEvent-d-VSIZE": "24099",
+          "SecondLargestRssEvent-e-DELTV": "0",
+          "SecondLargestRssEvent-f-RSS": "15011.1",
+          "SecondLargestVsizeEventT2-a-COUNT": "3",
+          "SecondLargestVsizeEventT2-b-RUN": "1",
+          "SecondLargestVsizeEventT2-c-EVENT": "1",
+          "SecondLargestVsizeEventT2-d-VSIZE": "24099",
+          "SecondLargestVsizeEventT2-e-DELTV": "0",
+          "SecondLargestVsizeEventT2-f-RSS": "15014.4",
+          "ThirdLargestRssEvent-a-COUNT": "2",
+          "ThirdLargestRssEvent-b-RUN": "1",
+          "ThirdLargestRssEvent-c-EVENT": "2",
+          "ThirdLargestRssEvent-d-VSIZE": "24099",
+          "ThirdLargestRssEvent-e-DELTV": "1692",
+          "ThirdLargestRssEvent-f-RSS": "14519.7",
+          "ThirdLargestVsizeEventT3-a-COUNT": "4",
+          "ThirdLargestVsizeEventT3-b-RUN": "1",
+          "ThirdLargestVsizeEventT3-c-EVENT": "3",
+          "ThirdLargestVsizeEventT3-d-VSIZE": "24099",
+          "ThirdLargestVsizeEventT3-e-DELTV": "0",
+          "ThirdLargestVsizeEventT3-f-RSS": "15011.1"
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2964",
+        "_id": "5febb36b6057f18e9e75a8119235d6ae0a189af2",
+        "_score": 0,
+        "_source": {
+          "exitcode": 1,
+          "workflow": "38551.85",
+          "release": "CMSSW_20_1_DBG_X_2026-11-13-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step1",
+          "@timestamp": 1794627225340,
+          "hostname": "cmsbuild906.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_DBG_X_2026-11-13-2300/pyRelValMatrixLogs/run/38551.85_HydjetQMinBias_5519GeV+Run4D128_hi/step1_dasquery.log",
+          "error_count": 0
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2964",
+        "_id": "cb7ef9ba0e59e76e7e79c70ed596e1c025ebf794",
+        "_score": 0,
+        "_source": {
+          "exitcode": 1,
+          "workflow": "38551.85",
+          "release": "CMSSW_20_1_X_2026-11-13-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step1",
+          "@timestamp": 1794627765125,
+          "hostname": "cmsbuild997.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-13-2300/pyRelValMatrixLogs/run/38551.85_HydjetQMinBias_5519GeV+Run4D128_hi/step1_dasquery.log",
+          "error_count": 0
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2964",
+        "_id": "46ab15a72ffce34cbe75491a2ce533d9cd90ad2e",
+        "_score": 0,
+        "_source": {
+          "command": """cmsDriver.py step2  --process reHLT -s L1REPACK:Full,HLT:@relval2017 --conditions auto:run2_hlt_relval --data  --eventcontent FEVTDEBUGHLT --datatier FEVTDEBUGHLT --era Run2_2017  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbld/jenkins/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 14400 '  -n 100  --filein filelist:step1_dasquery.log --lumiToProcess step1_lumiRanges.log --fileout file:step2.root  --suffix "-j JobReport2.xml "  --nThreads 4 > step2_RunZeroBias2017F.log  2>&1""",
+          "exitcode": 62720,
+          "workflow": "136.837",
+          "release": "CMSSW_20_1_ASAN_X_2026-11-13-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step2",
+          "@timestamp": 1794627109000,
+          "hostname": "cmsbuild975.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_ASAN_X_2026-11-13-2300/pyRelValMatrixLogs/run/136.837_RunZeroBias2017F/step2_RunZeroBias2017F.log",
+          "error_count": 0,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_ASAN_X_2026-11-13-2300/pyRelValMatrixLogs/run/136.837_RunZeroBias2017F/JobReport2.xml"
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2964",
+        "_id": "650c4e7b64d84f508305b08f1739403bf883b75d",
+        "_score": 0,
+        "_source": {
+          "test_type": "other",
+          "other": "rntuple",
+          "exitcode": 1,
+          "workflow": "38551.85",
+          "release": "CMSSW_20_1_X_2026-11-13-2300",
+          "architecture": "el9_amd64_gcc14",
+          "step": "step1",
+          "@timestamp": 1794627754676,
+          "hostname": "cmsbuild994.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_amd64_gcc14/CMSSW_20_1_X_2026-11-13-2300/pyRelValMatrixLogs/run/38551.85_HydjetQMinBias_5519GeV+Run4D128_hi/step1_dasquery.log",
+          "error_count": 0
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2964",
+        "_id": "2076537135b088b85cb79730d16e8c5f55525345",
+        "_score": 0,
+        "_source": {
+          "test_type": "other",
+          "other": "rntuple",
+          "command": """cmsDriver.py step3  -s RAW2DIGI,L1Reco,RECO,RECOSIM,PAT,VALIDATION:@standardValidationNoHLT+@miniAODValidation,DQM:@standardDQMFakeHLT+@miniAODDQM --conditions auto:phase1_2018_realistic --datatier GEN-SIM-RECO,MINIAODSIM,DQMIO -n 10 --eventcontent RECOSIM,MINIAODSIM,DQM --geometry DB:Extended --era Run2_2018 --procModifiers enableSonicTriton,photonDRN  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbld/jenkins/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 14400 cmsTraceFunction --abort --startAfterFunction ScheduleItems::initMisc setenv '  --rntuple_out --filein  file:step2.rntpl  --fileout file:step3.rntpl  --suffix "-j JobReport3.xml "  --nThreads 4 > step3_SingleGammaPt10+2018_photonDRN.log  2>&1""",
+          "exitcode": 256,
+          "workflow": "10804.31",
+          "release": "CMSSW_20_1_ROOT6_X_2026-11-13-2300",
+          "architecture": "el9_aarch64_gcc14",
+          "step": "step3",
+          "@timestamp": 1794626920783,
+          "hostname": "arm-cmsbuild004.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_aarch64_gcc14/CMSSW_20_1_ROOT6_X_2026-11-13-2300/pyRelValMatrixLogs/run/10804.31_SingleGammaPt10+2018_photonDRN/step3_SingleGammaPt10+2018_photonDRN.log",
+          "exception": """An exception of category 'ExternalFailure' occurred while
+[0] Processing begin Job
+[1] Handling pre signal, likely in a service function
+Exception Message:
+TritonService: Starting the fallback server failed with exit code 65280
+""",
+          "errors": [
+            {
+              "error": """%MSG-e TritonService:  AfterModDestruction 14-Nov-2026 04:28:37 CET pre-eventsCMS_TRITON_CHOSEN_DEVICE: cpu
+CMS_TRITON_GRPC_PORT: 8001
+INFO:    Instance stats will not be available - cannot use systemd cgroups manager, systemd not running as init on this host
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/hostname: exec format error
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/cut: exec format error
+fork/exec /usr/bin/cat: exec format error
+FATAL:   exec /bin/sh failed: fork/exec /bin/sh: exec format error
+ERROR:   container cleanup failed: no instance found with name triton_server_instance_7fe720e2-9028-46e3-ac6b-ffe0266372e2
+
+FATAL:   while executing starter: failed to start instance: while running /cvmfs/oasis.opensciencegrid.org/mis/apptainer/1.5.5/aarch64/libexec/apptainer/bin/starter: exit status 255
+Error for command "stop": no instance found
+
+Usage:
+apptainer [global options...] instance stop [stop options...] [instance]
+
+Run 'apptainer --help' for more detailed usage information.
+Retrying after container issue...
+INFO:    Instance stats will not be available - cannot use systemd cgroups manager, systemd not running as init on this host
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/hostname: exec format error
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/cut: exec format error
+fork/exec /usr/bin/cat: exec format error
+FATAL:   exec /bin/sh failed: fork/exec /bin/sh: exec format error
+ERROR:   container cleanup failed: no instance found with name triton_server_instance_7fe720e2-9028-46e3-ac6b-ffe0266372e2
+
+FATAL:   while executing starter: failed to start instance: while running /cvmfs/oasis.opensciencegrid.org/mis/apptainer/1.5.5/aarch64/libexec/apptainer/bin/starter: exit status 255
+Error for command "stop": no instance found
+
+Usage:
+apptainer [global options...] instance stop [stop options...] [instance]
+
+Run 'apptainer --help' for more detailed usage information.
+Retrying after container issue...
+INFO:    Instance stats will not be available - cannot use systemd cgroups manager, systemd not running as init on this host
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/hostname: exec format error
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/cut: exec format error
+fork/exec /usr/bin/cat: exec format error
+FATAL:   exec /bin/sh failed: fork/exec /bin/sh: exec format error
+ERROR:   container cleanup failed: no instance found with name triton_server_instance_7fe720e2-9028-46e3-ac6b-ffe0266372e2
+
+FATAL:   while executing starter: failed to start instance: while running /cvmfs/oasis.opensciencegrid.org/mis/apptainer/1.5.5/aarch64/libexec/apptainer/bin/starter: exit status 255
+Error for command "stop": no instance found
+
+Usage:
+apptainer [global options...] instance stop [stop options...] [instance]
+
+Run 'apptainer --help' for more detailed usage information.
+Retrying after container issue...
+Error from apptainer
+
+""",
+              "kind": "TritonService:  AfterModDestruction"
+            },
+            {
+              "error": """%MSG-e TritonService:  AfterModDestruction 14-Nov-2026 04:28:37 CET pre-eventsTritonService: could not find server log log_triton_server_instance_7fe720e2-9028-46e3-ac6b-ffe0266372e2.log in current directory or /tmp/f12a89e7-245c-4695-9156-320f3158fb9f
+""",
+              "kind": "TritonService:  AfterModDestruction"
+            }
+          ],
+          "error_count": 2,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_aarch64_gcc14/CMSSW_20_1_ROOT6_X_2026-11-13-2300/pyRelValMatrixLogs/run/10804.31_SingleGammaPt10+2018_photonDRN/JobReport3.xml",
+          "AvgEventTime": "0",
+          "EventThroughput": "0",
+          "MaxEventTime": "0",
+          "MinEventTime": 1000000,
+          "NumberOfStreams": "4",
+          "NumberOfThreads": "4",
+          "TotalEventSetupTime": "0",
+          "TotalInitCPU": "0",
+          "TotalInitTime": -3786700,
+          "TotalJobCPU": "102.077",
+          "TotalJobChildrenCPU": "2.27338",
+          "TotalJobTime": "180.745",
+          "TotalLoopCPU": "102.075",
+          "TotalLoopTime": 3786880,
+          "TotalNonModuleTime": "0",
+          "AverageGrowthRateRss": "92.3281",
+          "AverageGrowthRateVsize": "112.41",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "PeakValueRss": "0",
+          "PeakValueVsize": "0"
+        }
+      },
+      {
+        "_index": "cmssdt-ib-matrix-2964",
+        "_id": "6e1bad56e3bc24ce14b4c11562af6ca8fdca39fd",
+        "_score": 0,
+        "_source": {
+          "test_type": "other",
+          "other": "rntuple",
+          "command": """cmsDriver.py step3  -s RAW2DIGI,L1Reco,RECO,RECOSIM,PAT,VALIDATION:@standardValidationNoHLT+@miniAODValidation,DQM:@standardDQMFakeHLT+@miniAODDQM --conditions auto:phase1_2018_realistic --datatier GEN-SIM-RECO,MINIAODSIM,DQMIO -n 10 --eventcontent RECOSIM,MINIAODSIM,DQM --geometry DB:Extended --era Run2_2018 --procModifiers enableSonicTriton,photonDRN  --customise Validation/Performance/TimeMemorySummary.customiseWithTimeMemorySummary --prefix 'python3 /data/cmsbld/jenkins/workspace/ib-run-relvals/cms-bot/monitor_workflow.py timeout --signal SIGTERM 14400 cmsTraceFunction --abort --startAfterFunction ScheduleItems::initMisc setenv '  --rntuple_out --filein  file:step2.rntpl  --fileout file:step3.rntpl  --suffix "-j JobReport3.xml "  --nThreads 4 > step3_SingleGammaPt35+2018_photonDRN.log  2>&1""",
+          "exitcode": 256,
+          "workflow": "10805.31",
+          "release": "CMSSW_20_1_ROOT6_X_2026-11-13-2300",
+          "architecture": "el9_aarch64_gcc14",
+          "step": "step3",
+          "@timestamp": 1794626898856,
+          "hostname": "arm-cmsbuild004.cern.ch",
+          "url": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_aarch64_gcc14/CMSSW_20_1_ROOT6_X_2026-11-13-2300/pyRelValMatrixLogs/run/10805.31_SingleGammaPt35+2018_photonDRN/step3_SingleGammaPt35+2018_photonDRN.log",
+          "exception": """An exception of category 'ExternalFailure' occurred while
+[0] Processing begin Job
+[1] Handling pre signal, likely in a service function
+Exception Message:
+TritonService: Starting the fallback server failed with exit code 65280
+""",
+          "errors": [
+            {
+              "error": """%MSG-e TritonService:  AfterModDestruction 14-Nov-2026 04:28:14 CET pre-eventsCMS_TRITON_CHOSEN_DEVICE: cpu
+CMS_TRITON_GRPC_PORT: 8001
+INFO:    Instance stats will not be available - cannot use systemd cgroups manager, systemd not running as init on this host
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/hostname: exec format error
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/cut: exec format error
+fork/exec /usr/bin/cat: exec format error
+FATAL:   exec /bin/sh failed: fork/exec /bin/sh: exec format error
+ERROR:   container cleanup failed: no instance found with name triton_server_instance_78d4b8c6-9602-44b0-810c-6434fa892e26
+
+FATAL:   while executing starter: failed to start instance: while running /cvmfs/oasis.opensciencegrid.org/mis/apptainer/1.5.5/aarch64/libexec/apptainer/bin/starter: exit status 255
+Error for command "stop": no instance found
+
+Usage:
+apptainer [global options...] instance stop [stop options...] [instance]
+
+Run 'apptainer --help' for more detailed usage information.
+Retrying after container issue...
+INFO:    Instance stats will not be available - cannot use systemd cgroups manager, systemd not running as init on this host
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/hostname: exec format error
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/cut: exec format error
+fork/exec /usr/bin/cat: exec format error
+FATAL:   exec /bin/sh failed: fork/exec /bin/sh: exec format error
+ERROR:   container cleanup failed: no instance found with name triton_server_instance_78d4b8c6-9602-44b0-810c-6434fa892e26
+
+FATAL:   while executing starter: failed to start instance: while running /cvmfs/oasis.opensciencegrid.org/mis/apptainer/1.5.5/aarch64/libexec/apptainer/bin/starter: exit status 255
+Error for command "stop": no instance found
+
+Usage:
+apptainer [global options...] instance stop [stop options...] [instance]
+
+Run 'apptainer --help' for more detailed usage information.
+Retrying after container issue...
+INFO:    Instance stats will not be available - cannot use systemd cgroups manager, systemd not running as init on this host
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/hostname: exec format error
+fork/exec /usr/bin/sed: exec format error
+fork/exec /usr/bin/cut: exec format error
+fork/exec /usr/bin/cat: exec format error
+FATAL:   exec /bin/sh failed: fork/exec /bin/sh: exec format error
+ERROR:   container cleanup failed: no instance found with name triton_server_instance_78d4b8c6-9602-44b0-810c-6434fa892e26
+
+FATAL:   while executing starter: failed to start instance: while running /cvmfs/oasis.opensciencegrid.org/mis/apptainer/1.5.5/aarch64/libexec/apptainer/bin/starter: exit status 255
+Error for command "stop": no instance found
+
+Usage:
+apptainer [global options...] instance stop [stop options...] [instance]
+
+Run 'apptainer --help' for more detailed usage information.
+Retrying after container issue...
+Error from apptainer
+
+""",
+              "kind": "TritonService:  AfterModDestruction"
+            },
+            {
+              "error": """%MSG-e TritonService:  AfterModDestruction 14-Nov-2026 04:28:14 CET pre-eventsTritonService: could not find server log log_triton_server_instance_78d4b8c6-9602-44b0-810c-6434fa892e26.log in current directory or /tmp/c0fc05fe-985e-4fff-a991-848ce007a4f4
+""",
+              "kind": "TritonService:  AfterModDestruction"
+            }
+          ],
+          "error_count": 2,
+          "jobreport": "https://cmssdt.cern.ch/SDT/cgi-bin/buildlogs/el9_aarch64_gcc14/CMSSW_20_1_ROOT6_X_2026-11-13-2300/pyRelValMatrixLogs/run/10805.31_SingleGammaPt35+2018_photonDRN/JobReport3.xml",
+          "AvgEventTime": "0",
+          "EventThroughput": "0",
+          "MaxEventTime": "0",
+          "MinEventTime": 1000000,
+          "NumberOfStreams": "4",
+          "NumberOfThreads": "4",
+          "TotalEventSetupTime": "0",
+          "TotalInitCPU": "0",
+          "TotalInitTime": -3786680,
+          "TotalJobCPU": "101.861",
+          "TotalJobChildrenCPU": "2.43334",
+          "TotalJobTime": "178.426",
+          "TotalLoopCPU": "101.86",
+          "TotalLoopTime": 3786860,
+          "TotalNonModuleTime": "0",
+          "AverageGrowthRateRss": "98.0234",
+          "AverageGrowthRateVsize": "112.41",
+          "HEAP_ARENA_N_UNUSED_CHUNKS": "1",
+          "HEAP_ARENA_SIZE_BYTES": "0",
+          "HEAP_MAPPED_N_CHUNKS": "0",
+          "HEAP_MAPPED_SIZE_BYTES": "0",
+          "HEAP_TOP_FREE_BYTES": "0",
+          "HEAP_UNUSED_BYTES": "0",
+          "HEAP_USED_BYTES": "0",
+          "PeakValueRss": "0",
+          "PeakValueVsize": "0"
+        }
+      }
+    ]
+  }
+}

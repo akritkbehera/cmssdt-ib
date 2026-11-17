@@ -18,7 +18,17 @@ export function loadConfig(env = process.env) {
     accessToken: env.CHAT_ACCESS_TOKEN,
     origins: (env.CHAT_ALLOWED_ORIGINS || 'http://localhost:5173,http://127.0.0.1:5173,https://akritkbehera.github.io').split(',').map(s => s.trim()),
     maxSteps: 8,
+    // Persistent knowledge registry on a dedicated mounted volume (the
+    // container filesystem is read-only). Empty disables persistence; the
+    // registry then runs in memory and the app keeps working.
+    dataDir: env.CHAT_DATA_DIR || '',
+    // Set CHAT_OPTIMIZE=false to force baseline behavior (always rediscover
+    // tools and mappings) — used by benchmarks and emergency rollback.
+    optimize: env.CHAT_OPTIMIZE !== 'false',
+    mcpTimeout: Number(env.CHAT_MCP_TIMEOUT_MS || 30000),
   };
+  if (config.dataDir && !config.dataDir.startsWith('/')) throw new Error('CHAT_DATA_DIR must be an absolute path to the mounted data volume.');
+  if (config.dataDir && (config.dataDir === '/app' || config.dataDir.startsWith('/app/'))) throw new Error('CHAT_DATA_DIR must point at the dedicated mounted volume, not the application directory.');
   if (!config.mcpHeaders || typeof config.mcpHeaders !== 'object' || Array.isArray(config.mcpHeaders)) throw new Error('OPENSEARCH_MCP_HEADERS must be a JSON object.');
   if (Object.keys(config.mcpHeaders).some(key => key.toLowerCase() === 'cookie')) throw new Error('SSO cookies are not supported for API authentication. Use a dedicated credential or OIDC token.');
   if (config.oidcClientId || config.oidcClientSecret || config.oidcRedirectURI) {

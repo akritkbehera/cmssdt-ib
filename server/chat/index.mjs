@@ -4,12 +4,21 @@ import { loadConfig, validateMessages } from './config.mjs';
 import { runAgent, openMcp, discoverTools } from './agent.mjs';
 import { createAuth } from './auth.mjs';
 import { publicError } from './errors.mjs';
+import { createDiagnostics } from './diagnostics.mjs';
+import { createRegistry } from './registry.mjs';
+import { createToolCache } from './mcp.mjs';
 
 export function createChatServer(config, agent = runAgent, options = {}) {
   let active = 0;
   const auth = options.auth || createAuth(config);
   const connect = options.openMcp || openMcp;
   const list = options.discoverTools || discoverTools;
+  // Shared structural knowledge (tool schemas, verified mappings, validated
+  // templates). It never holds user data, credentials or result payloads and
+  // cannot bypass per-user OpenSearch authorization.
+  const registry = options.registry || createRegistry({ dir: config.dataDir || '' });
+  registry.load?.().catch(() => {});
+  const toolCache = options.toolCache || createToolCache();
   async function handle(req, res) {
     const origin = req.headers.origin;
     res.setHeader('Cache-Control', 'no-store');
@@ -35,10 +44,12 @@ export function createChatServer(config, agent = runAgent, options = {}) {
       if (active >= 4) { res.writeHead(429).end(); return; }
       active++;
       const signal = AbortSignal.timeout(45000);
+      const diagnostics = createDiagnostics({});
       let client;
       try {
-        client = await connect(runtime, signal);
-        const tools = await list(client, signal);
+        client = await connect(runtime, signal, { diagnostics });
+        const tools = await list(client, signal, { diagnostics });
+        diagnostics.log('mcp_operation', { stage: 'tools/list', outcome: 'verified', tool: tools.map(tool => tool.function.name).join(',') });
         res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ connected: true,
           verifiedAt: new Date().toISOString(), tools: tools.map(tool => tool.function.name), modelConfigured: ready,
           endpoint: config.mcpURL }));
@@ -60,16 +71,22 @@ export function createChatServer(config, agent = runAgent, options = {}) {
     } catch { fail(400, 'Invalid or oversized conversation. Start a new chat if needed.'); return; }
     if (active >= 4) { fail(429, 'Chat backend is busy. Try again shortly.'); return; }
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 180000);
-    res.on('close', () => controller.abort());
+    // Distinct abort reasons distinguish server timeout from client disconnect.
+    const timer = setTimeout(() => controller.abort(new DOMException('Request timed out', 'TimeoutError')), 180000);
+    res.on('close', () => controller.abort(new DOMException('Client disconnected', 'AbortError')));
     res.writeHead(200, { 'Content-Type': 'application/x-ndjson', 'X-Accel-Buffering': 'no' });
     res.flushHeaders(); active++;
+    const diagnostics = createDiagnostics({});
     const emit = event => { if (!res.destroyed) res.write(`${JSON.stringify(event)}\n`); };
-    try { await agent({ config: runtime, messages, signal: controller.signal, emit }); }
-    catch (error) {
+    diagnostics.log('chat_request', { stage: 'connect', messages: messages.length });
+    try {
+      await agent({ config: runtime, messages, signal: controller.signal, emit, diagnostics, registry, toolCache });
+    } catch (error) {
       const issue = publicError(error);
-      if (!res.destroyed) emit({ type: 'error', code: issue.code, source: issue.source, text: controller.signal.aborted
-        ? 'Request timed out. Try a narrower question.' : issue.message });
+      diagnostics.log('chat_request', { stage: 'close', outcome: 'error', errorKind: issue.kind, errorCode: issue.code, status: issue.status });
+      const text = controller.signal.reason?.name === 'TimeoutError' ? 'Request timed out. Try a narrower question.'
+        : issue.code === 'request_cancelled' ? 'Request cancelled before the answer completed.' : issue.message;
+      if (!res.destroyed) emit({ type: 'error', code: issue.code, source: issue.source, text });
     } finally { active--; clearTimeout(timer); res.end(); }
   }
   return createServer((req, res) => {
