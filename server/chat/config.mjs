@@ -29,6 +29,7 @@ export function loadConfig(env = process.env) {
     optimize: env.CHAT_OPTIMIZE !== 'false',
     mcpTimeout: Number(env.CHAT_MCP_TIMEOUT_MS || 30000),
     pplEnabled: env.CHAT_PPL_ENABLED !== 'false',
+    pplPreflight: env.CHAT_PPL_PREFLIGHT !== 'false',
     pplTimeout: Number(env.CHAT_PPL_TIMEOUT_MS || 30000),
     pplMaxBytes: Number(env.CHAT_PPL_MAX_BYTES || 131072),
     pplIndices: env.CHAT_PPL_ALLOWED_INDICES ? env.CHAT_PPL_ALLOWED_INDICES.split(',').map(s => s.trim()) : [...DEFAULT_PPL_INDICES],

@@ -6,6 +6,19 @@ tools: the three dynamically discovered native MCP read tools plus the local
 in OpenSearch. No inference provider, browser history, login or frontend changes
 are required. The existing streamed tool-result/answer loop handles both paths.
 
+Before MCP connects, a deterministic read-only PPL inspection probes at most two
+relevant concrete indices already named by the user, recorded in the runtime
+registry, or listed in the versioned discovery snapshot. It never fabricates a
+suffix. Each query is `source = concrete-index | head 1`, with a four-second
+per-query deadline and eight-second total inspection budget. Only the returned
+column names/types and retrieval time enter the model context, not sample values.
+These are PPL observations, not complete mappings, and are not persisted as
+verified index mappings. A series-only follow-up preserves the earlier question
+for intent/structure selection. Unknown indices, inspection errors and deadline
+expiry fall back to MCP discovery. The model then uses the observations to target
+MCP searches and requests mappings only for missing details. This reduces
+rediscovery; it cannot guarantee that subsequent queries never time out.
+
 Native MCP remains the route for `ListIndexTool`, `IndexMappingTool` and
 `SearchIndexTool`. The additional local function sends JSON `{ "query": "..." }`
 to `POST https://os-cmssdt.cern.ch/os/_plugins/_ppl`. Use discovery/mappings to
@@ -79,6 +92,7 @@ and resource controls. This implementation does not change that cluster setting.
 | Variable | Default / constraint |
 | --- | --- |
 | `CHAT_PPL_ENABLED` | `true`; `false` removes the local tool from model requests |
+| `CHAT_PPL_PREFLIGHT` | `true`; `false` disables the PPL-first structure inspection |
 | `OPENSEARCH_PPL_URL` | Sibling `/_plugins/_ppl` on the configured MCP origin/base path; alternate origins/routes rejected |
 | `CHAT_PPL_ALLOWED_INDICES` | Comma-separated concrete `cmssdt-` names or family prefixes ending in one `*` |
 | `CHAT_PPL_TIMEOUT_MS` | `30000`; range 1000–30000 |

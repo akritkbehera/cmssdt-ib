@@ -195,7 +195,7 @@ test('one existing model loop can call all three MCP tools plus local PPL withou
       yield { choices: [{ delta: { content: 'The fixture returned 1748 records.' }, finish_reason: 'stop' }] };
     }
   })() } } };
-  await runAgent({ config: { ...config, maxSteps: 3 }, messages: [{ role: 'user', content: `How many records are in ${index}?` }], client, model,
+  await runAgent({ config: { ...config, maxSteps: 3, pplPreflight: false }, messages: [{ role: 'user', content: `How many records are in ${index}?` }], client, model,
     emit: event => events.push(event), pplExecute: async (runtime, args, options) => { local++; return executePpl(runtime, args, { ...options, fetchImpl: async () => json() }); } });
   assert.deepEqual(remote, names);
   assert.equal(local, 1);

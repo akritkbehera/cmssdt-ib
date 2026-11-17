@@ -8,6 +8,7 @@ import { planQuestion, executePlan, makeDedupe } from './planner.mjs';
 import { validateToolArguments } from './templates.mjs';
 import { loadKnowledge, selectKnowledge } from './knowledge.mjs';
 import { PPL_TOOL, PPL_TOOL_NAME, executePpl } from './ppl.mjs';
+import { inspectionQuestion, inspectPplFirst } from './ppl-inspection.mjs';
 
 export { openMcp, discoverTools, READ_TOOLS };
 const SYSTEM = `You are the CMS SDT IB investigation assistant. Answer questions about CMSSW builds, flavours, architectures, unit tests, RelVals and Jenkins using the connected OpenSearch tools.
@@ -61,6 +62,9 @@ export async function runAgent({ config, messages, signal, emit, client, model, 
   const ai = model || new OpenAI({ apiKey: config.apiKey, baseURL: config.baseURL, maxRetries: 0, timeout: 90000 });
   const optimize = config?.optimize !== false;
   try {
+    const question = inspectionQuestion(messages);
+    const knowledge = optimize ? await loadKnowledge() : null;
+    const inspection = await inspectPplFirst({ config, question, registry, knowledge, signal, emit, diagnostics, execute: pplExecute });
     await session.init();
     const endpoint = config?.mcpURL || 'external';
     emit({ type: 'activity', text: cache.fresh(endpoint) ? 'Using cached OpenSearch tool schemas…' : 'Discovering OpenSearch read tools…' });
@@ -69,7 +73,6 @@ export async function runAgent({ config, messages, signal, emit, client, model, 
     const tools = config.pplEnabled !== false && config.pplURL ? [...mcpTools, PPL_TOOL] : mcpTools;
     const available = new Set(tools.map(tool => tool.function.name));
     const validators = new Map(tools.map(tool => [tool.function.name, args => validateToolArguments(tool.function.parameters, args)]));
-    const question = messages.at(-1)?.content || '';
     const state = createInvestigationState(question);
     const dedupe = makeDedupe();
     let planEvidence = [];
@@ -83,11 +86,11 @@ export async function runAgent({ config, messages, signal, emit, client, model, 
       }
     }
     const contextBlock = await buildContext({ question, registry, state, planEvidence });
-    const snapshot = optimize ? selectKnowledge(await loadKnowledge(), question, { budget: 2400 }).text : '';
+    const snapshot = optimize ? selectKnowledge(knowledge, question, { budget: 2400 }).text : '';
     diagnostics.log('context_built', { stage: 'initialize', questionIntent: state.intent,
       verifiedIndexFamily: state.verifiedIndexFamily, mappingFingerprint: state.mappingFingerprint,
       plannedQueries: planEvidence.length, contextChars: contextBlock.length });
-    const context = [{ role: 'system', content: `${SYSTEM}\n\n${snapshot}\n\n${contextBlock}` }, ...messages];
+    const context = [{ role: 'system', content: `${SYSTEM}\n\n${snapshot}\n\n${contextBlock}\n\n${inspection}` }, ...messages];
     let evidenceSize = 0, failedTools = 0, hasVisibleText = false;
     for (let step = 0; step < (config.maxSteps ?? 8); step++) {
       const finalStep = step === (config.maxSteps ?? 8) - 1;
