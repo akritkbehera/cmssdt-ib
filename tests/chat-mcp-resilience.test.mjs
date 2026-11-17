@@ -291,3 +291,12 @@ test('error classification preserves categories and public messages never leak p
   const wrapped = publicError(new ChatError('authentication_required', 'custom', 401, 'opensearch'));
   assert.equal(wrapped.message, 'custom', 'classification preserved through ChatError');
 });
+
+test('gateway 400 categories explain context and tool configuration without leaking upstream text', () => {
+  const context = publicError({ status: 400, error: { message: 'maximum context length exceeded private-value' } }, 'model');
+  assert.equal(context.code, 'model_context_rejected');
+  assert.ok(!context.message.includes('private-value'));
+  const tools = publicError({ status: 400, error: { message: 'auto tool choice requires enable-auto-tool-choice private-value' } }, 'model');
+  assert.equal(tools.code, 'model_tools_unsupported');
+  assert.ok(!tools.message.includes('private-value'));
+});

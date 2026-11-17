@@ -93,6 +93,16 @@ export function publicError(error, source = 'opensearch') {
   if (error instanceof ChatError) return error;
   const info = classifyError(error);
   const target = source === 'model' ? 'CERN AI Gateway' : 'OpenSearch';
+  if (source === 'model' && info.status === 400) {
+    // Classify upstream text, but never expose it: it can echo prompts or secrets.
+    const detail = String(error?.error?.message || error?.message || '');
+    if (/context.{0,30}(?:length|window)|maximum.{0,20}(?:tokens|context)|too many tokens|input.{0,20}too long/i.test(detail)) {
+      return new ChatError('model_context_rejected', 'CERN AI Gateway rejected the conversation because it exceeds this model’s context limit. Try this question in a new conversation.', 400, source, 'http_client');
+    }
+    if (/tool.{0,30}(?:parser|choice|support|enable)|enable.auto.tool|chat template/i.test(detail)) {
+      return new ChatError('model_tools_unsupported', 'The selected CERN AI Gateway model rejected tool calling. Its serving configuration must support automatic tool calls; changing your question will not fix this.', 400, source, 'http_client');
+    }
+  }
   if (source === 'model' && ['http_transient', 'http_client', 'transport'].includes(info.kind)) {
     return new ChatError(info.code, `${target} ${info.kind === 'transport' ? 'connection failed' : `returned an HTTP error (${info.status})`}. The model request did not complete.`, info.status || 502, source, info.kind);
   }

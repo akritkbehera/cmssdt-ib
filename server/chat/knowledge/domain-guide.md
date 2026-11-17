@@ -42,6 +42,12 @@ must still be matched against live mappings.
 
 ## Build stages `[verified in this repo]`
 
+These are the frontend JSON contract, **not verified OpenSearch mappings**.
+Do not assume the stage fields below exist in any OpenSearch index or use
+them to identify build-statistics documents. Verify the actual document
+grain and completion/build-type semantics in the relevant Jenkins or
+build-statistics index before comparing full-build durations.
+
 - Results are grouped per stage: `builds`, `utests` (unit tests), `relvals`,
   `addons`, `dupDict` (duplicate dictionaries). Stage records carry `arch`,
   `passed`, `done`, `details`, `file`.

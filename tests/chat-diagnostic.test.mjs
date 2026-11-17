@@ -30,3 +30,13 @@ test('the final investigation step produces an evidence-based answer rather than
   assert.equal(events.at(-1).type, 'done');
   assert.ok(events.some(event => event.type === 'text' && event.text.includes('not verified')));
 });
+
+test('a standalone greeting never connects to MCP or the model, even after an investigation', async () => {
+  const events = [];
+  await runAgent({ config: {}, messages: [{ role: 'user', content: 'Compare DEFAULT with CLANG' },
+    { role: 'assistant', content: 'Previous investigation failed.' }, { role: 'user', content: 'hi' }],
+    emit: event => events.push(event), client: { listTools() { throw Error('must not discover tools'); } },
+    model: { chat: { completions: { create() { throw Error('must not call model'); } } } } });
+  assert.equal(events.at(-1).type, 'done');
+  assert.match(events[0].text, /^Hi!/);
+});
