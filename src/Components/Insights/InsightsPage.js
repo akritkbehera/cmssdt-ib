@@ -46,7 +46,7 @@ function Conversation({ thread, endpoint, token, onSaved, onError, onAuthenticat
           <ThreadPrimitive.If running={false}><ComposerPrimitive.Send aria-label="Send message"><FaPaperPlane /></ComposerPrimitive.Send></ThreadPrimitive.If>
           <ThreadPrimitive.If running><ComposerPrimitive.Cancel aria-label="Stop response"><FaStop /></ComposerPrimitive.Cancel></ThreadPrimitive.If>
         </ComposerPrimitive.Root>
-        <small>Chats are saved in this browser. Questions and conversation context are sent to the configured backend and CERN model. Verify conclusions against their sources.</small>
+        <small>Chats are saved in this browser; long chats send only recent messages. Questions and conversation context are sent to the configured backend and CERN model. Verify conclusions against their sources.</small>
       </div>
     </ThreadPrimitive.Root>
   </AssistantRuntimeProvider>;
@@ -82,7 +82,7 @@ export default function InsightsPage() {
     }}>
       <label>Backend address<input type="url" placeholder="https://your-backend.example" value={draftURL} onChange={event => setDraftURL(event.target.value)} /></label>
       {connection.mode !== 'oidc' && <label>Backend access token<input type="password" autoComplete="off" value={draftToken} onChange={event => setDraftToken(event.target.value)} /></label>}
-      <p>Leave the address empty for a same-origin backend. Authentication stays in memory and is cleared on reload. CERN AI and OpenSearch credentials belong on the backend.</p>
+      <p>Leave the address empty for a same-origin backend. CERN sign-in is remembered in this browser for up to 8 hours. Sign out to clear it. CERN AI and OpenSearch credentials stay on the backend.</p>
       <button type="submit">Save connection</button>
     </form>}
     {error && <div className="insights-error" role="alert">{error}</div>}

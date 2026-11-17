@@ -19,6 +19,7 @@ export function runKerberosCurl(args, body, signal, cache) {
     child.on('error', () => reject(new ChatError('kerberos_unavailable', 'Kerberos request could not start or was cancelled. Check curl/GSSAPI and the ticket cache.', 502, 'opensearch')));
     child.on('close', code => {
       if (oversized) return reject(new ChatError('response_too_large', 'OpenSearch response exceeded 2 MiB. Request less data.', 502, 'opensearch'));
+      if (code === 28) return reject(new ChatError('upstream_timeout', 'OpenSearch did not respond within 30 seconds. Try a narrower query.', 504, 'opensearch'));
       if (code !== 0) return reject(new ChatError('kerberos_request_failed', 'Kerberos connection failed. Check the backend ticket cache, network and ticket expiry.', 502, 'opensearch'));
       resolve(Buffer.concat(chunks).toString('utf8'));
     });
@@ -54,7 +55,7 @@ export function createKerberosFetch(config, execute = runKerberosCurl) {
     const split = output.lastIndexOf('\n');
     const status = Number(output.slice(split + 1)), body = output.slice(0, split);
     if (!Number.isInteger(status) || status < 200 || status > 599) throw new Error('Invalid Kerberos HTTP response.');
-    if (status === 401) throw new ChatError('authentication_required', 'The backend Kerberos ticket is missing, expired or rejected. Refresh its dedicated cache with kinit, then retry.', 401, 'opensearch');
+    if (status === 401) throw new ChatError('authentication_required', 'The backend Kerberos ticket is missing, expired or rejected. Refresh its dedicated cache with kinit, then retry.', 401, 'kerberos');
     if (status === 403) throw new ChatError('permission_denied', 'The Kerberos identity lacks permission for this OpenSearch request.', 403, 'opensearch');
     if (status >= 300 && status < 400) throw new Error('OpenSearch redirected the Kerberos request; redirects are disabled.');
     return new Response([204, 205, 304].includes(status) ? null : body, {

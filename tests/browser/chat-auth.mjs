@@ -12,6 +12,7 @@ try {
     assert.equal(route.request().headers().authorization, `Bearer ${session}`); probes++;
     await route.fulfill({ json: { connected: true, tools: ['ListIndexTool'], verifiedAt: new Date().toISOString() } });
   });
+  await context.route('**/api/chat/auth/session', route => route.fulfill({ json: { authenticated: true, expiresAt: Date.now() + 3600000 } }));
   await context.route('**/api/chat/auth/logout', route => route.fulfill({ status: 204 }));
   await context.route('**/api/chat', route => route.fulfill({ status: 401, json: { code: 'authentication_required', source: 'opensearch', error: 'Sign in again' } }));
   await context.route('**/api/chat/auth/start?*', async route => {
@@ -26,20 +27,31 @@ try {
   await signIn.click();
   await page.getByRole('status').filter({ hasText: 'MCP tools/list verified' }).waitFor();
   assert.equal(probes, 1);
-  assert.ok(await page.evaluate(() => !JSON.stringify(localStorage).includes('opaque-session') && !JSON.stringify(sessionStorage).includes('opaque-session')), 'session remains in memory');
+  assert.ok(await page.evaluate(() => JSON.stringify(localStorage).includes('opaque-session')), 'opaque application session is remembered');
+  await page.reload();
+  await page.getByRole('button', { name: 'Sign out', exact: true }).waitFor();
+  const secondTab = await context.newPage();
+  await secondTab.goto('http://localhost:5174/#/insights');
+  await secondTab.getByRole('button', { name: 'Sign out', exact: true }).waitFor();
+  await secondTab.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await signIn.waitFor();
+  await secondTab.getByRole('button', { name: 'Sign in with CERN', exact: true }).waitFor();
+  await secondTab.close();
+  await signIn.click();
+  await page.getByRole('status').filter({ hasText: 'MCP tools/list verified' }).waitFor();
   await page.getByRole('textbox', { name: 'Ask about builds' }).fill('Expired token example');
   await page.getByRole('button', { name: 'Send message', exact: true }).click();
   await signIn.waitFor();
-  await page.getByRole('status').filter({ hasText: 'OpenSearch authentication expired' }).waitFor();
+  await page.getByRole('status').filter({ hasText: 'Session expired' }).waitFor();
   await signIn.click();
   await page.getByRole('status').filter({ hasText: 'MCP tools/list verified' }).waitFor();
-  assert.equal(probes, 2);
+  assert.equal(probes, 3);
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await signIn.waitFor();
   await page.reload(); await signIn.waitFor();
-  assert.equal(probes, 2, 'reload requires sign-in again');
+  assert.equal(probes, 3, 'explicit logout persists across reload');
   assert.deepEqual(errors, []);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   await context.close();
 } finally { await browser.close(); }
-console.log(`${process.env.IB_BROWSER || 'chromium'}: OIDC popup, memory session and actual discovery state checks passed`);
+console.log(`${process.env.IB_BROWSER || 'chromium'}: OIDC popup, remembered session, cross-tab logout and actual discovery state checks passed`);

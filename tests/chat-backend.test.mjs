@@ -105,3 +105,48 @@ test('a model streaming authentication failure is not reported as OpenSearch fai
   await assert.rejects(() => runAgent({ config: { model: 'test', maxSteps: 1 }, messages: [{ role: 'user', content: 'Question' }],
     signal: new AbortController().signal, emit: () => {}, client, model }), error => error.source === 'model' && error.code === 'authentication_required' && !error.message.includes('private'));
 });
+
+test('model text reaches the client before generation completes and heartbeat frames are harmless', async () => {
+  let unblock;
+  const gate = new Promise(resolve => { unblock = resolve; });
+  let sawFirst;
+  const first = new Promise(resolve => { sawFirst = resolve; });
+  const client = { listTools: async () => ({ tools: [{ name: 'ListIndexTool', inputSchema: { type: 'object' } }] }), close: async () => {} };
+  const model = { chat: { completions: { create: async () => (async function* () {
+    yield { choices: [{ delta: { content: 'First ' } }] };
+    await gate;
+    yield { choices: [{ delta: { content: 'second' }, finish_reason: 'stop' }] };
+  })() } } };
+  const events = [];
+  const running = runAgent({ config: { model: 'test', maxSteps: 1 }, messages: [{ role: 'user', content: 'Question' }],
+    signal: new AbortController().signal, client, model,
+    emit: event => { events.push(event); if (event.type === 'text') sawFirst(); } });
+  await first;
+  assert.equal(events.at(-1).text, 'First ');
+  assert.ok(!events.some(event => event.type === 'done'));
+  unblock(); await running;
+  assert.equal(events.filter(e => e.type === 'text').map(e => e.text).join(''), 'First second');
+  const frames = [];
+  for await (const frame of readEvents(new Response('{"type":"heartbeat"}\n{"type":"text","text":"ok"}\n{"type":"done"}\n', { headers: { 'Content-Type': 'application/x-ndjson' } }))) frames.push(frame.type);
+  assert.deepEqual(frames, ['heartbeat', 'text', 'done']);
+});
+
+test('MCP query errors are returned to the model for correction instead of reported as a lost connection', async () => {
+  let requests = 0;
+  const client = { listTools: async () => ({ tools: [{ name: 'SearchIndexTool', inputSchema: { type: 'object' } }] }),
+    callTool: async () => { throw { code: -32602, message: 'private upstream details' }; }, close: async () => {} };
+  const model = { chat: { completions: { create: async request => (async function* () {
+    if (++requests === 1) yield { choices: [{ delta: { tool_calls: [{ index: 0, id: 'c1', function: { name: 'SearchIndexTool', arguments: '{}' } }] }, finish_reason: 'tool_calls' }] };
+    else {
+      const result = request.messages.find(m => m.role === 'tool').content;
+      assert.ok(result.includes('-32602'));
+      assert.ok(!result.includes('private'));
+      yield { choices: [{ delta: { content: 'The query was rejected; no result was obtained.' }, finish_reason: 'stop' }] };
+    }
+  })() } } };
+  const events = [];
+  await runAgent({ config: { model: 'test', maxSteps: 2 }, messages: [{ role: 'user', content: 'Question' }],
+    signal: new AbortController().signal, emit: event => events.push(event), client, model });
+  assert.equal(events.at(-1).type, 'done');
+  assert.ok(!JSON.stringify(events).includes('Could not connect'));
+});

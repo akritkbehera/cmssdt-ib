@@ -49,7 +49,7 @@ export async function runAgent({ config, messages, signal, emit, client, model }
     const ajv = new Ajv({ strict: false });
     const validators = new Map(tools.map(tool => [tool.function.name, ajv.compile(tool.function.parameters)]));
     const context = [{ role: 'system', content: SYSTEM }, ...messages];
-    let evidenceSize = 0;
+    let evidenceSize = 0, failedTools = 0, hasVisibleText = false;
     for (let step = 0; step < config.maxSteps; step++) {
       const stream = await ai.chat.completions.create({ model: config.model, messages: context,
         tools, tool_choice: 'auto', stream: true, max_tokens: 4096 }, { signal }).catch(error => { throw publicError(error, 'model'); });
@@ -59,7 +59,9 @@ export async function runAgent({ config, messages, signal, emit, client, model }
         const choice = part.choices[0];
         if (!choice) continue;
         finish = choice.finish_reason || finish;
-        if (choice.delta.content) { text += choice.delta.content; emit({ type: 'text', text: choice.delta.content }); }
+        if (choice.delta.content) {
+          if (!text && hasVisibleText) emit({ type: 'text', text: '\n\n' });
+          hasVisibleText = true; text += choice.delta.content; emit({ type: 'text', text: choice.delta.content }); }
         for (const delta of choice.delta.tool_calls || []) {
           const call = calls.get(delta.index) || { id: '', type: 'function', function: { name: '', arguments: '' } };
           if (delta.id) call.id = delta.id;
@@ -68,15 +70,15 @@ export async function runAgent({ config, messages, signal, emit, client, model }
           calls.set(delta.index, call);
         }
       } } catch (error) { throw publicError(error, 'model'); }
-      if (finish === 'length') throw new Error('Model response reached its token limit.');
+      if (finish === 'length') throw new ChatError('response_limit', 'The model reached its response limit. Ask for a shorter answer.', 502, 'model');
       if (!calls.size) {
-        if (!text.trim()) throw new Error('Model returned an empty answer. Check model tool-calling support.');
+        if (!text.trim()) throw new ChatError('empty_response', 'The model returned an empty answer. Check model tool-calling support.', 502, 'model');
         emit({ type: 'done' }); return;
       }
-      if (calls.size > 8) throw new Error('Too many tool requests in one response.');
+      if (calls.size > 8) throw new ChatError('tool_limit', 'The model requested too many tools at once. Ask a narrower question.', 502, 'model');
       context.push({ role: 'assistant', content: text || null, tool_calls: [...calls.values()] });
       for (const call of calls.values()) {
-        if (!available.has(call.function.name)) throw new Error('Model requested an unavailable tool.');
+        if (!available.has(call.function.name)) throw new ChatError('invalid_tool', 'The model requested a tool that is not available.', 502, 'model');
         let args;
         try { args = JSON.parse(call.function.arguments); } catch { args = null; }
         if (!validators.get(call.function.name)(args)) {
@@ -84,14 +86,28 @@ export async function runAgent({ config, messages, signal, emit, client, model }
           continue;
         }
         emit({ type: 'activity', text: `Querying ${call.function.name}…` });
-        const result = await mcp.callTool({ name: call.function.name, arguments: args }, undefined, { signal, timeout: 30000 }).catch(error => { throw publicError(error); });
+        let result;
+        try {
+          result = await mcp.callTool({ name: call.function.name, arguments: args }, undefined, { signal, timeout: 30000 });
+        } catch (error) {
+          if ([-32600, -32601, -32602, -32603].includes(Number(error?.code))) {
+            const issue = new ChatError('tool_request_failed', `OpenSearch rejected ${call.function.name} (MCP ${error.code}). This is a tool/query error, not a lost login.`, 502, 'opensearch');
+            if (++failedTools > 2) throw issue;
+            emit({ type: 'activity', text: `${call.function.name} rejected the query · checking arguments…` });
+            context.push({ role: 'tool', tool_call_id: call.id, content: JSON.stringify({ isError: true, code: error.code,
+              message: 'The tool rejected this request. Check its schema and mappings, simplify the query, and do not repeat identical arguments. No results were obtained.' }) });
+            continue;
+          }
+          throw publicError(error);
+        }
+        emit({ type: 'activity', text: result.isError ? `${call.function.name} returned a tool error · reviewing…` : `${call.function.name} completed · preparing answer…` });
         const content = JSON.stringify(result);
         evidenceSize += Math.min(content.length, 48000);
-        if (evidenceSize > 192000) throw new Error('Evidence context limit reached. Ask a narrower question.');
+        if (evidenceSize > 192000) throw new ChatError('evidence_limit', 'The result set exceeded the evidence limit. Ask for a smaller time range or summary.', 502, 'opensearch');
         context.push({ role: 'tool', tool_call_id: call.id, content: content.length > 48000
           ? JSON.stringify({ truncated: true, note: 'Tool result exceeded context limit. Request a smaller query or aggregation.', excerpt: content.slice(0, 48000) }) : content });
       }
     }
-    throw new Error('Investigation reached its tool-step limit. Ask a narrower question.');
+    throw new ChatError('investigation_limit', 'The investigation reached its step limit. Ask a narrower question using the findings above.', 502, 'model');
   } finally { await mcp.close().catch(() => {}); }
 }

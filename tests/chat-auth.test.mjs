@@ -53,10 +53,17 @@ test('PKCE login binds state and cookie, returns only an opaque session, and log
   const message = JSON.parse(html.match(/postMessage\((\{.*?\}),/s)[1]);
   assert.equal(message.loginId, '12345678-1234-1234-1234-123456789abc');
   assert.ok(message.session.length >= 32);
+  const restored = await fetch(`${url}/api/chat/auth/session`, { headers: { Authorization: `Bearer ${message.session}` } });
+  assert.equal(restored.status, 200);
+  const restoredData = await restored.json();
+  assert.equal(restoredData.authenticated, true);
+  assert.equal(restoredData.expiresAt, message.expiresAt);
+  assert.ok(!JSON.stringify(restoredData).includes('secret'));
   assert.equal((await fetch(callback, { headers: { Cookie: cookie } })).status, 400, 'callback cannot replay');
   const runtime = await auth.resolve({ headers: { authorization: `Bearer ${message.session}` } });
   assert.equal(runtime.mcpHeaders.Authorization, 'Bearer target-access-secret');
   await fetch(`${url}/api/chat/auth/logout`, { method: 'POST', headers: { Authorization: `Bearer ${message.session}` } });
+  assert.equal((await fetch(`${url}/api/chat/auth/session`, { headers: { Authorization: `Bearer ${message.session}` } })).status, 401);
   await assert.rejects(() => auth.resolve({ headers: { authorization: `Bearer ${message.session}` } }), error => error.code === 'authentication_required');
   assert.equal((await fetch(`${url}/api/chat/auth/start?origin=https://evil.test&login_id=12345678-1234-1234-1234-123456789abc`, { redirect: 'manual' })).status, 400);
   const another = await fetch(`${url}/api/chat/auth/start?origin=${encodeURIComponent(origin)}&login_id=22345678-1234-1234-1234-123456789abc`, { redirect: 'manual' });

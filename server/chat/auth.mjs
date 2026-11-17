@@ -85,6 +85,12 @@ export function createAuth(config, dependencies = {}) {
       if (!url.pathname.startsWith('/api/chat/auth/')) return false;
       sweep();
       if (mode !== 'oidc') { res.writeHead(409, { 'Content-Type': 'application/json' }).end(JSON.stringify({ error: 'CERN login needs a registered OIDC client on the backend.' })); return true; }
+      if (url.pathname === '/api/chat/auth/session' && req.method === 'GET') {
+        const session = sessions.get(bearer(req));
+        if (!session) throw authRequired();
+        res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ authenticated: true, expiresAt: session.expires }));
+        return true;
+      }
       if (url.pathname === '/api/chat/auth/start' && req.method === 'GET') {
         const origin = url.searchParams.get('origin'), loginId = url.searchParams.get('login_id');
         if (!config.origins.includes(origin) || !/^[a-zA-Z0-9-]{20,100}$/.test(loginId || '')) { res.writeHead(400).end(); return true; }
@@ -112,8 +118,9 @@ export function createAuth(config, dependencies = {}) {
           const target = config.kerberosCache ? { expires: Infinity } : await exchangeTokens(provider, tokens);
           if (sessions.size >= 128) throw new ChatError('busy', 'Too many active sessions. Try again later.', 429);
           const session = random();
-          sessions.set(session, { tokens: config.kerberosCache ? {} : tokens, target, expires: Date.now() + 8 * 3600000 });
-          callbackPage(res, flow.origin, { type: 'cmssdt-cern-login', loginId: flow.loginId, session });
+          const expiresAt = Date.now() + 8 * 3600000;
+          sessions.set(session, { tokens: config.kerberosCache ? {} : tokens, target, expires: expiresAt });
+          callbackPage(res, flow.origin, { type: 'cmssdt-cern-login', loginId: flow.loginId, session, expiresAt });
         } catch (error) {
           const issue = publicError(error);
           callbackPage(res, flow.origin, { type: 'cmssdt-cern-login', loginId: flow.loginId, error: issue.message, code: issue.code });

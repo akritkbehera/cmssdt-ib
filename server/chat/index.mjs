@@ -65,12 +65,13 @@ export function createChatServer(config, agent = runAgent, options = {}) {
     res.writeHead(200, { 'Content-Type': 'application/x-ndjson', 'X-Accel-Buffering': 'no' });
     res.flushHeaders(); active++;
     const emit = event => { if (!res.destroyed) res.write(`${JSON.stringify(event)}\n`); };
+    const heartbeat = setInterval(() => emit({ type: 'heartbeat' }), 10000);
     try { await agent({ config: runtime, messages, signal: controller.signal, emit }); }
     catch (error) {
       const issue = publicError(error);
       if (!res.destroyed) emit({ type: 'error', code: issue.code, source: issue.source, text: controller.signal.aborted
         ? 'Request timed out. Try a narrower question.' : issue.message });
-    } finally { active--; clearTimeout(timer); res.end(); }
+    } finally { active--; clearTimeout(timer); clearInterval(heartbeat); res.end(); }
   }
   return createServer((req, res) => {
     handle(req, res).catch(error => {

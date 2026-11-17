@@ -38,6 +38,24 @@ export async function* readEvents(response) {
   } finally { await reader.cancel().catch(() => {}); reader.releaseLock(); }
 }
 
+export function conversationContext(messages) {
+  const valid = messages.filter(message => ['user', 'assistant'].includes(message.role))
+    .map(message => ({ role: message.role, content: message.content.filter(part => part.type === 'text').map(part => part.text).join('\n') }))
+    .filter(message => message.content.trim());
+  const recent = []; let chars = 0;
+  for (let i = valid.length - 1; i >= 0 && recent.length < 96; i--) {
+    if (chars + valid[i].content.length > 140000) break;
+    recent.unshift(valid[i]); chars += valid[i].content.length;
+  }
+  while (recent.length && recent[0].role !== 'user') recent.shift();
+  while (recent.length && new TextEncoder().encode(JSON.stringify({ messages: recent })).length > 480000) {
+    recent.shift();
+    while (recent.length && recent[0].role !== 'user') recent.shift();
+  }
+  if (!recent.length || recent.at(-1).role !== 'user') throw new Error('Your latest question is too large. Shorten it before sending.');
+  return recent;
+}
+
 export function chatAdapter({ endpoint, token, onActivity, onError = () => {} }) {
   return {
     async *run({ messages, abortSignal }) {
@@ -47,8 +65,7 @@ export function chatAdapter({ endpoint, token, onActivity, onError = () => {} })
         const response = await fetch(`${endpoint}/api/chat`, {
           method: 'POST', signal: abortSignal,
           headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-          body: JSON.stringify({ messages: messages.filter(message => ['user', 'assistant'].includes(message.role))
-            .map(message => ({ role: message.role, content: message.content.filter(part => part.type === 'text').map(part => part.text).join('\n') })) }),
+          body: JSON.stringify({ messages: conversationContext(messages) }),
         });
         for await (const event of readEvents(response)) {
           if (event.type === 'activity') onActivity(event.text);

@@ -2,7 +2,7 @@
 
 Open `#/insights`, or use **IB Insights** in the dashboard navigation. The chat route works even if the build data service is unavailable.
 
-The interface uses assistant-ui's local runtime and primitives. Conversations, titles and messages live in IndexedDB under this site's origin. They remain on this browser/device until deleted or site data is cleared. No account or server chat database is required. Requests send the active conversation to the backend; messages are then sent to the CERN model and tool queries to OpenSearch. Switching conversations cancels an active response. A browser storage failure is reported instead of silently falling back to unsaved history.
+The interface uses assistant-ui's local runtime and primitives. Conversations, titles and messages live in IndexedDB under this site's origin. They remain on this browser/device until deleted or site data is cleared. No account or server chat database is required. Requests send bounded recent context from the active conversation to the backend; messages are then sent to the CERN model and tool queries to OpenSearch. Switching conversations cancels an active response. A browser storage failure is reported instead of silently falling back to unsaved history.
 
 ## Start the backend
 
@@ -27,13 +27,13 @@ The system prompt asks for exact build identities, mappings before queries, limi
 
 ## Local development
 
-Run `npm start` in a second terminal. Vite proxies `/api/chat` to port 8787. Leave **Connection → Backend address** empty. In service mode, enter `CHAT_ACCESS_TOKEN` in Connection if configured. Tokens are held in memory only and cleared on reload. Conversations continue to persist in IndexedDB.
+Run `npm start` in a second terminal. Vite proxies `/api/chat` to port 8787. Leave **Connection → Backend address** empty. In service mode, enter `CHAT_ACCESS_TOKEN` in Connection if configured. Manually entered service access tokens are held in memory only and cleared on reload. Conversations continue to persist in IndexedDB.
 
 ## GitHub Pages deployment
 
 Pages hosts the UI but cannot hold the model key or run this backend. Deploy `server/chat/index.mjs` on a CERN-reachable Node 24 service behind HTTPS. An optional Dockerfile is provided at `server/chat/Dockerfile` (build from repository root). Allow the exact Pages origin in `CHAT_ALLOWED_ORIGINS`. Beyond loopback, service mode requires `CHAT_ACCESS_TOKEN`; OIDC mode requires a registered confidential client and per-user login. Use a least-privilege OpenSearch identity.
 
-Open Connection and enter the backend HTTPS address without `/api/chat`. Only that address is saved in localStorage. Access/session tokens stay in memory. CERN keys and OpenSearch tokens never go into the UI. Alternatively set the GitHub Actions repository variable `CHAT_BACKEND_URL`; the Pages workflow embeds this public address as `VITE_CHAT_BACKEND_URL`. Never put secrets in any `VITE_` variable or Actions variable.
+Open Connection and enter the backend HTTPS address without `/api/chat`. The address and an opaque application-session handle are saved in localStorage. CERN sign-in survives tabs/reloads for up to eight hours; logout clears the remembered handle in all tabs. Every request validates it server-side. Backend restart invalidates sessions. Manually entered service access tokens remain memory-only. CERN keys and OpenSearch tokens never go into the UI. Alternatively set the GitHub Actions repository variable `CHAT_BACKEND_URL`; the Pages workflow embeds this public address as `VITE_CHAT_BACKEND_URL`. Never put secrets in any `VITE_` variable or Actions variable.
 
 The server binds to localhost by default. It stores no conversations and logs no request bodies. Browser cancellation aborts model and MCP requests. Follow-up context includes the prior user/assistant text; tool responses are used during each investigation and must be queried again when a follow-up needs fresh evidence.
 
@@ -44,4 +44,4 @@ npm run test:chat
 npm run build:pages
 ```
 
-Tests use local model/MCP endpoints and fake IndexedDB. CI runs Chromium, Firefox and WebKit checks for chat persistence, context, OIDC popup messaging, memory-only sessions, logout, cancellation, and mobile layout. These are fixtures, not evidence of live CERN authentication. After deployment, use **Test MCP connection** or `npm run chat:check` in service mode to verify real `tools/list`, then ask a question to test model inference.
+Tests use local model/MCP endpoints and fake IndexedDB. CI runs Chromium, Firefox and WebKit checks for chat persistence, context, OIDC popup messaging, remembered sessions across reloads/tabs, expiry, logout, cancellation, and mobile layout. These are fixtures, not evidence of live CERN authentication. After deployment, use **Test MCP connection** or `npm run chat:check` in service mode to verify real `tools/list`, then ask a question to test model inference.

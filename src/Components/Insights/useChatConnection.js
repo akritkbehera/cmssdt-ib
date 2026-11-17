@@ -1,3 +1,4 @@
+import { readSession, saveSession, clearSession, sessionKey } from './session';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export default function useChatConnection(endpoint, serviceToken, onError) {
@@ -7,13 +8,21 @@ export default function useChatConnection(endpoint, serviceToken, onError) {
   const popup = useRef(null), attempt = useRef(null), probe = useRef(null);
   const token = session || serviceToken;
   const expired = useCallback(issue => {
-    if (issue?.code === 'authentication_required' && issue.source !== 'model') {
-      setSession(''); setTools([]); setStatus('OpenSearch authentication expired · sign in or renew its token');
+    if (issue?.code === 'authentication_required' && issue.source !== 'model' && issue.source !== 'kerberos') {
+      clearSession(endpoint); setSession(''); setTools([]); setStatus('Session expired · sign in with CERN again');
     }
-  }, []);
+  }, [endpoint]);
   useEffect(() => {
-    setSession(''); setTools([]);
-    return () => { attempt.current = null; popup.current?.close(); probe.current?.abort(); };
+    setSession(readSession(endpoint)); setTools([]);
+    const synchronize = event => {
+      if (event.key === sessionKey(endpoint) || event.key === null) {
+        const remembered = readSession(endpoint);
+        setSession(remembered); setTools([]);
+        if (!remembered) setStatus('Signed out of IB Insights');
+      }
+    };
+    window.addEventListener('storage', synchronize);
+    return () => { window.removeEventListener('storage', synchronize); attempt.current = null; popup.current?.close(); probe.current?.abort(); };
   }, [endpoint]);
   useEffect(() => {
     const controller = new AbortController();
@@ -60,6 +69,7 @@ export default function useChatConnection(endpoint, serviceToken, onError) {
       attempt.current = null; setSigningIn(false); popup.current?.close();
       if (event.data.error) { onError(event.data.error); setStatus('CERN sign-in failed'); return; }
       if (typeof event.data.session !== 'string' || event.data.session.length < 32) return;
+      saveSession(endpoint, event.data.session, event.data.expiresAt);
       setSession(event.data.session); void testConnection(event.data.session);
     };
     window.addEventListener('message', receive);
@@ -70,6 +80,19 @@ export default function useChatConnection(endpoint, serviceToken, onError) {
     }, 1000);
     return () => { window.removeEventListener('message', receive); clearInterval(timer); };
   }, [endpoint, onError, testConnection]);
+  useEffect(() => {
+    if (!session || mode !== 'oidc') return;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+    fetch(`${endpoint}/api/chat/auth/session`, { signal: controller.signal, headers: { Authorization: `Bearer ${session}` } })
+      .then(async response => {
+        if (response.status === 401) {
+          clearSession(endpoint); setSession(''); setTools([]); setStatus('Session expired · sign in with CERN again');
+        } else if (!response.ok) throw new Error('Session check failed');
+      }).catch(() => { /* Keep a remembered session on transient network failures; every API request validates it. */ })
+      .finally(() => clearTimeout(timeout));
+    return () => { clearTimeout(timeout); controller.abort(); };
+  }, [endpoint, session, mode]);
   function login() {
     const id = crypto.randomUUID(), url = new URL(`${endpoint}/api/chat/auth/start`, location.origin);
     url.searchParams.set('origin', location.origin); url.searchParams.set('login_id', id);
@@ -80,7 +103,7 @@ export default function useChatConnection(endpoint, serviceToken, onError) {
   }
   async function logout() {
     try { await fetch(`${endpoint}/api/chat/auth/logout`, { method: 'POST', headers: { Authorization: `Bearer ${session}` } }); }
-    finally { setSession(''); setTools([]); setStatus('Signed out of IB Insights'); }
+    finally { clearSession(endpoint); setSession(''); setTools([]); setStatus('Signed out of IB Insights'); }
   }
   return { token, mode, status, tools, checking, signingIn, signedIn: Boolean(session), login, logout, testConnection, expired };
 }
