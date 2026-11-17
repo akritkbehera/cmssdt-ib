@@ -27,23 +27,30 @@ export function runKerberosCurl(args, body, signal, cache) {
   });
 }
 
-export function createKerberosFetch(config, execute = runKerberosCurl) {
-  const endpoint = new URL(config.mcpURL).href;
+export function createKerberosFetch(config, execute = runKerberosCurl, { target = 'mcp', timeoutMs = 30000 } = {}) {
+  if (!['mcp', 'ppl'].includes(target)) throw new Error('Unsupported OpenSearch transport target.');
+  const endpoint = new URL(target === 'ppl' ? config.pplURL : config.mcpURL).href;
+  if (target === 'ppl') {
+    const allowed = new URL(config.mcpURL);
+    allowed.pathname = allowed.pathname.endsWith('/_plugins/_ml/mcp') ? allowed.pathname.replace(/\/_plugins\/_ml\/mcp$/, '/_plugins/_ppl') : '/_plugins/_ppl';
+    allowed.search = ''; allowed.hash = '';
+    if (endpoint !== allowed.href) throw new Error('PPL must use the configured OpenSearch sibling endpoint.');
+  }
   return async (input, init = {}) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
     if (new URL(url).href !== endpoint) throw new ChatError('invalid_endpoint', 'Kerberos requests must target the configured MCP endpoint.', 400, 'opensearch');
     const method = (init.method || 'GET').toUpperCase();
     // Native CERN MCP is stateless: no unsolicited SSE stream or session deletion.
-    if (method === 'GET') return new Response(null, { status: 405 });
-    if (method === 'DELETE') return new Response(null, { status: 204 });
+    if (target === 'mcp' && method === 'GET') return new Response(null, { status: 405 });
+    if (target === 'mcp' && method === 'DELETE') return new Response(null, { status: 204 });
     if (method !== 'POST' || typeof init.body !== 'string') throw new Error('Unsupported Kerberos MCP request.');
     const headers = new Headers(init.headers);
     if (headers.has('authorization') || headers.has('cookie')) throw new Error('Do not mix Kerberos with bearer credentials or cookies.');
     const args = ['--disable', '--silent', '--show-error', '--negotiate', '--user', ':',
-      '--proto', '=https', '--connect-timeout', '10', '--max-time', '30',
+      '--proto', '=https', '--connect-timeout', '10', '--max-time', String(Math.min(timeoutMs ?? 30000, 30000) / 1000),
       '--request', 'POST', '--header', 'Content-Type: application/json',
-      '--header', 'Accept: application/json, text/event-stream'];
-    for (const name of ['mcp-protocol-version', 'mcp-session-id']) {
+      '--header', target === 'ppl' ? 'Accept: application/json' : 'Accept: application/json, text/event-stream'];
+    for (const name of target === 'mcp' ? ['mcp-protocol-version', 'mcp-session-id'] : []) {
       const value = headers.get(name);
       if (value) {
         if (/[\r\n]/.test(value)) throw new Error('Invalid MCP header.');

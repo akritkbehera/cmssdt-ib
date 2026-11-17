@@ -1,3 +1,5 @@
+import { DEFAULT_PPL_INDICES } from './ppl.mjs';
+
 export function loadConfig(env = process.env) {
   const host = env.CHAT_HOST || '127.0.0.1';
   if (!['127.0.0.1', 'localhost', '::1'].includes(host) && !env.CHAT_ACCESS_TOKEN && !(env.CERN_OIDC_CLIENT_ID && env.CERN_OIDC_CLIENT_SECRET)) {
@@ -26,7 +28,20 @@ export function loadConfig(env = process.env) {
     // tools and mappings) — used by benchmarks and emergency rollback.
     optimize: env.CHAT_OPTIMIZE !== 'false',
     mcpTimeout: Number(env.CHAT_MCP_TIMEOUT_MS || 30000),
+    pplEnabled: env.CHAT_PPL_ENABLED !== 'false',
+    pplTimeout: Number(env.CHAT_PPL_TIMEOUT_MS || 30000),
+    pplMaxBytes: Number(env.CHAT_PPL_MAX_BYTES || 131072),
+    pplIndices: env.CHAT_PPL_ALLOWED_INDICES ? env.CHAT_PPL_ALLOWED_INDICES.split(',').map(s => s.trim()) : [...DEFAULT_PPL_INDICES],
   };
+  const mcp = new URL(config.mcpURL);
+  const ppl = new URL(mcp.href);
+  ppl.pathname = mcp.pathname.endsWith('/_plugins/_ml/mcp') ? mcp.pathname.replace(/\/_plugins\/_ml\/mcp$/, '/_plugins/_ppl') : '/_plugins/_ppl';
+  ppl.search = ''; ppl.hash = '';
+  config.pplURL = env.OPENSEARCH_PPL_URL || ppl.href;
+  if (config.pplURL !== ppl.href) throw new Error('OPENSEARCH_PPL_URL must be the sibling /_plugins/_ppl endpoint on the configured OpenSearch origin.');
+  if (!Number.isInteger(config.pplTimeout) || config.pplTimeout < 1000 || config.pplTimeout > 30000) throw new Error('CHAT_PPL_TIMEOUT_MS must be between 1000 and 30000.');
+  if (!Number.isInteger(config.pplMaxBytes) || config.pplMaxBytes < 1024 || config.pplMaxBytes > 131072) throw new Error('CHAT_PPL_MAX_BYTES must be between 1024 and 131072.');
+  if (!config.pplIndices.length || config.pplIndices.some(p => !/^cmssdt-[a-z0-9_-]+(?:\*)?$/.test(p))) throw new Error('CHAT_PPL_ALLOWED_INDICES accepts concrete cmssdt names or cmssdt family prefixes with one trailing *.');
   if (config.dataDir && !config.dataDir.startsWith('/')) throw new Error('CHAT_DATA_DIR must be an absolute path to the mounted data volume.');
   if (config.dataDir && (config.dataDir === '/app' || config.dataDir.startsWith('/app/'))) throw new Error('CHAT_DATA_DIR must point at the dedicated mounted volume, not the application directory.');
   if (!config.mcpHeaders || typeof config.mcpHeaders !== 'object' || Array.isArray(config.mcpHeaders)) throw new Error('OPENSEARCH_MCP_HEADERS must be a JSON object.');
