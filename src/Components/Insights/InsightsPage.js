@@ -12,7 +12,7 @@ import './insights.css';
 
 const safeGet = (store, key) => { try { return window[store].getItem(key) || ''; } catch { return ''; } };
 function Markdown({ text }) {
-  return <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: props => <a {...props} target="_blank" rel="noopener noreferrer" /> }}>{text}</ReactMarkdown>;
+  return <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ table: ({ node, ...props }) => <div className="insights-table-scroll" role="region" aria-label="Result table — scroll horizontally" tabIndex={0}><table {...props} /></div>, a: props => <a {...props} target="_blank" rel="noopener noreferrer" /> }}>{text}</ReactMarkdown>;
 }
 function Message() {
   return <MessagePrimitive.Root className="insights-message">

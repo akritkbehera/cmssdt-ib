@@ -9,6 +9,7 @@ try {
   for (const width of [390, 1440]) {
     const context = await browser.newContext({ viewport: { width, height: 844 } });
     const page = await context.newPage(), errors = [], requests = [];
+    const wideTable = '| Release | Architecture | Package | Test | GPU | Timestamp (UTC) | Status | Index |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| `CMSSW_20_1_DEVEL_X_2026-11-15-2300` | `el9_amd64_gcc14` | CondTools/RunInfo | CondToolsLHCInfoNewPopConTest | NVIDIA_L4 | 2026-11-16 02:38:00 | failed | cmssdt-ibs-2968 |';
     let failNext = false, holdNext = false, release;
     page.on('pageerror', error => errors.push(error.message));
     // No build-data fixtures: /insights must load independently of monitoring.
@@ -23,7 +24,7 @@ try {
         await route.fulfill({ contentType: 'application/x-ndjson', body: '{"type":"done"}\n' }).catch(() => {});
         return;
       }
-      const text = body.messages.at(-1).content === 'Follow up' ? 'Follow-up answer using context.' : 'Fixture answer from cmssdt-ibs: **120 seconds**.';
+      const text = body.messages.at(-1).content === 'Wide table' ? wideTable : body.messages.at(-1).content === 'Follow up' ? 'Follow-up answer using context.' : 'Fixture answer from cmssdt-ibs: **120 seconds**.';
       await route.fulfill({ contentType: 'application/x-ndjson', body: [
         { type: 'activity', text: 'Querying SearchIndexTool…' },
         { type: 'text', text }, { type: 'done' },
@@ -39,6 +40,22 @@ try {
     await input.fill('Follow up'); await page.getByRole('button', { name: 'Send message', exact: true }).click();
     await page.getByText('Follow-up answer using context.').waitFor();
     assert.deepEqual(requests.at(-1).messages.map(message => message.role), ['user', 'assistant', 'user']);
+    await input.fill('Wide table'); await page.getByRole('button', { name: 'Send message', exact: true }).click();
+    const tableRegion = page.getByRole('region', { name: 'Result table — scroll horizontally' });
+    await tableRegion.waitFor();
+    const dimensions = await tableRegion.evaluate(el => {
+      const table = el.querySelector('table');
+      return { overflow: el.scrollWidth > el.clientWidth, headerHeight: table.tHead.rows[0].getBoundingClientRect().height,
+        rowHeight: table.tBodies[0].rows[0].getBoundingClientRect().height,
+        firstCellVisible: table.rows[0].cells[0].getBoundingClientRect().left >= el.getBoundingClientRect().left };
+    });
+    assert.ok(dimensions.overflow, 'wide tables scroll within their own region');
+    assert.ok(dimensions.firstCellVisible, 'first column is reachable without clipping');
+    assert.ok(dimensions.headerHeight < 80 && dimensions.rowHeight < 80, 'timestamps never stack character by character');
+    await tableRegion.evaluate(el => { el.scrollLeft = el.scrollWidth; });
+    assert.ok(await tableRegion.evaluate(el => el.scrollLeft > 0), 'table supports horizontal scrolling');
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'wide results do not widen the page');
+    await page.screenshot({ path: `chat-review/${engine}-table-${width}.png`, fullPage: true });
     await page.reload();
     await page.getByText('Follow-up answer using context.').waitFor();
     await page.getByRole('button', { name: 'New conversation', exact: true }).click();
