@@ -134,13 +134,14 @@ test('model text reaches the client before generation completes and heartbeat fr
 test('MCP query errors are returned to the model for correction instead of reported as a lost connection', async () => {
   let requests = 0;
   const client = { listTools: async () => ({ tools: [{ name: 'SearchIndexTool', inputSchema: { type: 'object' } }] }),
-    callTool: async () => { throw { code: -32602, message: 'private upstream details' }; }, close: async () => {} };
+    callTool: async () => { throw { code: -32602, message: 'Unknown query [bogus]; Authorization: Bearer secret-credential' }; }, close: async () => {} };
   const model = { chat: { completions: { create: async request => (async function* () {
     if (++requests === 1) yield { choices: [{ delta: { tool_calls: [{ index: 0, id: 'c1', function: { name: 'SearchIndexTool', arguments: '{}' } }] }, finish_reason: 'tool_calls' }] };
     else {
       const result = request.messages.find(m => m.role === 'tool').content;
       assert.ok(result.includes('-32602'));
-      assert.ok(!result.includes('private'));
+      assert.ok(result.includes('Unknown query'));
+      assert.ok(!result.includes('secret-credential'));
       yield { choices: [{ delta: { content: 'The query was rejected; no result was obtained.' }, finish_reason: 'stop' }] };
     }
   })() } } };
@@ -149,4 +150,17 @@ test('MCP query errors are returned to the model for correction instead of repor
     signal: new AbortController().signal, emit: event => events.push(event), client, model });
   assert.equal(events.at(-1).type, 'done');
   assert.ok(!JSON.stringify(events).includes('Could not connect'));
+});
+
+test('repeating identical rejected arguments does not repeat the failing server request', async () => {
+  let steps = 0, toolCalls = 0;
+  const client = { listTools: async () => ({ tools: [{ name: 'SearchIndexTool', inputSchema: { type: 'object' } }] }),
+    callTool: async () => { toolCalls++; throw { code: -32603, message: 'class x.ModelTensorOutput cannot be cast to class java.lang.String' }; }, close: async () => {} };
+  const model = { chat: { completions: { create: async () => (async function* () {
+    if (++steps <= 2) yield { choices: [{ delta: { tool_calls: [{ index: 0, id: `call-${steps}`, function: { name: 'SearchIndexTool', arguments: '{}' } }] }, finish_reason: 'tool_calls' }] };
+    else yield { choices: [{ delta: { content: 'The server could not serialize the tool output; no results were obtained.' }, finish_reason: 'stop' }] };
+  })() } } };
+  await runAgent({ config: { model: 'test', maxSteps: 3 }, messages: [{ role: 'user', content: 'Question' }],
+    signal: new AbortController().signal, emit: () => {}, client, model });
+  assert.equal(toolCalls, 1);
 });

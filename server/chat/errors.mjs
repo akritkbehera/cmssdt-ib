@@ -46,7 +46,7 @@ export function classifyError(error, { signal } = {}) {
     if (rpc === -32001) return { kind: 'timeout', code: 'upstream_timeout', status: 504, retryable: true, aborted: false, timedOut: true, rpc };
     if (rpc === -32000) return { kind: 'session', code: 'mcp_session_expired', status: 502, retryable: true, aborted: false, timedOut: false, rpc };
     if (rpc === -32602) return { kind: 'invalid_arguments', code: 'invalid_tool_arguments', status: 502, retryable: false, aborted: false, timedOut: false, rpc };
-    if (rpc === -32603) return { kind: 'protocol', code: 'mcp_protocol_error', status: 502, retryable: true, aborted: false, timedOut: false, rpc };
+    if (rpc === -32603) return { kind: 'protocol', code: 'mcp_protocol_error', status: 502, retryable: false, aborted: false, timedOut: false, rpc };
     return { kind: 'protocol', code: 'mcp_protocol_error', status: 502, retryable: false, aborted: false, timedOut: false, rpc };
   }
   const status = HTTP_STATUS(error);
@@ -82,7 +82,7 @@ const MESSAGES = {
   cancelled: () => 'The request was cancelled before the answer completed.',
   session: () => 'The OpenSearch MCP session ended mid-investigation and reconnection failed. Start the question again; no conversation data was lost.',
   invalid_arguments: () => 'The generated OpenSearch tool arguments were rejected as invalid (schema mismatch). The tool schema may have changed; retry the question.',
-  protocol: info => `OpenSearch MCP returned a protocol error${info?.rpc ? ` (code ${info.rpc})` : ''}. The server may be restarting; retry the question.`,
+  protocol: info => `OpenSearch MCP could not execute the requested tool${info?.rpc ? ` (code ${info.rpc})` : ''}. This error alone does not establish an expired login or a server restart.`,
   http_client: info => `OpenSearch MCP rejected the request${info?.httpStatus ? ` (HTTP ${info.httpStatus})` : ''}. This is not retryable automatically.`,
   http_transient: info => `OpenSearch MCP failed temporarily${info?.httpStatus ? ` (HTTP ${info.httpStatus})` : ''}. The connection itself worked; retrying usually helps.`,
   transport: () => 'The connection to OpenSearch MCP failed or was reset mid-request. This is usually transient; retry or check network access.',
@@ -93,6 +93,9 @@ export function publicError(error, source = 'opensearch') {
   if (error instanceof ChatError) return error;
   const info = classifyError(error);
   const target = source === 'model' ? 'CERN AI Gateway' : 'OpenSearch';
+  if (source === 'model' && ['http_transient', 'http_client', 'transport'].includes(info.kind)) {
+    return new ChatError(info.code, `${target} ${info.kind === 'transport' ? 'connection failed' : `returned an HTTP error (${info.status})`}. The model request did not complete.`, info.status || 502, source, info.kind);
+  }
   const message = ({ authentication: MESSAGES.authentication(target), authorization: MESSAGES.authorization(target),
     timeout: MESSAGES.timeout(), cancelled: MESSAGES.cancelled(), session: MESSAGES.session(),
     invalid_arguments: MESSAGES.invalid_arguments(), protocol: MESSAGES.protocol(info), http_client: MESSAGES.http_client(info),

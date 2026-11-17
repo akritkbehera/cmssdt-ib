@@ -1,9 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
-import { openMcp, createMcpSession, createToolCache, runWithRecovery } from '../server/chat/mcp.mjs';
+import { openMcp, createMcpSession, createToolCache, runWithRecovery, toolFailureSummary } from '../server/chat/mcp.mjs';
 import { publicError, classifyError, ChatError } from '../server/chat/errors.mjs';
 import { createDiagnostics } from '../server/chat/diagnostics.mjs';
+
+test('internal tool errors are not automatically replayed and diagnostics expose only exception types', async () => {
+  let calls = 0;
+  const lines = [];
+  const error = Object.assign(new Error('class org.example.ModelTensorOutput cannot be cast to class java.lang.String; Bearer SECRET-CREDENTIAL'), { code: -32603 });
+  assert.equal(classifyError(error).retryable, false);
+  assert.equal(toolFailureSummary(error), 'org.example.ModelTensorOutput cannot be cast to java.lang.String');
+  await assert.rejects(runWithRecovery({ run: async () => { calls++; throw error; }, stage: 'tools/call', tool: 'SearchIndexTool',
+    diagnostics: createDiagnostics({ sink: line => lines.push(line) }) }));
+  assert.equal(calls, 1);
+  assert.ok(!lines.join('').includes('SECRET-CREDENTIAL'));
+  assert.ok(lines.join('').includes('ModelTensorOutput'));
+  assert.ok(!publicError(error).message.includes('restarting'));
+});
+
+test('model gateway HTTP failures are never labelled as OpenSearch failures', () => {
+  const issue = publicError({ status: 503, message: 'private upstream response' }, 'model');
+  assert.match(issue.message, /CERN AI Gateway/);
+  assert.ok(!issue.message.includes('OpenSearch'));
+  assert.ok(!issue.message.includes('private'));
+});
 
 // Controllable mock MCP server speaking JSON-RPC over Streamable HTTP.
 function mockMcp(t, { onCall, tools = [{ name: 'SearchIndexTool', description: 'search', inputSchema: { type: 'object', properties: { index: { type: 'string' }, query: { type: 'object' } }, required: ['index'] } }] } = {}) {

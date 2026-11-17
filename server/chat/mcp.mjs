@@ -10,6 +10,16 @@ const DEFAULT_TIMEOUT = 30000;
 
 export function fingerprint(value) { return createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0, 32); }
 
+// Only type names/flags are logged, never the query or result payload.
+export function toolFailureSummary(error) {
+  const message = String(error?.message || '');
+  const cast = /class ([A-Za-z0-9_.$]+) cannot be cast to class ([A-Za-z0-9_.$]+)/.exec(message);
+  return cast ? `${cast[1]} cannot be cast to ${cast[2]}`
+    : /parsing_exception|parse_exception|failed to parse/i.test(message) ? 'query_parse_error'
+    : /illegal_argument_exception/i.test(message) ? 'illegal_argument'
+    : 'unspecified_tool_error';
+}
+
 const abortable = (reason, signal) => (signal?.aborted ? (signal.reason ?? new DOMException('Aborted', 'AbortError')) : reason ?? new DOMException('Aborted', 'AbortError'));
 function sleep(ms, signal) {
   return new Promise((resolve, reject) => {
@@ -35,13 +45,14 @@ export async function runWithRecovery({ run, stage, tool, signal, diagnostics = 
     const started = Date.now();
     try {
       const value = await run();
+      if (stage === 'tools/call' && !value?.isError) diagnostics.recordSuccess?.();
       diagnostics.log('mcp_operation', { stage, tool, attempt, durationMs: Date.now() - started, outcome: 'ok' });
       return value;
     } catch (error) {
       const info = classifyError(error, { signal });
       diagnostics.log('mcp_operation', { stage, tool, attempt, durationMs: Date.now() - started, outcome: 'error',
         errorKind: info.kind, errorCode: info.code, httpStatus: info.httpStatus, rpcCode: info.rpc,
-        timedOut: info.timedOut, aborted: info.aborted });
+        timedOut: info.timedOut, aborted: info.aborted, errorSummary: info.rpc === -32603 ? toolFailureSummary(error) : undefined });
       if (info.aborted || signal?.aborted) throw error;
       if (info.kind === 'authentication' && refreshAndReconnect && !refreshed) {
         refreshed = true;
@@ -170,6 +181,8 @@ export function createMcpSession({ config, signal, diagnostics = nullDiagnostics
       return tools;
     },
     async callTool(name, args, { stage = 'tools/call', readOnly = true } = {}) {
+      diagnostics.log('mcp_tool_request', { stage, tool: name, argumentKeys: Object.keys(args || {}).sort().join(','),
+        queryType: typeof args?.query, rawResponseRequested: args?.return_raw_response === true || args?.return_raw_response === 'true' });
       return runWithRecovery({
         run: () => client.callTool({ name, arguments: args }, undefined, { signal, timeout }),
         stage, tool: name, signal, diagnostics, readOnly,
