@@ -19,7 +19,7 @@ export function runKerberosCurl(args, body, signal, cache) {
     child.on('error', () => reject(new ChatError('kerberos_unavailable', 'Kerberos request could not start or was cancelled. Check curl/GSSAPI and the ticket cache.', 502, 'opensearch')));
     child.on('close', code => {
       if (oversized) return reject(new ChatError('response_too_large', 'OpenSearch response exceeded 2 MiB. Request less data.', 502, 'opensearch'));
-      if (code === 28) return reject(new ChatError('upstream_timeout', 'OpenSearch did not respond within 30 seconds. Try a narrower query.', 504, 'opensearch'));
+      if (code === 28) return reject(new ChatError('upstream_timeout', 'OpenSearch did not respond within its operation deadline. Try a narrower query.', 504, 'opensearch'));
       if (code !== 0) return reject(new ChatError('kerberos_request_failed', 'Kerberos connection failed. Check the backend ticket cache, network and ticket expiry.', 502, 'opensearch'));
       resolve(Buffer.concat(chunks).toString('utf8'));
     });
@@ -27,7 +27,7 @@ export function runKerberosCurl(args, body, signal, cache) {
   });
 }
 
-export function createKerberosFetch(config, execute = runKerberosCurl, { target = 'mcp', timeoutMs = 30000 } = {}) {
+export function createKerberosFetch(config, execute = runKerberosCurl, { target = 'mcp', timeoutMs = 120000 } = {}) {
   if (!['mcp', 'ppl'].includes(target)) throw new Error('Unsupported OpenSearch transport target.');
   const endpoint = new URL(target === 'ppl' ? config.pplURL : config.mcpURL).href;
   if (target === 'ppl') {
@@ -47,7 +47,7 @@ export function createKerberosFetch(config, execute = runKerberosCurl, { target 
     const headers = new Headers(init.headers);
     if (headers.has('authorization') || headers.has('cookie')) throw new Error('Do not mix Kerberos with bearer credentials or cookies.');
     const args = ['--disable', '--silent', '--show-error', '--negotiate', '--user', ':',
-      '--proto', '=https', '--connect-timeout', '10', '--max-time', String(Math.min(timeoutMs ?? 30000, 30000) / 1000),
+      '--proto', '=https', '--connect-timeout', '10', '--max-time', String(Math.min(timeoutMs ?? 120000, 600000) / 1000),
       '--request', 'POST', '--header', 'Content-Type: application/json',
       '--header', target === 'ppl' ? 'Accept: application/json' : 'Accept: application/json, text/event-stream'];
     for (const name of target === 'mcp' ? ['mcp-protocol-version', 'mcp-session-id'] : []) {

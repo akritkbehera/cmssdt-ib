@@ -1,3 +1,5 @@
+> Historical report: registry/planner/context injection and its synthetic benchmark are no longer part of the live chatbot. See ib-insights.md for current behavior.
+
 # IB Insights chat backend — resilience, diagnostics and agent memory
 
 This report collects the deliverables of the investigation-and-hardening work on

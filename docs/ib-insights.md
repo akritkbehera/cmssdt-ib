@@ -21,9 +21,13 @@ Set `CERN_AI_KEY`, `CERN_AI_MODEL`, and `OPENSEARCH_MCP_URL`. Choose a model ava
 
 The endpoint defaults to `https://os-cmssdt.cern.ch/os/_plugins/_ml/mcp`. The `/os` prefix is required. A successful request inside Dashboards Dev Tools does not establish access from this backend. Use per-user OIDC login, a newly issued CLI token file, or a dedicated read-only service credential; see the authentication guide. SSO cookies are rejected. CERN model authentication is separate from OpenSearch. Use a trusted CA (`NODE_EXTRA_CA_CERTS` if needed), never disable TLS validation.
 
-Register the existing `ListIndexTool`, `IndexMappingTool` and `SearchIndexTool` with the native MCP server. Only those three names are exposed to the model, with arguments validated against the discovered schemas. The backend creates a Streamable HTTP MCP client per question, discovers/paginates tools, streams the model's response, executes requested tools and continues the model loop. Tool-step, concurrency, context, result-size and request-duration limits keep requests bounded. Actual read permissions and query quotas must be enforced by the OpenSearch identity and cluster policy.
+Register the existing `ListIndexTool`, `IndexMappingTool` and `SearchIndexTool` with the native MCP server. The model receives those three discovered tools plus the local `execute_opensearch_ppl` tool. Tool arguments are validated against their schemas. The backend executes only model-requested tools; there are no automatic PPL probes, query plans, schema-registry blocks, domain guides or snapshot prompts.
 
-The system prompt asks for exact build identities, mappings before queries, limited searches, comparable architectures, evidence and explicit uncertainty. This does not replace checking model conclusions. Model/provider errors are returned without upstream payloads or credentials. Health reports configuration only. **Test MCP connection** performs real initialization and tool discovery; only success produces the verified status. This verifies MCP access, not model inference; send a question to verify both.
+Only the active conversation, current tool definitions/results and a short safety instruction are sent to the existing CERN model. No additional LLM or generated context is used. Actual read permissions remain enforced by OpenSearch. Health reports configuration only; **Test MCP connection** verifies initialization and discovery, not inference or PPL execution.
+
+The investigation has no overall wall-clock deadline or tool-step limit. The stream sends heartbeats every ten seconds while tools/model calls are pending. User cancellation or client disconnection aborts upstream work; a completed answer ends normally. Individual MCP/PPL calls default to 120 seconds, configurable up to ten minutes with `CHAT_MCP_TIMEOUT_MS` and `CHAT_PPL_TIMEOUT_MS`. The model HTTP request uses the user cancellation signal instead of an SDK deadline. External gateway, proxy and cluster limits or failures can still terminate a request; no application can override those limits.
+
+Tool outputs are capped per result, and oldest complete tool exchanges are discarded when the working transcript grows large. This uses actual retained conversation/tool evidence, not injected summaries, and does not delete browser-local history. Token-limited text answers are continued in the same streamed response. The read-only PPL parser, approved indices, response-size caps, request admission limits and credential redaction remain enforced. See [direct PPL](opensearch-ppl.md).
 
 ## Local development
 
@@ -50,37 +54,16 @@ Tests use local model/MCP endpoints and fake IndexedDB. CI runs Chromium, Firefo
 
 The backend classifies every failure into a real category instead of a generic message: `authentication` (401/token expiry), `authorization` (403), `timeout`, `cancelled` (browser abort), `session` (expired MCP session), `protocol` (JSON-RPC errors), `invalid_arguments` (tool schema mismatch), `http_transient` (5xx/429), `http_client`, `transport` (reset/refused sockets) and `unknown`. Each category has a distinct public `code` and message; raw upstream payloads and credentials are never echoed to the client.
 
-Only transient failures are retried; internal MCP -32603 errors are not replayed automatically: bounded exponential backoff with jitter, abort-aware, never for auth or invalid-argument errors, and never replaying an investigation (only the single failed operation is retried). Expired MCP sessions reinitialize exactly once — with forced credential renewal in OIDC mode before reconnecting — and broken transports get a fresh SDK client. Tool-call limits per response and evidence-size caps protect the service.
+Only transient failures are retried; internal MCP -32603 errors are not replayed automatically: bounded exponential backoff with jitter, abort-aware, never for auth or invalid-argument errors, and never replaying an investigation (only the single failed operation is retried). Expired MCP sessions reinitialize exactly once — with forced credential renewal in OIDC mode before reconnecting — and broken transports get a fresh SDK client. Tool-call limits per response and per-result/working-transcript caps protect the service without imposing an investigation step limit.
 
 ## Diagnostics
 
 With `CHAT_DIAGNOSTICS` enabled (default), each MCP operation emits one sanitized JSON line on stderr: stage, tool, duration, outcome, HTTP status, error kind/code, retry attempt, correlation ID and successful tool-call count. Bearer tokens, cookies, JWTs, API keys, authorization values and credential-bearing URLs are redacted, and query bodies/results are never logged.
 
-## Knowledge registry and query templates
+## Context and deployment
 
-`CHAT_DATA_DIR` (mounted volume) holds a persistent, version-controlled-style schema registry: index families, verified field mappings with types, keyword-vs-text classification, date fields and formats, nested paths, bound field roles (release, arch, timestamp, exitcode, …), MCP tool schemas with fingerprints, and per-template validation state — all structural metadata; never query results or credentials. Writes are atomic (`registry.json.tmp` + rename, with `registry.json.bak`), corrupt files are quarantined and the service continues with a warning when the volume is missing or read-only.
+The former knowledge registry, query planner, domain-guide injection, operational snapshot warm-up and PPL-first inspection are disconnected from the live agent. Historical discovery artifacts and helper tests are retained as source history only; the running chatbot does not read them or mount the registry data directory. Browser-local conversation history and per-tab selection remain unchanged.
 
-Eight parameterized query templates (latest IB, release/arch match, failing RelVals, RelVal failure aggregation, flavour comparison, build comparison, unit-test failures, build status) render only when every field role binds to a real field of a verified live mapping and the rendered arguments validate against the discovered `SearchIndexTool` schema (Ajv). A template is marked validated only after a real query against the matching mapping fingerprint succeeds; mapping fingerprints invalidate cached knowledge on schema change.
+The container runs read-only with dropped capabilities, the public CA bundle and the dedicated Kerberos cache. No registry volume is required. Do not delete the existing host data directory merely to disable context; it is simply no longer mounted/read.
 
-## Context-aware investigation
-
-Before the first query the agent receives a compact, deterministic context block: relevant index families for the question, bound roles with types, date/keyword/text conventions from the versioned domain guide `server/chat/knowledge/domain-guide.md`, matched template hints and the current investigation state. Unverified facts are labelled as such and freshness claims are only made from live query results. Per-conversation state tracks attempted queries, successes and gaps. Conversations are isolated: no evidence or history crosses between questions or users.
-
-## Frontend conversation selection
-
-The active conversation is remembered per browser tab (`sessionStorage`): reloading continues the tab's investigation, while a fresh visit starts a new conversation instead of resuming an old thread and re-sending its history on a greeting.
-
-## Benchmark
-
-`node --test tests/chat-benchmark.test.mjs` runs a reproducible scripted workload (6 representative questions, mock MCP server + deterministic model) comparing the baseline configuration (`CHAT_OPTIMIZE=false`, per-question discovery and exploration) with the improved pipeline cold and warm. It measures MCP calls, schema/mapping discovery calls, failed attempts, model calls, prompt size, wall latency, completion and tool-schema cache hit rate. Numbers are synthetic harness measurements — no live CERN services or invented results.
-
-## Security and deployment notes
-
-Read-only by construction: only `ListIndexTool`, `IndexMappingTool` and `SearchIndexTool` are exposed to the model; rendered templates cannot issue writes or scripts. User credentials and investigation evidence remain isolated; structural schema metadata may be shared within one deployment; registry volumes are per deployment and store no results. The container runs read-only (`--read-only`, `--cap-drop ALL`, `--user $(id -u):$(id -g)`) with three mounts: CA bundle (ro), Kerberos cache (rw, kerberos mode) and the registry data volume (`$HOME/.local/share/cmssdt-chat/data:/run/cmssdt-data`). Roll back to baseline behaviour at any time with `CHAT_OPTIMIZE=false` without redeploying code.
-
-## Known limitations
-
-- Template coverage is the eight documented investigations; anything else falls back to model-driven exploration with cached schema knowledge.
-- The registry TTL is 24 hours for mappings and 7 days before sweep; very rapidly evolving clusters may need shorter TTLs.
-- Retry/backoff behaviour is verified against mock servers; live CERN failure modes (proxy quirks, token-exchange edge cases) still need field validation.
-- The benchmark uses a scripted model; it measures harness overhead, not answer quality.
+For long streams, the reverse proxy must allow streaming and avoid a hard total-duration limit. Apache's proxy socket timeout is an idle timeout; the ten-second heartbeat prevents idle periods while an investigation is active. Backend restarts or network interruptions still close active responses.

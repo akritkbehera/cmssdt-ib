@@ -5,7 +5,6 @@ import { runAgent, openMcp, discoverTools } from './agent.mjs';
 import { createAuth } from './auth.mjs';
 import { publicError } from './errors.mjs';
 import { createDiagnostics } from './diagnostics.mjs';
-import { createRegistry } from './registry.mjs';
 import { createToolCache } from './mcp.mjs';
 
 export function createChatServer(config, agent = runAgent, options = {}) {
@@ -13,11 +12,6 @@ export function createChatServer(config, agent = runAgent, options = {}) {
   const auth = options.auth || createAuth(config);
   const connect = options.openMcp || openMcp;
   const list = options.discoverTools || discoverTools;
-  // Shared structural knowledge (tool schemas, verified mappings, validated
-  // templates). It never holds user data, credentials or result payloads and
-  // cannot bypass per-user OpenSearch authorization.
-  const registry = options.registry || createRegistry({ dir: config.dataDir || '' });
-  const registryReady = registry.load?.().catch(() => {});
   const toolCache = options.toolCache || createToolCache();
   async function handle(req, res) {
     const origin = req.headers.origin;
@@ -71,8 +65,6 @@ export function createChatServer(config, agent = runAgent, options = {}) {
     } catch { fail(400, 'Invalid or oversized conversation. Start a new chat if needed.'); return; }
     if (active >= 4) { fail(429, 'Chat backend is busy. Try again shortly.'); return; }
     const controller = new AbortController();
-    // Distinct abort reasons distinguish server timeout from client disconnect.
-    const timer = setTimeout(() => controller.abort(new DOMException('Request timed out', 'TimeoutError')), 180000);
     res.on('close', () => controller.abort(new DOMException('Client disconnected', 'AbortError')));
     res.writeHead(200, { 'Content-Type': 'application/x-ndjson', 'X-Accel-Buffering': 'no' });
     res.flushHeaders(); active++;
@@ -81,23 +73,25 @@ export function createChatServer(config, agent = runAgent, options = {}) {
     const heartbeat = setInterval(() => emit({ type: 'heartbeat' }), 10000);
     diagnostics.log('chat_request', { stage: 'connect', messages: messages.length });
     try {
-      await registryReady;
-      await agent({ config: runtime, messages, signal: controller.signal, emit, diagnostics, registry, toolCache });
+      await agent({ config: runtime, messages, signal: controller.signal, emit, diagnostics, toolCache });
     } catch (error) {
       const issue = publicError(error);
       diagnostics.log('chat_request', { stage: 'close', outcome: 'error', errorKind: issue.kind, errorCode: issue.code, status: issue.status });
       const text = controller.signal.reason?.name === 'TimeoutError' ? 'Request timed out. Try a narrower question.'
         : issue.code === 'request_cancelled' ? 'Request cancelled before the answer completed.' : issue.message;
       if (!res.destroyed) emit({ type: 'error', code: issue.code, source: issue.source, text });
-    } finally { active--; clearTimeout(timer); clearInterval(heartbeat); res.end(); }
+    } finally { active--; clearInterval(heartbeat); res.end(); }
   }
-  return createServer((req, res) => {
+  const server = createServer((req, res) => {
     handle(req, res).catch(error => {
       const issue = publicError(error);
       if (!res.headersSent) res.writeHead(issue.status, { 'Content-Type': 'application/json' }).end(JSON.stringify({ error: issue.message, code: issue.code, source: issue.source }));
       else res.end();
     });
   });
+  server.requestTimeout = 0;
+  server.timeout = 0;
+  return server;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

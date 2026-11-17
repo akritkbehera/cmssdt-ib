@@ -62,7 +62,6 @@ jobs:
           CERN_OIDC_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           CHAT_BACKEND_URL: ${{ vars.CHAT_BACKEND_URL }}
           CERN_AI_MODEL: ${{ vars.CERN_AI_MODEL || 'qwen3.8-27b-fp16' }}
-          CHAT_OPTIMIZE: ${{ vars.CHAT_OPTIMIZE || 'true' }}
         run: |
           set -eu
           export CERN_OIDC_REDIRECT_URI="$CHAT_BACKEND_URL/auth/callback"
@@ -82,14 +81,9 @@ jobs:
           else
             runtime_args+=(-v "$trust_dir:/run/cmssdt-trust:ro")
           fi
-          data_dir="$HOME/.local/share/cmssdt-chat/data"
-          mkdir -p "$data_dir"
-          chmod 700 "$data_dir"
-          runtime_args+=(-e CHAT_DATA_DIR=/run/cmssdt-data --user "$(id -u):$(id -g)")
+          runtime_args+=(--user "$(id -u):$(id -g)")
           if docker --version | grep -qi podman; then
-            runtime_args+=(--userns keep-id -v "$data_dir:/run/cmssdt-data:rw,Z")
-          else
-            runtime_args+=(-v "$data_dir:/run/cmssdt-data:rw")
+            runtime_args+=(--userns keep-id)
           fi
           if [ "$OPENSEARCH_AUTH_MODE" = kerberos ]; then
             umask 077
@@ -114,7 +108,7 @@ jobs:
             --cap-drop ALL --security-opt no-new-privileges \
             --log-opt max-size=10m --log-opt max-file=3 \
             -p 127.0.0.1:8787:8787 \
-            -e CERN_AI_KEY -e CERN_AI_MODEL -e CHAT_OPTIMIZE \
+            -e CERN_AI_KEY -e CERN_AI_MODEL \
             -e CERN_OIDC_CLIENT_ID -e CERN_OIDC_CLIENT_SECRET -e CERN_OIDC_REDIRECT_URI \
             -e CHAT_ALLOWED_ORIGINS=https://akritkbehera.github.io \
             cmssdt-chat:${{ github.sha }}

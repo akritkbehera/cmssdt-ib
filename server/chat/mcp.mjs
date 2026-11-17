@@ -6,7 +6,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 
 export const READ_TOOLS = new Set(['ListIndexTool', 'IndexMappingTool', 'SearchIndexTool']);
-const DEFAULT_TIMEOUT = 30000;
+const DEFAULT_TIMEOUT = 120000;
 
 export function fingerprint(value) { return createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0, 32); }
 

@@ -159,7 +159,7 @@ export async function executePpl(config, args, { signal, fetchImpl, diagnostics 
   try {
     const checked = validatePpl(args?.query, { patterns: config.pplIndices || DEFAULT_PPL_INDICES, maxRows: args?.max_rows ?? 100 });
     release = limiter();
-    const timeout = AbortSignal.timeout(config.pplTimeout ?? 30000);
+    const timeout = AbortSignal.timeout(config.pplTimeout ?? 120000);
     const requestSignal = signal ? AbortSignal.any([signal, timeout]) : timeout;
     const request = fetchImpl || (config.kerberosCache ? createKerberosFetch(config, undefined, { target: 'ppl', timeoutMs: config.pplTimeout }) : fetch);
     let response;

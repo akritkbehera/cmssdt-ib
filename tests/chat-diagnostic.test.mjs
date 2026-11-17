@@ -10,7 +10,7 @@ test('diagnostics distinguish missing aggregation output from an actual empty re
   assert.equal(summarizeResult({ content: [{ type: 'text', text: '{"aggregations":{"by_architecture":{"buckets":[]}}}' }] }).aggregationsPresent, true);
 });
 
-test('the final investigation step produces an evidence-based answer rather than requesting more tools', async () => {
+test('tool execution returns evidence to the same model without a forced final-step instruction', async () => {
   let modelCalls = 0;
   const client = { listTools: async () => ({ tools: [{ name: 'SearchIndexTool', inputSchema: { type: 'object' } }] }),
     callTool: async () => ({ content: [{ type: 'text', text: '{"evidence":"one bounded result"}' }] }), close: async () => {} };
@@ -19,10 +19,10 @@ test('the final investigation step produces an evidence-based answer rather than
       assert.equal(request.tool_choice, 'auto');
       yield { choices: [{ delta: { tool_calls: [{ index: 0, id: 'c1', function: { name: 'SearchIndexTool', arguments: '{}' } }] }, finish_reason: 'tool_calls' }] };
     } else {
-      assert.equal(request.tool_choice, undefined);
-      assert.equal(request.tools, undefined);
+      assert.equal(request.tool_choice, 'auto');
+      assert.ok(request.tools.length);
       assert.equal(request.messages.filter(message => message.role === 'system').length, 1);
-      assert.match(request.messages[0].content, /final response for this investigation/);
+      assert.ok(!request.messages[0].content.includes('final response for this investigation'));
       assert.ok(request.messages.some(message => message.role === 'tool' && message.content.includes('one bounded result')));
       yield { choices: [{ delta: { content: 'One result was retrieved. Completion of the comparison is not verified.' }, finish_reason: 'stop' }] };
     }

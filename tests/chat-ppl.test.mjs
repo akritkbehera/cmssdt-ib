@@ -47,7 +47,7 @@ test('configuration confines credentials to the sibling endpoint and approved CM
     { OPENSEARCH_PPL_URL: 'https://other.example/_plugins/_ppl' },
     { OPENSEARCH_PPL_URL: 'https://os-cmssdt.cern.ch/os/_search' },
     { CHAT_PPL_ALLOWED_INDICES: '*' }, { CHAT_PPL_ALLOWED_INDICES: '.security' },
-    { CHAT_PPL_ALLOWED_INDICES: 'cmssdt-*x*' }, { CHAT_PPL_TIMEOUT_MS: '30001' },
+    { CHAT_PPL_ALLOWED_INDICES: 'cmssdt-*x*' }, { CHAT_PPL_TIMEOUT_MS: '600001' },
     { CHAT_PPL_MAX_BYTES: '9999999' },
   ]) assert.throws(() => loadConfig(env));
   assert.equal(loadConfig({ CHAT_PPL_ENABLED: 'false' }).pplEnabled, false);

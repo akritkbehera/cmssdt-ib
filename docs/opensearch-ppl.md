@@ -6,18 +6,11 @@ tools: the three dynamically discovered native MCP read tools plus the local
 in OpenSearch. No inference provider, browser history, login or frontend changes
 are required. The existing streamed tool-result/answer loop handles both paths.
 
-Before MCP connects, a deterministic read-only PPL inspection probes at most two
-relevant concrete indices already named by the user, recorded in the runtime
-registry, or listed in the versioned discovery snapshot. It never fabricates a
-suffix. Each query is `source = concrete-index | head 1`, with a four-second
-per-query deadline and eight-second total inspection budget. Only the returned
-column names/types and retrieval time enter the model context, not sample values.
-These are PPL observations, not complete mappings, and are not persisted as
-verified index mappings. A series-only follow-up preserves the earlier question
-for intent/structure selection. Unknown indices, inspection errors and deadline
-expiry fall back to MCP discovery. The model then uses the observations to target
-MCP searches and requests mappings only for missing details. This reduces
-rediscovery; it cannot guarantee that subsequent queries never time out.
+The agent runs only tools requested by the model. Automatic PPL-first structure
+inspection, snapshot/context injection and query planning are disabled/removed
+from the live path. The model can request PPL or MCP discovery/search in any order.
+There is no overall investigation deadline or eight-step limit; the browser can
+cancel an active response. MCP/PPL operation deadlines default to 120 seconds.
 
 Native MCP remains the route for `ListIndexTool`, `IndexMappingTool` and
 `SearchIndexTool`. The additional local function sends JSON `{ "query": "..." }`
@@ -41,8 +34,7 @@ PPL execution and reads on approved monitoring indices. Application validation
 is defense in depth, not a substitute for OpenSearch permissions (including
 permissions on alias targets).
 
-This change is prepared on `direct-ppl-execution`; no production deployment or
-cluster settings/registrations are changed by the implementation or tests.
+No cluster settings or MCP registrations are changed by this implementation or its tests.
 
 ## Supported grammar and limits
 
@@ -82,7 +74,7 @@ as the source-document count for an aggregate; read the count cell itself.
 Responses over 128 KiB fail rather than silently returning partial evidence.
 Credential-shaped result strings are scrubbed before the model sees them.
 
-The request has a maximum 30-second network/body deadline and respects chat
+Each PPL request has a configurable network/body deadline (default 120 seconds, maximum ten minutes) and respects chat
 cancellation. Aborting the client does not guarantee cluster-side cancellation;
 the cluster owner should configure an appropriate `plugins.ppl.query.timeout`
 and resource controls. This implementation does not change that cluster setting.
@@ -92,10 +84,9 @@ and resource controls. This implementation does not change that cluster setting.
 | Variable | Default / constraint |
 | --- | --- |
 | `CHAT_PPL_ENABLED` | `true`; `false` removes the local tool from model requests |
-| `CHAT_PPL_PREFLIGHT` | `true`; `false` disables the PPL-first structure inspection |
 | `OPENSEARCH_PPL_URL` | Sibling `/_plugins/_ppl` on the configured MCP origin/base path; alternate origins/routes rejected |
 | `CHAT_PPL_ALLOWED_INDICES` | Comma-separated concrete `cmssdt-` names or family prefixes ending in one `*` |
-| `CHAT_PPL_TIMEOUT_MS` | `30000`; range 1000–30000 |
+| `CHAT_PPL_TIMEOUT_MS` | `120000`; range 1000–600000 |
 | `CHAT_PPL_MAX_BYTES` | `131072`; range 1024–131072 |
 
 No new secret is required. Existing deployment defaults work without new
