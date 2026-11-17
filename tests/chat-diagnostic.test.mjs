@@ -1,0 +1,32 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { summarizeResult } from '../server/chat/diagnose-search.mjs';
+import { runAgent } from '../server/chat/agent.mjs';
+
+test('diagnostics distinguish missing aggregation output from an actual empty result', () => {
+  assert.equal(summarizeResult({ content: [{ type: 'text', text: '' }] }).empty, true);
+  assert.equal(summarizeResult({ content: [{ type: 'text', text: '[]' }] }).documentsReturned, 0);
+  assert.equal(summarizeResult({ content: [{ type: 'text', text: '[]' }] }).aggregationsPresent, false);
+  assert.equal(summarizeResult({ content: [{ type: 'text', text: '{"aggregations":{"by_architecture":{"buckets":[]}}}' }] }).aggregationsPresent, true);
+});
+
+test('the final investigation step produces an evidence-based answer rather than requesting more tools', async () => {
+  let modelCalls = 0;
+  const client = { listTools: async () => ({ tools: [{ name: 'SearchIndexTool', inputSchema: { type: 'object' } }] }),
+    callTool: async () => ({ content: [{ type: 'text', text: '{"evidence":"one bounded result"}' }] }), close: async () => {} };
+  const model = { chat: { completions: { create: async request => (async function* () {
+    if (++modelCalls === 1) {
+      assert.equal(request.tool_choice, 'auto');
+      yield { choices: [{ delta: { tool_calls: [{ index: 0, id: 'c1', function: { name: 'SearchIndexTool', arguments: '{}' } }] }, finish_reason: 'tool_calls' }] };
+    } else {
+      assert.equal(request.tool_choice, 'none');
+      assert.ok(request.messages.some(message => message.role === 'tool' && message.content.includes('one bounded result')));
+      yield { choices: [{ delta: { content: 'One result was retrieved. Completion of the comparison is not verified.' }, finish_reason: 'stop' }] };
+    }
+  })() } } };
+  const events = [];
+  await runAgent({ config: { model: 'fixture', maxSteps: 2 }, messages: [{ role: 'user', content: 'Compare builds' }],
+    signal: new AbortController().signal, emit: event => events.push(event), client, model });
+  assert.equal(events.at(-1).type, 'done');
+  assert.ok(events.some(event => event.type === 'text' && event.text.includes('not verified')));
+});

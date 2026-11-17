@@ -22,9 +22,12 @@ test('deduplication distinguishes nested query filters and canonicalizes equival
   assert.equal(cache.key('SearchIndexTool', first), cache.key('SearchIndexTool', { query: { term: { release: 'A' } }, index: 'x' }));
 });
 
-test('search argument adaptation never silently drops requested aggregations', () => {
+test('native SearchIndexTool query carries the entire bounded search body', () => {
   const schema = { type: 'object', properties: { index: { type: 'string' }, query: { type: 'object' } } };
-  assert.equal(buildSearchArgs(schema, { index: 'x', body: { size: 0, query: { match_all: {} }, aggs: { by_release: { terms: { field: 'release' } } } } }), null);
+  const body = { size: 0, query: { match_all: {} }, aggs: { by_release: { terms: { field: 'release' } } } };
+  assert.deepEqual(buildSearchArgs(schema, { index: 'x', body }), { index: 'x', query: body });
+  const stringSchema = { ...schema, properties: { ...schema.properties, query: { type: 'string' } } };
+  assert.deepEqual(buildSearchArgs(stringSchema, { index: 'x', body }), { index: 'x', query: JSON.stringify(body) });
 });
 
 const BUILD_MAPPING = { 'cmssdt-ibs-2968': { mappings: { properties: {

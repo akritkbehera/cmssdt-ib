@@ -172,8 +172,16 @@ export function buildSearchArgs(schema, { index, body }) {
   const args = {};
   if (properties.index) args.index = index;
   const bodyKey = BODY_KEYS.find(key => properties[key]);
-  if (bodyKey) args[bodyKey] = body;
+  if (bodyKey) args[bodyKey] = properties[bodyKey].type === 'string' ? JSON.stringify(body) : body;
   else if (properties.query) {
+    // Native ML Commons SearchIndexTool uses `query` for the complete search
+    // request, not just its query clause. Some wrappers expose separate body
+    // fields; preserve that separate contract when discovered explicitly.
+    const splitBody = PART_KEYS.some(key => properties[key]) || properties.source;
+    if (!splitBody) {
+      args.query = properties.query.type === 'string' ? JSON.stringify(body) : body;
+      return validateToolArguments(schema, args).ok ? args : null;
+    }
     // Never silently drop an aggregation, sort or size constraint when the
     // discovered tool cannot express it: let the model choose another query.
     for (const key of Object.keys(body).filter(key => body[key] !== undefined && key !== 'query')) {

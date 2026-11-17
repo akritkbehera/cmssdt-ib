@@ -116,7 +116,9 @@ export async function discoverTools(client, signal, { diagnostics = nullDiagnost
   } while (cursor);
   if (!tools.length) throw new ChatError('tools_not_registered', 'MCP initialized but no approved read tools were discovered. Register ListIndexTool, IndexMappingTool or SearchIndexTool.', 409, 'opensearch');
   return tools.map(tool => ({ type: 'function', function: {
-    name: tool.name, description: tool.description, parameters: tool.inputSchema || { type: 'object' },
+    name: tool.name, description: tool.description + (tool.name === 'SearchIndexTool' && tool.inputSchema?.properties?.query &&
+      !['size', 'sort', '_source', 'aggs', 'body', 'searchBody', 'requestBody'].some(key => tool.inputSchema.properties[key])
+      ? ' Native SearchIndexTool contract: query is the COMPLETE OpenSearch search body, including size, query and optional aggs/_source, not merely the inner query clause. Use the JSON string or object type required by this input schema. An empty tool response does not prove zero matching documents or zero aggregation buckets.' : ''), parameters: tool.inputSchema || { type: 'object' },
   } }));
 }
 

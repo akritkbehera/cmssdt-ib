@@ -82,8 +82,10 @@ export async function runAgent({ config, messages, signal, emit, client, model, 
     const context = [{ role: 'system', content: `${SYSTEM}\n\n${snapshot}\n\n${contextBlock}` }, ...messages];
     let evidenceSize = 0, failedTools = 0, hasVisibleText = false;
     for (let step = 0; step < (config.maxSteps ?? 8); step++) {
+      const finalStep = step === (config.maxSteps ?? 8) - 1;
+      if (finalStep) context.push({ role: 'system', content: 'This is the final response for this investigation. Use only evidence already obtained. Explain unresolved points or ask for a missing parameter. Never infer success, failure, zero counts, or completion from absent data. Do not request more tools.' });
       const stream = await ai.chat.completions.create({ model: config.model, messages: context,
-        tools, tool_choice: 'auto', stream: true, max_tokens: 4096 }, { signal }).catch(error => { throw publicError(error, 'model'); });
+        tools, tool_choice: finalStep ? 'none' : 'auto', stream: true, max_tokens: 4096 }, { signal }).catch(error => { throw publicError(error, 'model'); });
       const calls = new Map();
       let text = '', finish;
       try { for await (const part of stream) {
