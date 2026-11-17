@@ -114,9 +114,9 @@ test('version migration upgrades legacy documents', async t => {
 test('an unwritable volume degrades to memory and the application keeps working', async t => {
   const dir = await dataDir(t);
   const locked = join(dir, 'locked');
-  await mkdir(locked);
-  await chmod(locked, 0o555);
-  t.after(() => chmod(locked, 0o755).catch(() => {}));
+  // A file in place of the mount directory fails for root as well as normal
+  // users. chmod(0555) does not make a directory unwritable in root-run CI.
+  await writeFile(locked, 'not a directory');
   const registry = createRegistry({ dir: locked });
   await registry.load();
   registry.recordMapping({ index: 'cmssdt-ibs-2', mapping: MAPPING });
