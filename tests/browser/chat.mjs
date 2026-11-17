@@ -58,6 +58,13 @@ try {
     await page.screenshot({ path: `chat-review/${engine}-table-${width}.png`, fullPage: true });
     await page.reload();
     await page.getByText('Follow-up answer using context.').waitFor();
+    const freshTab = await context.newPage();
+    await freshTab.route('**/api/chat/health', route => route.fulfill({ json: { ready: true, model: 'fixture-model' } }));
+    await freshTab.goto('http://localhost:5174/#/insights');
+    await freshTab.getByRole('heading', { name: 'Investigate your Integration Builds' }).waitFor();
+    await freshTab.getByRole('button', { name: 'Build duration', exact: true }).click();
+    await freshTab.getByText('Follow-up answer using context.').waitFor();
+    await freshTab.close();
     await page.getByRole('button', { name: 'New conversation', exact: true }).click();
     await page.getByRole('heading', { name: 'Investigate your Integration Builds' }).waitFor();
     await input.fill('Independent question'); await page.getByRole('button', { name: 'Send message', exact: true }).click();

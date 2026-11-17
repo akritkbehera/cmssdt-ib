@@ -45,3 +45,42 @@ npm run build:pages
 ```
 
 Tests use local model/MCP endpoints and fake IndexedDB. CI runs Chromium, Firefox and WebKit checks for chat persistence, context, OIDC popup messaging, remembered sessions across reloads/tabs, expiry, logout, cancellation, and mobile layout. These are fixtures, not evidence of live CERN authentication. After deployment, use **Test MCP connection** or `npm run chat:check` in service mode to verify real `tools/list`, then ask a question to test model inference.
+
+## Failure reporting and retries
+
+The backend classifies every failure into a real category instead of a generic message: `authentication` (401/token expiry), `authorization` (403), `timeout`, `cancelled` (browser abort), `session` (expired MCP session), `protocol` (JSON-RPC errors), `invalid_arguments` (tool schema mismatch), `http_transient` (5xx/429), `http_client`, `transport` (reset/refused sockets) and `unknown`. Each category has a distinct public `code` and message; raw upstream payloads and credentials are never echoed to the client.
+
+Only transient failures are retried; internal MCP -32603 errors are not replayed automatically: bounded exponential backoff with jitter, abort-aware, never for auth or invalid-argument errors, and never replaying an investigation (only the single failed operation is retried). Expired MCP sessions reinitialize exactly once — with forced credential renewal in OIDC mode before reconnecting — and broken transports get a fresh SDK client. Tool-call limits per response and evidence-size caps protect the service.
+
+## Diagnostics
+
+With `CHAT_DIAGNOSTICS` enabled (default), each MCP operation emits one sanitized JSON line on stderr: stage, tool, duration, outcome, HTTP status, error kind/code, retry attempt, correlation ID and successful tool-call count. Bearer tokens, cookies, JWTs, API keys, authorization values and credential-bearing URLs are redacted, and query bodies/results are never logged.
+
+## Knowledge registry and query templates
+
+`CHAT_DATA_DIR` (mounted volume) holds a persistent, version-controlled-style schema registry: index families, verified field mappings with types, keyword-vs-text classification, date fields and formats, nested paths, bound field roles (release, arch, timestamp, exitcode, …), MCP tool schemas with fingerprints, and per-template validation state — all structural metadata; never query results or credentials. Writes are atomic (`registry.json.tmp` + rename, with `registry.json.bak`), corrupt files are quarantined and the service continues with a warning when the volume is missing or read-only.
+
+Eight parameterized query templates (latest IB, release/arch match, failing RelVals, RelVal failure aggregation, flavour comparison, build comparison, unit-test failures, build status) render only when every field role binds to a real field of a verified live mapping and the rendered arguments validate against the discovered `SearchIndexTool` schema (Ajv). A template is marked validated only after a real query against the matching mapping fingerprint succeeds; mapping fingerprints invalidate cached knowledge on schema change.
+
+## Context-aware investigation
+
+Before the first query the agent receives a compact, deterministic context block: relevant index families for the question, bound roles with types, date/keyword/text conventions from the versioned domain guide `server/chat/knowledge/domain-guide.md`, matched template hints and the current investigation state. Unverified facts are labelled as such and freshness claims are only made from live query results. Per-conversation state tracks attempted queries, successes and gaps. Conversations are isolated: no evidence or history crosses between questions or users.
+
+## Frontend conversation selection
+
+The active conversation is remembered per browser tab (`sessionStorage`): reloading continues the tab's investigation, while a fresh visit starts a new conversation instead of resuming an old thread and re-sending its history on a greeting.
+
+## Benchmark
+
+`node --test tests/chat-benchmark.test.mjs` runs a reproducible scripted workload (6 representative questions, mock MCP server + deterministic model) comparing the baseline configuration (`CHAT_OPTIMIZE=false`, per-question discovery and exploration) with the improved pipeline cold and warm. It measures MCP calls, schema/mapping discovery calls, failed attempts, model calls, prompt size, wall latency, completion and tool-schema cache hit rate. Numbers are synthetic harness measurements — no live CERN services or invented results.
+
+## Security and deployment notes
+
+Read-only by construction: only `ListIndexTool`, `IndexMappingTool` and `SearchIndexTool` are exposed to the model; rendered templates cannot issue writes or scripts. User credentials and investigation evidence remain isolated; structural schema metadata may be shared within one deployment; registry volumes are per deployment and store no results. The container runs read-only (`--read-only`, `--cap-drop ALL`, `--user $(id -u):$(id -g)`) with three mounts: CA bundle (ro), Kerberos cache (rw, kerberos mode) and the registry data volume (`$HOME/.local/share/cmssdt-chat/data:/run/cmssdt-data`). Roll back to baseline behaviour at any time with `CHAT_OPTIMIZE=false` without redeploying code.
+
+## Known limitations
+
+- Template coverage is the eight documented investigations; anything else falls back to model-driven exploration with cached schema knowledge.
+- The registry TTL is 24 hours for mappings and 7 days before sweep; very rapidly evolving clusters may need shorter TTLs.
+- Retry/backoff behaviour is verified against mock servers; live CERN failure modes (proxy quirks, token-exchange edge cases) still need field validation.
+- The benchmark uses a scripted model; it measures harness overhead, not answer quality.

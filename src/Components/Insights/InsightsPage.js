@@ -11,6 +11,12 @@ import useChatConnection from './useChatConnection';
 import './insights.css';
 
 const safeGet = (store, key) => { try { return window[store].getItem(key) || ''; } catch { return ''; } };
+const safeSet = (store, key, value) => { try { window[store].setItem(key, value); } catch { /* Storage unavailable: selection stays in memory. */ } };
+// The active conversation is remembered per browser tab (sessionStorage):
+// reloading the page continues the tab's own investigation, while a fresh
+// visit starts a new conversation instead of resuming an old one and
+// re-sending its history on a greeting.
+const ACTIVE_KEY = 'cmssdt-insights-active';
 function Markdown({ text }) {
   return <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ table: ({ node, ...props }) => <div className="insights-table-scroll" role="region" aria-label="Result table — scroll horizontally" tabIndex={0}><table {...props} /></div>, a: props => <a {...props} target="_blank" rel="noopener noreferrer" /> }}>{text}</ReactMarkdown>;
 }
@@ -61,14 +67,16 @@ export default function InsightsPage() {
   const connection = useChatConnection(endpoint, token, setError);
   useEffect(() => { try { sessionStorage.removeItem('cmssdt-chat-access'); } catch { /* Tokens now remain in memory. */ } }, []);
   const refresh = useCallback(async () => { try { setThreads(await listThreads()); } catch { setError('Browser storage is unavailable. Enable site storage to save and open conversations.'); } }, []);
+  const selectThread = useCallback(thread => { safeSet('sessionStorage', ACTIVE_KEY, thread.id); setSelected(thread); }, []);
   useEffect(() => { let live = true; (async () => {
     try {
       const existing = await listThreads();
       if (!live) return;
-      const thread = existing[0] || await createThread();
-      if (live) { setThreads(existing.length ? existing : [thread]); setSelected(thread); }
+      const remembered = safeGet('sessionStorage', ACTIVE_KEY);
+      const thread = existing.find(entry => entry.id === remembered) || await createThread();
+      if (live) { setThreads(await listThreads()); selectThread(thread); }
     } catch { if (live) setError('Browser storage is unavailable. Enable site storage to use conversations.'); }
-  })(); return () => { live = false; }; }, []);
+  })(); return () => { live = false; }; }, [selectThread]);
   const act = async fn => { try { setError(''); await fn(); await refresh(); } catch { setError('Could not save this change in browser storage.'); } };
   return <div className="insights-page">
     <header className="insights-header"><Link to="/" aria-label="Back to builds"><FaArrowLeft /> Builds</Link>
@@ -88,13 +96,13 @@ export default function InsightsPage() {
     {error && <div className="insights-error" role="alert">{error}</div>}
     <div className="insights-layout">
       <aside className="insights-sidebar" aria-label="Saved conversations">
-        <button className="insights-new" onClick={() => act(async () => setSelected(await createThread()))}><FaPlus /> New conversation</button>
+        <button className="insights-new" onClick={() => act(async () => selectThread(await createThread()))}><FaPlus /> New conversation</button>
         <ul>{threads.map(thread => <li key={thread.id} className={selected?.id === thread.id ? 'is-selected' : ''}>
-          <button className="insights-thread-select" title={thread.title} aria-current={selected?.id === thread.id ? 'true' : undefined} onClick={() => setSelected(thread)}>{thread.title}</button>
+          <button className="insights-thread-select" title={thread.title} aria-current={selected?.id === thread.id ? 'true' : undefined} onClick={() => selectThread(thread)}>{thread.title}</button>
           <button aria-label={`Rename ${thread.title}`} onClick={() => { const name = window.prompt('Conversation name', thread.title); if (name?.trim()) act(() => renameThread(thread.id, name)); }}><FaPen /></button>
           <button aria-label={`Delete ${thread.title}`} onClick={() => { if (window.confirm(`Delete “${thread.title}” from this browser?`)) act(async () => {
             await deleteThread(thread.id);
-            if (selected?.id === thread.id) setSelected((await listThreads())[0] || await createThread());
+            if (selected?.id === thread.id) selectThread((await listThreads())[0] || await createThread());
           }); }}><FaTrash /></button>
         </li>)}</ul>
       </aside>
