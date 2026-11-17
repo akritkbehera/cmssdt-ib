@@ -89,12 +89,12 @@ export async function runAgent({ config, messages, signal, emit, client, model, 
     let evidenceSize = 0, failedTools = 0, hasVisibleText = false;
     for (let step = 0; step < (config.maxSteps ?? 8); step++) {
       const finalStep = step === (config.maxSteps ?? 8) - 1;
-      if (finalStep) context.push({ role: 'system', content: 'This is the final response for this investigation. Use only evidence already obtained. Explain unresolved points or ask for a missing parameter. Never infer success, failure, zero counts, or completion from absent data. Do not request more tools.' });
+      if (finalStep) context[0] = { ...context[0], content: `${context[0].content}\nThis is the final response for this investigation. Use only evidence already obtained. Explain unresolved points or ask for a missing parameter. Never infer success, failure, zero counts, or completion from absent data. Do not request more tools.` };
       const stream = await ai.chat.completions.create({ model: config.model, messages: context,
-        tools, tool_choice: finalStep ? 'none' : 'auto', stream: true, max_tokens: 4096 }, { signal }).catch(error => {
+        ...(!finalStep && tools.length ? { tools, tool_choice: 'auto' } : {}), stream: true, max_tokens: 4096 }, { signal }).catch(error => {
           const issue = publicError(error, 'model');
           diagnostics.log('model_request_error', { stage: 'model', status: error.status, errorCode: issue.code,
-            step, messageCount: context.length, contextChars: JSON.stringify(context).length, toolCount: tools.length });
+            step, messageCount: context.length, contextChars: JSON.stringify(context).length, toolCount: finalStep ? 0 : tools.length });
           throw issue;
         });
       const calls = new Map();

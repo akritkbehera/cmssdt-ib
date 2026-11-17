@@ -19,7 +19,10 @@ test('the final investigation step produces an evidence-based answer rather than
       assert.equal(request.tool_choice, 'auto');
       yield { choices: [{ delta: { tool_calls: [{ index: 0, id: 'c1', function: { name: 'SearchIndexTool', arguments: '{}' } }] }, finish_reason: 'tool_calls' }] };
     } else {
-      assert.equal(request.tool_choice, 'none');
+      assert.equal(request.tool_choice, undefined);
+      assert.equal(request.tools, undefined);
+      assert.equal(request.messages.filter(message => message.role === 'system').length, 1);
+      assert.match(request.messages[0].content, /final response for this investigation/);
       assert.ok(request.messages.some(message => message.role === 'tool' && message.content.includes('one bounded result')));
       yield { choices: [{ delta: { content: 'One result was retrieved. Completion of the comparison is not verified.' }, finish_reason: 'stop' }] };
     }
