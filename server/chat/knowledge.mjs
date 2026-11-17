@@ -73,7 +73,12 @@ export function findTemplate(knowledge, id) {
 export function validateTemplateArgs(knowledge, templateId, args = {}) {
   const template = findTemplate(knowledge, templateId);
   if (!template) return { ok: false, errors: [`Unknown query template '${templateId}'.`] };
-  const declared = { ...(knowledge.templates.param_types || {}), ...(template.params || {}) };
+  const paramTypes = knowledge.templates.param_types || {};
+  const declared = {};
+  for (const [name, spec] of Object.entries(template.params || {})) {
+    const ref = paramTypes[spec.type];
+    declared[name] = ref ? { ...ref, ...spec, type: ref.type } : { ...spec };
+  }
   const errors = [];
   const values = {};
   for (const name of Object.keys(args)) {
@@ -247,13 +252,13 @@ export function createKnowledgeCache({ ttlMs = DEFAULT_TTL_MS, now = () => Date.
     /** Load a value through the per-principal cache. Missing or stale entries
      *  trigger the loader (a live discovery/query); fresh entries are reused. */
     async fetch(key, { ttl = ttlMs, load, now: at } = {}) {
-      const current = (at ?? now())();
+      const current = (at ?? now)();
       const entry = entries.get(key);
       if (entry && current - entry.fetchedAt < ttl) { counters.hits++; return { value: entry.value, cached: true, fetchedAt: entry.fetchedAt, stale: false }; }
       if (entry) counters.evictions++;
       counters.misses++;
       const value = await load();
-      const fetchedAt = (at ?? now())();
+      const fetchedAt = (at ?? now)();
       entries.set(key, { value, fetchedAt });
       counters.stores++;
       return { value, cached: false, fetchedAt, stale: Boolean(entry) };
