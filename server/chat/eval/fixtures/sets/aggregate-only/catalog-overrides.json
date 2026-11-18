@@ -1,0 +1,8 @@
+{
+  "datasets": {
+    "unit_test_results": {
+      "coverage": "aggregate_only",
+      "description": "Export contains aggregate counts only (no per-test records)"
+    }
+  }
+}

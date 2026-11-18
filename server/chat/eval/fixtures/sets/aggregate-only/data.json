@@ -1,0 +1,26 @@
+{
+  "cmssdt-ibs-2968": [
+    { "release_name": "CMSSW_20_1_X_2026-11-17-2300", "release_queue": "CMSSW_20_1_X", "arch": "el8_amd64_gcc12", "ib_date": "2026-11-17-2300", "status": "running", "done": false, "passed": null },
+    { "release_name": "CMSSW_20_1_X_2026-11-17-2300", "release_queue": "CMSSW_20_1_X", "arch": "el9_amd64_gcc14", "ib_date": "2026-11-17-2300", "status": "running", "done": false, "passed": null },
+    { "release_name": "CMSSW_20_1_X_2026-11-16-2300", "release_queue": "CMSSW_20_1_X", "arch": "el8_amd64_gcc12", "ib_date": "2026-11-16-2300", "status": "passed", "done": true, "passed": true },
+    { "release_name": "CMSSW_20_1_X_2026-11-16-2300", "release_queue": "CMSSW_20_1_X", "arch": "el9_amd64_gcc14", "ib_date": "2026-11-16-2300", "status": "failed", "done": true, "passed": false },
+    { "release_name": "CMSSW_20_1_CLANG_X_2026-11-16-2300", "release_queue": "CMSSW_20_1_CLANG_X", "arch": "el9_amd64_gcc14", "ib_date": "2026-11-16-2300", "status": "passed", "done": true, "passed": true }
+  ],
+  "cmssdt-utests-2968": [],
+  "cmssdt-utest-summary-2968": [
+    { "release_name": "CMSSW_20_1_X_2026-11-17-2300", "arch": "el8_amd64_gcc12", "failed_tests": 0, "total_tests": 41, "ib_date": "2026-11-17-2300" },
+    { "release_name": "CMSSW_20_1_X_2026-11-16-2300", "arch": "el8_amd64_gcc12", "failed_tests": 2, "total_tests": 238, "ib_date": "2026-11-16-2300" },
+    { "release_name": "CMSSW_20_1_X_2026-11-16-2300", "arch": "el9_amd64_gcc14", "failed_tests": 1, "total_tests": 238, "ib_date": "2026-11-16-2300" }
+  ],
+  "cmssdt-relvals_stats_summary-2968": [
+    { "release_name": "CMSSW_20_1_X_2026-11-16-2300", "release_queue": "CMSSW_20_1_X", "arch": "el8_amd64_gcc12", "workflow": "11634.0", "workflow_name": "TTbar_14TeV+2026", "exitcode": 256, "status": "failed", "ib_date": "2026-11-16-2300" },
+    { "release_name": "CMSSW_20_1_X_2026-11-16-2300", "release_queue": "CMSSW_20_1_X", "arch": "el8_amd64_gcc12", "workflow": "13634.0", "workflow_name": "TTbar_14TeVPU_2026", "exitcode": 1, "status": "failed", "ib_date": "2026-11-16-2300" },
+    { "release_name": "CMSSW_20_1_X_2026-11-16-2300", "release_queue": "CMSSW_20_1_X", "arch": "el8_amd64_gcc12", "workflow": "13234.0", "workflow_name": "ZMM_14TeV_2026", "exitcode": 0, "status": "passed", "ib_date": "2026-11-16-2300" }
+  ],
+  "cmssdt-jenkins-jobs-2968": [
+    { "job_name": "cms-sw-ib-dist-int", "build_number": 412, "status": "SUCCESS", "queue": "CMSSW_20_1_X", "timestamp": "2026-11-17-2310" },
+    { "job_name": "cms-sw-ib-relval", "build_number": 388, "status": "FAILURE", "queue": "CMSSW_20_1_X", "timestamp": "2026-11-17-2345" },
+    { "job_name": "cms-sw-ib-unittests", "build_number": 377, "status": "FAILURE", "queue": "CMSSW_20_1_X", "timestamp": "2026-11-16-2345" },
+    { "job_name": "cmsdist-ib-build", "build_number": 95, "status": "SUCCESS", "queue": "CMSSW_20_1_X", "timestamp": "2026-11-16-2210" }
+  ]
+}

@@ -1,0 +1,495 @@
+{
+  "schema_version": "1.0",
+  "snapshot": {
+    "id": "cmssdt-synthetic-2026-11-18",
+    "generated_at": "2026-11-18T06:00:00Z",
+    "source": "synthetic-fixture",
+    "label": "synthetic",
+    "note": "Synthetic CMSSDT knowledge graph for offline development and replay evaluation. Structure mirrors the real opensearch-knowledge catalog.json contract (schema_version 1); values are invented fixtures, not production data."
+  },
+  "datasets": [
+    {
+      "dataset_id": "ib_builds",
+      "description": "Integration builds (IBs) per release cycle, flavour and architecture",
+      "index": "cmssdt-ibs-*",
+      "granularity": "build",
+      "coverage": "complete",
+      "time_field": "ib_date",
+      "key_fields": ["f-ib-release_name"],
+      "join_keys": ["f-ib-release_name"]
+    },
+    {
+      "dataset_id": "unit_test_results",
+      "description": "Per unit-test outcome records for an IB and architecture",
+      "index": "cmssdt-utests-*",
+      "granularity": "test",
+      "coverage": "complete",
+      "time_field": "ib_date",
+      "key_fields": ["f-ut-release_name", "f-ut-test_name"],
+      "join_keys": ["f-ut-release_name"]
+    },
+    {
+      "dataset_id": "unit_test_summaries",
+      "description": "Per-build aggregate counts of unit-test failures (no per-test rows)",
+      "index": "cmssdt-utest-summary-*",
+      "granularity": "build",
+      "coverage": "aggregate_only",
+      "time_field": "ib_date",
+      "key_fields": ["f-us-release_name"],
+      "join_keys": ["f-us-release_name"]
+    },
+    {
+      "dataset_id": "relval_results",
+      "description": "RelVal workflow outcomes; summary export covering completed workflows only",
+      "index": "cmssdt-relvals_stats_summary-*",
+      "granularity": "workflow_run",
+      "coverage": "partial",
+      "time_field": "ib_date",
+      "key_fields": ["f-rv-release_name", "f-rv-workflow"],
+      "join_keys": ["f-rv-release_name"]
+    },
+    {
+      "dataset_id": "jenkins_jobs",
+      "description": "Jenkins job builds observed by the CMSSDT dashboard",
+      "index": "cmssdt-jenkins-jobs-*",
+      "granularity": "job",
+      "coverage": "complete",
+      "time_field": "timestamp",
+      "key_fields": ["f-jj-job_name"],
+      "join_keys": []
+    }
+  ],
+  "fields": [
+    { "field_id": "f-ib-release_name", "dataset_id": "ib_builds", "name": "release_name", "type": "keyword", "keyword": true, "role": "build_id", "description": "exact IB identifier" },
+    { "field_id": "f-ib-release_queue", "dataset_id": "ib_builds", "name": "release_queue", "type": "keyword", "keyword": true, "role": "series", "description": "release cycle and flavour, e.g. CMSSW_20_1_X or CMSSW_20_1_CLANG_X" },
+    { "field_id": "f-ib-arch", "dataset_id": "ib_builds", "name": "arch", "type": "keyword", "keyword": true, "role": "architecture" },
+    { "field_id": "f-ib-ib_date", "dataset_id": "ib_builds", "name": "ib_date", "type": "date", "role": "timestamp", "description": "IB date-time, format yyyy-MM-dd-HHmm" },
+    { "field_id": "f-ib-status", "dataset_id": "ib_builds", "name": "status", "type": "keyword", "keyword": true, "role": "status" },
+    { "field_id": "f-ib-done", "dataset_id": "ib_builds", "name": "done", "type": "boolean", "role": "attribute" },
+    { "field_id": "f-ib-passed", "dataset_id": "ib_builds", "name": "passed", "type": "boolean", "role": "attribute" },
+
+    { "field_id": "f-ut-release_name", "dataset_id": "unit_test_results", "name": "release_name", "type": "keyword", "keyword": true, "role": "build_id" },
+    { "field_id": "f-ut-arch", "dataset_id": "unit_test_results", "name": "arch", "type": "keyword", "keyword": true, "role": "architecture" },
+    { "field_id": "f-ut-test_name", "dataset_id": "unit_test_results", "name": "test_name", "type": "keyword", "keyword": true, "role": "test_name" },
+    { "field_id": "f-ut-package", "dataset_id": "unit_test_results", "name": "package", "type": "keyword", "keyword": true, "role": "package" },
+    { "field_id": "f-ut-exitcode", "dataset_id": "unit_test_results", "name": "exitcode", "type": "integer", "role": "metric" },
+    { "field_id": "f-ut-status", "dataset_id": "unit_test_results", "name": "status", "type": "keyword", "keyword": true, "role": "status" },
+    { "field_id": "f-ut-ib_date", "dataset_id": "unit_test_results", "name": "ib_date", "type": "date", "role": "timestamp" },
+    { "field_id": "f-ut-step_name", "dataset_id": "unit_test_results", "name": "steps.name", "type": "keyword", "keyword": true, "role": "attribute", "nested_under": "steps", "description": "nested test step name" },
+    { "field_id": "f-ut-step_exitcode", "dataset_id": "unit_test_results", "name": "steps.exitcode", "type": "integer", "role": "metric", "nested_under": "steps", "description": "nested test step exit code" },
+
+    { "field_id": "f-us-release_name", "dataset_id": "unit_test_summaries", "name": "release_name", "type": "keyword", "keyword": true, "role": "build_id" },
+    { "field_id": "f-us-arch", "dataset_id": "unit_test_summaries", "name": "arch", "type": "keyword", "keyword": true, "role": "architecture" },
+    { "field_id": "f-us-failed_tests", "dataset_id": "unit_test_summaries", "name": "failed_tests", "type": "integer", "role": "metric", "description": "count of failing unit tests (aggregate only)" },
+    { "field_id": "f-us-total_tests", "dataset_id": "unit_test_summaries", "name": "total_tests", "type": "integer", "role": "metric" },
+    { "field_id": "f-us-ib_date", "dataset_id": "unit_test_summaries", "name": "ib_date", "type": "date", "role": "timestamp" },
+
+    { "field_id": "f-rv-release_name", "dataset_id": "relval_results", "name": "release_name", "type": "keyword", "keyword": true, "role": "build_id" },
+    { "field_id": "f-rv-release_queue", "dataset_id": "relval_results", "name": "release_queue", "type": "keyword", "keyword": true, "role": "series" },
+    { "field_id": "f-rv-arch", "dataset_id": "relval_results", "name": "arch", "type": "keyword", "keyword": true, "role": "architecture" },
+    { "field_id": "f-rv-workflow", "dataset_id": "relval_results", "name": "workflow", "type": "keyword", "keyword": true, "role": "workflow" },
+    { "field_id": "f-rv-workflow_name", "dataset_id": "relval_results", "name": "workflow_name", "type": "keyword", "keyword": true, "role": "workflow_name" },
+    { "field_id": "f-rv-exitcode", "dataset_id": "relval_results", "name": "exitcode", "type": "integer", "role": "metric" },
+    { "field_id": "f-rv-status", "dataset_id": "relval_results", "name": "status", "type": "keyword", "keyword": true, "role": "status" },
+    { "field_id": "f-rv-ib_date", "dataset_id": "relval_results", "name": "ib_date", "type": "date", "role": "timestamp" },
+
+    { "field_id": "f-jj-job_name", "dataset_id": "jenkins_jobs", "name": "job_name", "type": "keyword", "keyword": true, "role": "job_name" },
+    { "field_id": "f-jj-build_number", "dataset_id": "jenkins_jobs", "name": "build_number", "type": "integer", "role": "metric" },
+    { "field_id": "f-jj-status", "dataset_id": "jenkins_jobs", "name": "status", "type": "keyword", "keyword": true, "role": "status" },
+    { "field_id": "f-jj-queue", "dataset_id": "jenkins_jobs", "name": "queue", "type": "keyword", "keyword": true, "role": "series" },
+    { "field_id": "f-jj-timestamp", "dataset_id": "jenkins_jobs", "name": "timestamp", "type": "date", "role": "timestamp" }
+  ],
+  "relationships": [
+    { "relationship_id": "r-ib-ut", "source": "f-ib-release_name", "target": "f-ut-release_name", "type": "join_key", "granularity": "test", "confidence": "verified", "description": "build row to per-test rows (one build, many tests)" },
+    { "relationship_id": "r-ib-us", "source": "f-ib-release_name", "target": "f-us-release_name", "type": "join_key", "granularity": "build", "confidence": "verified", "description": "build row to its unit-test aggregate counts" },
+    { "relationship_id": "r-ib-rv", "source": "f-ib-release_name", "target": "f-rv-release_name", "type": "join_key", "granularity": "workflow_run", "confidence": "verified", "description": "build row to its RelVal workflow rows" },
+    { "relationship_id": "r-ut-us", "source": "f-ut-release_name", "target": "f-us-release_name", "type": "join_key", "granularity": "build", "confidence": "verified", "description": "per-test rows roll up to the aggregate counts at build granularity" },
+    { "relationship_id": "r-ut-steps", "source": "f-ut-test_name", "target": "f-ut-step_name", "type": "related", "granularity": "test", "confidence": "observed_structural_similarity", "description": "test record to its nested steps" }
+  ],
+  "routes": [
+    {
+      "route_id": "unit-test-failures-per-test",
+      "intent": "unit_test_failures",
+      "description": "Per-test unit-test failures for one IB and architecture",
+      "datasets": ["ib_builds", "unit_test_results"],
+      "required_params": ["build"],
+      "optional_params": ["architecture", "time_window", "flavour"],
+      "templates": ["t-ut-failures", "t-ib-build"],
+      "evidence_fields": ["f-ut-test_name", "f-ut-package", "f-ut-exitcode", "f-ut-status", "f-ib-release_name", "f-ib-arch", "f-ib-ib_date"],
+      "completeness": "per_test",
+      "granularity": "test",
+      "join_keys": ["r-ib-ut"],
+      "blocked_when": ["dataset_coverage_aggregate_only", "dataset_missing"]
+    },
+    {
+      "route_id": "unit-test-failures-aggregate",
+      "intent": "unit_test_failures",
+      "description": "Aggregate counts of unit-test failures per build (no per-test detail)",
+      "datasets": ["ib_builds", "unit_test_summaries"],
+      "required_params": ["series"],
+      "optional_params": ["architecture", "flavour"],
+      "templates": ["t-ut-summary", "t-ib-build-series"],
+      "evidence_fields": ["f-us-failed_tests", "f-us-total_tests", "f-us-release_name", "f-us-arch"],
+      "completeness": "aggregate_only",
+      "granularity": "build",
+      "join_keys": ["r-ib-us"],
+      "blocked_when": [],
+      "note": "counts only; per-test records are not available in this data"
+    },
+    {
+      "route_id": "relval-failures",
+      "intent": "relval_failures",
+      "description": "Failing RelVal workflows for a release cycle/build",
+      "datasets": ["relval_results"],
+      "required_params": ["series"],
+      "optional_params": ["architecture", "workflow", "time_window"],
+      "templates": ["t-rv-failures"],
+      "evidence_fields": ["f-rv-workflow", "f-rv-workflow_name", "f-rv-exitcode", "f-rv-status", "f-rv-release_name", "f-rv-arch"],
+      "completeness": "partial",
+      "granularity": "workflow_run",
+      "join_keys": [],
+      "blocked_when": ["dataset_missing"],
+      "note": "summary export: covers completed workflows only"
+    },
+    {
+      "route_id": "relval-failure-aggregation",
+      "intent": "relval_failure_aggregation",
+      "description": "RelVal failure counts grouped by workflow",
+      "datasets": ["relval_results"],
+      "required_params": ["series"],
+      "optional_params": ["architecture", "time_window"],
+      "templates": ["t-rv-by-workflow"],
+      "evidence_fields": ["f-rv-workflow", "f-rv-exitcode"],
+      "completeness": "partial",
+      "granularity": "workflow_run",
+      "join_keys": [],
+      "blocked_when": ["dataset_missing"]
+    },
+    {
+      "route_id": "latest-ib",
+      "intent": "latest_ib",
+      "description": "The most recent IB of a release cycle (optionally per architecture/flavour)",
+      "datasets": ["ib_builds"],
+      "required_params": ["series"],
+      "optional_params": ["architecture", "flavour"],
+      "templates": ["t-ib-latest"],
+      "evidence_fields": ["f-ib-release_name", "f-ib-release_queue", "f-ib-arch", "f-ib-ib_date", "f-ib-status", "f-ib-done", "f-ib-passed"],
+      "completeness": "complete",
+      "granularity": "build",
+      "join_keys": [],
+      "blocked_when": ["dataset_missing"]
+    },
+    {
+      "route_id": "build-status",
+      "intent": "build_status",
+      "description": "Status/completion of the latest or a named IB",
+      "datasets": ["ib_builds"],
+      "required_params": ["series"],
+      "optional_params": ["build", "architecture", "flavour"],
+      "templates": ["t-ib-status"],
+      "evidence_fields": ["f-ib-release_name", "f-ib-arch", "f-ib-ib_date", "f-ib-status", "f-ib-done", "f-ib-passed"],
+      "completeness": "complete",
+      "granularity": "build",
+      "join_keys": [],
+      "blocked_when": ["dataset_missing"]
+    },
+    {
+      "route_id": "compare-builds",
+      "intent": "compare_builds",
+      "description": "Compare the latest IB of a cycle with its predecessor (or a named comparison target)",
+      "datasets": ["ib_builds"],
+      "required_params": ["series"],
+      "optional_params": ["architecture", "compare_with", "flavour"],
+      "templates": ["t-ib-compare"],
+      "evidence_fields": ["f-ib-release_name", "f-ib-release_queue", "f-ib-arch", "f-ib-ib_date", "f-ib-status", "f-ib-done", "f-ib-passed"],
+      "completeness": "complete",
+      "granularity": "build",
+      "join_keys": [],
+      "blocked_when": ["dataset_missing"]
+    },
+    {
+      "route_id": "compare-flavours",
+      "intent": "compare_flavours",
+      "description": "Latest build per flavour within a release cycle",
+      "datasets": ["ib_builds"],
+      "required_params": ["series"],
+      "optional_params": ["architecture"],
+      "templates": ["t-ib-flavour-compare"],
+      "evidence_fields": ["f-ib-release_queue", "f-ib-release_name", "f-ib-arch", "f-ib-ib_date", "f-ib-status"],
+      "completeness": "complete",
+      "granularity": "build",
+      "join_keys": [],
+      "blocked_when": ["dataset_missing"]
+    },
+    {
+      "route_id": "jenkins-jobs",
+      "intent": "jenkins_jobs",
+      "description": "Recent Jenkins job builds and their statuses",
+      "datasets": ["jenkins_jobs"],
+      "required_params": [],
+      "optional_params": ["time_window", "job"],
+      "templates": ["t-jj-jobs"],
+      "evidence_fields": ["f-jj-job_name", "f-jj-build_number", "f-jj-status", "f-jj-queue", "f-jj-timestamp"],
+      "completeness": "complete",
+      "granularity": "job",
+      "join_keys": [],
+      "blocked_when": ["dataset_missing"]
+    }
+  ],
+  "templates": [
+    {
+      "template_id": "t-ib-latest",
+      "route_id": "latest-ib",
+      "dataset_id": "ib_builds",
+      "transport": "opensearch-dsl",
+      "description": "Latest IBs of a cycle, newest first",
+      "validated": true,
+      "params": {
+        "series": { "type": "string", "field": "f-ib-release_name", "op": "prefix" },
+        "architecture": { "type": "string", "field": "f-ib-arch", "op": "term", "optional": true }
+      },
+      "query": {
+        "size": 3,
+        "filters": [
+          { "op": "prefix", "field": "f-ib-release_name", "param": "series" },
+          { "op": "term", "field": "f-ib-arch", "param": "architecture" }
+        ],
+        "select": ["f-ib-release_name", "f-ib-release_queue", "f-ib-arch", "f-ib-ib_date", "f-ib-status", "f-ib-done", "f-ib-passed"],
+        "sort": [{ "field": "f-ib-ib_date", "order": "desc" }]
+      }
+    },
+    {
+      "template_id": "t-ib-status",
+      "route_id": "build-status",
+      "dataset_id": "ib_builds",
+      "transport": "opensearch-dsl",
+      "description": "Status of the latest (or named) IB",
+      "validated": true,
+      "params": {
+        "series": { "type": "string", "field": "f-ib-release_name", "op": "prefix" },
+        "build": { "type": "string", "field": "f-ib-release_name", "op": "term", "optional": true },
+        "architecture": { "type": "string", "field": "f-ib-arch", "op": "term", "optional": true }
+      },
+      "query": {
+        "size": 2,
+        "filters": [
+          { "op": "prefix", "field": "f-ib-release_name", "param": "series" },
+          { "op": "term", "field": "f-ib-release_name", "param": "build" },
+          { "op": "term", "field": "f-ib-arch", "param": "architecture" }
+        ],
+        "select": ["f-ib-release_name", "f-ib-release_queue", "f-ib-arch", "f-ib-ib_date", "f-ib-status", "f-ib-done", "f-ib-passed"],
+        "sort": [{ "field": "f-ib-ib_date", "order": "desc" }]
+      }
+    },
+    {
+      "template_id": "t-ib-compare",
+      "route_id": "compare-builds",
+      "dataset_id": "ib_builds",
+      "transport": "opensearch-dsl",
+      "description": "Latest two IBs of a cycle for side-by-side comparison",
+      "validated": true,
+      "params": {
+        "series": { "type": "string", "field": "f-ib-release_name", "op": "prefix" },
+        "architecture": { "type": "string", "field": "f-ib-arch", "op": "term", "optional": true }
+      },
+      "query": {
+        "size": 2,
+        "filters": [
+          { "op": "prefix", "field": "f-ib-release_name", "param": "series" },
+          { "op": "term", "field": "f-ib-arch", "param": "architecture" }
+        ],
+        "select": ["f-ib-release_name", "f-ib-release_queue", "f-ib-arch", "f-ib-ib_date", "f-ib-status", "f-ib-done", "f-ib-passed"],
+        "sort": [{ "field": "f-ib-ib_date", "order": "desc" }]
+      }
+    },
+    {
+      "template_id": "t-ib-flavour-compare",
+      "route_id": "compare-flavours",
+      "dataset_id": "ib_builds",
+      "transport": "opensearch-dsl",
+      "description": "Latest IB per release queue (flavour) within a cycle",
+      "validated": true,
+      "params": {
+        "series_prefix": { "type": "string", "field": "f-ib-release_name", "op": "prefix" },
+        "architecture": { "type": "string", "field": "f-ib-arch", "op": "term", "optional": true }
+      },
+      "query": {
+        "size": 0,
+        "filters": [
+          { "op": "prefix", "field": "f-ib-release_name", "param": "series_prefix" },
+          { "op": "term", "field": "f-ib-arch", "param": "architecture" }
+        ],
+        "aggregate": {
+          "field": "f-ib-release_queue",
+          "size": 12,
+          "sub_aggs": [{ "fn": "max", "field": "f-ib-ib_date", "as": "latest_ib_date" }]
+        }
+      }
+    },
+    {
+      "template_id": "t-ib-build",
+      "route_id": "unit-test-failures-per-test",
+      "dataset_id": "ib_builds",
+      "transport": "opensearch-dsl",
+      "description": "Build metadata for the IB under investigation (join key: release_name)",
+      "validated": true,
+      "params": {
+        "build": { "type": "string", "field": "f-ib-release_name", "op": "term" },
+        "architecture": { "type": "string", "field": "f-ib-arch", "op": "term", "optional": true }
+      },
+      "query": {
+        "size": 5,
+        "filters": [
+          { "op": "term", "field": "f-ib-release_name", "param": "build" },
+          { "op": "term", "field": "f-ib-arch", "param": "architecture" }
+        ],
+        "select": ["f-ib-release_name", "f-ib-release_queue", "f-ib-arch", "f-ib-ib_date", "f-ib-status", "f-ib-done", "f-ib-passed"],
+        "sort": [{ "field": "f-ib-ib_date", "order": "desc" }]
+      }
+    },
+    {
+      "template_id": "t-ib-build-series",
+      "route_id": "unit-test-failures-aggregate",
+      "dataset_id": "ib_builds",
+      "transport": "opensearch-dsl",
+      "description": "Build metadata for the cycle under investigation (join key: release_name)",
+      "validated": true,
+      "params": {
+        "series": { "type": "string", "field": "f-ib-release_name", "op": "prefix" },
+        "build": { "type": "string", "field": "f-ib-release_name", "op": "term", "optional": true },
+        "architecture": { "type": "string", "field": "f-ib-arch", "op": "term", "optional": true }
+      },
+      "query": {
+        "size": 5,
+        "filters": [
+          { "op": "prefix", "field": "f-ib-release_name", "param": "series" },
+          { "op": "term", "field": "f-ib-release_name", "param": "build" },
+          { "op": "term", "field": "f-ib-arch", "param": "architecture" }
+        ],
+        "select": ["f-ib-release_name", "f-ib-release_queue", "f-ib-arch", "f-ib-ib_date", "f-ib-status"],
+        "sort": [{ "field": "f-ib-ib_date", "order": "desc" }]
+      }
+    },
+    {
+      "template_id": "t-ut-failures",
+      "route_id": "unit-test-failures-per-test",
+      "dataset_id": "unit_test_results",
+      "transport": "opensearch-dsl",
+      "description": "Per-test unit-test failures (exitcode != 0) for one IB",
+      "validated": true,
+      "params": {
+        "build": { "type": "string", "field": "f-ut-release_name", "op": "term" },
+        "architecture": { "type": "string", "field": "f-ut-arch", "op": "term", "optional": true },
+        "time_window": { "type": "date", "field": "f-ut-ib_date", "op": "range", "optional": true }
+      },
+      "query": {
+        "size": 50,
+        "filters": [
+          { "op": "term", "field": "f-ut-release_name", "param": "build" },
+          { "op": "term", "field": "f-ut-arch", "param": "architecture" },
+          { "op": "range", "field": "f-ut-ib_date", "param": "time_window" },
+          { "op": "not_term", "field": "f-ut-exitcode", "value": 0 }
+        ],
+        "select": ["f-ut-release_name", "f-ut-arch", "f-ut-test_name", "f-ut-package", "f-ut-exitcode", "f-ut-status", "f-ut-ib_date"],
+        "sort": [{ "field": "f-ut-test_name", "order": "asc" }]
+      }
+    },
+    {
+      "template_id": "t-ut-summary",
+      "route_id": "unit-test-failures-aggregate",
+      "dataset_id": "unit_test_summaries",
+      "transport": "opensearch-dsl",
+      "description": "Aggregate unit-test failure counts per build (no per-test rows exist)",
+      "validated": true,
+      "params": {
+        "series": { "type": "string", "field": "f-us-release_name", "op": "prefix" },
+        "build": { "type": "string", "field": "f-us-release_name", "op": "term", "optional": true },
+        "architecture": { "type": "string", "field": "f-us-arch", "op": "term", "optional": true }
+      },
+      "query": {
+        "size": 20,
+        "filters": [
+          { "op": "prefix", "field": "f-us-release_name", "param": "series" },
+          { "op": "term", "field": "f-us-release_name", "param": "build" },
+          { "op": "term", "field": "f-us-arch", "param": "architecture" }
+        ],
+        "select": ["f-us-release_name", "f-us-arch", "f-us-failed_tests", "f-us-total_tests", "f-us-ib_date"],
+        "sort": [{ "field": "f-us-ib_date", "order": "desc" }]
+      }
+    },
+    {
+      "template_id": "t-rv-failures",
+      "route_id": "relval-failures",
+      "dataset_id": "relval_results",
+      "transport": "opensearch-dsl",
+      "description": "Failing RelVal workflows (exitcode != 0)",
+      "validated": true,
+      "params": {
+        "series": { "type": "string", "field": "f-rv-release_name", "op": "prefix" },
+        "build": { "type": "string", "field": "f-rv-release_name", "op": "term", "optional": true },
+        "architecture": { "type": "string", "field": "f-rv-arch", "op": "term", "optional": true },
+        "workflow": { "type": "string", "field": "f-rv-workflow", "op": "term", "optional": true },
+        "time_window": { "type": "date", "field": "f-rv-ib_date", "op": "range", "optional": true }
+      },
+      "query": {
+        "size": 50,
+        "filters": [
+          { "op": "prefix", "field": "f-rv-release_name", "param": "series" },
+          { "op": "term", "field": "f-rv-release_name", "param": "build" },
+          { "op": "term", "field": "f-rv-arch", "param": "architecture" },
+          { "op": "term", "field": "f-rv-workflow", "param": "workflow" },
+          { "op": "range", "field": "f-rv-ib_date", "param": "time_window" },
+          { "op": "not_term", "field": "f-rv-exitcode", "value": 0 }
+        ],
+        "select": ["f-rv-release_name", "f-rv-arch", "f-rv-workflow", "f-rv-workflow_name", "f-rv-exitcode", "f-rv-status", "f-rv-ib_date"],
+        "sort": [{ "field": "f-rv-workflow", "order": "asc" }]
+      }
+    },
+    {
+      "template_id": "t-rv-by-workflow",
+      "route_id": "relval-failure-aggregation",
+      "dataset_id": "relval_results",
+      "transport": "ppl",
+      "description": "RelVal failure counts grouped by workflow via bounded PPL (existing controls)",
+      "validated": true,
+      "params": {
+        "series": { "type": "string", "field": "f-rv-release_queue" },
+        "build": { "type": "string", "field": "f-rv-release_name", "optional": true },
+        "architecture": { "type": "string", "field": "f-rv-arch", "optional": true }
+      },
+      "ppl": {
+        "source": "cmssdt-relvals_stats_summary-2968",
+        "where": [
+          { "field": "f-rv-release_queue", "op": "=", "param": "series" },
+          { "field": "f-rv-release_name", "op": "=", "param": "build" },
+          { "field": "f-rv-arch", "op": "=", "param": "architecture" },
+          { "field": "f-rv-exitcode", "op": "!=", "value": 0 }
+        ],
+        "stats": { "fn": "count", "by": "f-rv-workflow", "size": 20 },
+        "sort": "- total",
+        "head": 20
+      }
+    },
+    {
+      "template_id": "t-jj-jobs",
+      "route_id": "jenkins-jobs",
+      "dataset_id": "jenkins_jobs",
+      "transport": "opensearch-dsl",
+      "description": "Recent Jenkins job builds, newest first",
+      "validated": true,
+      "params": {
+        "job": { "type": "string", "field": "f-jj-job_name", "op": "prefix", "optional": true },
+        "time_window": { "type": "date", "field": "f-jj-timestamp", "op": "range", "optional": true }
+      },
+      "query": {
+        "size": 20,
+        "filters": [
+          { "op": "prefix", "field": "f-jj-job_name", "param": "job" },
+          { "op": "range", "field": "f-jj-timestamp", "param": "time_window" }
+        ],
+        "select": ["f-jj-job_name", "f-jj-build_number", "f-jj-status", "f-jj-queue", "f-jj-timestamp"],
+        "sort": [{ "field": "f-jj-timestamp", "order": "desc" }]
+      }
+    }
+  ]
+}

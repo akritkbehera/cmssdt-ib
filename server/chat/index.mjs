@@ -6,6 +6,7 @@ import { createAuth } from './auth.mjs';
 import { publicError } from './errors.mjs';
 import { createDiagnostics } from './diagnostics.mjs';
 import { createToolCache } from './mcp.mjs';
+import { loadGraph } from './graph/pipeline.mjs';
 
 export function createChatServer(config, agent = runAgent, options = {}) {
   let active = 0;
@@ -13,6 +14,17 @@ export function createChatServer(config, agent = runAgent, options = {}) {
   const connect = options.openMcp || openMcp;
   const list = options.discoverTools || discoverTools;
   const toolCache = options.toolCache || createToolCache();
+  // Versioned knowledge graph for the ROUTE/QUERY/ANSWER path. Loaded once at
+  // startup; a missing or invalid catalog disables the path (the plain tool
+  // loop keeps serving) and the reason is logged, never invented.
+  const graphPromise = options.graph !== undefined
+    ? Promise.resolve(options.graph)
+    : config.graphPath
+      ? loadGraph(config.graphPath).then(graph => {
+        if (!graph.ok) console.error(`knowledge graph disabled: ${graph.errors.join('; ')}`);
+        return graph;
+      })
+      : Promise.resolve(null);
   async function handle(req, res) {
     const origin = req.headers.origin;
     res.setHeader('Cache-Control', 'no-store');
@@ -28,9 +40,12 @@ export function createChatServer(config, agent = runAgent, options = {}) {
     const ready = Boolean(config.apiKey && config.model && config.mcpURL);
     if (req.url === '/api/chat/health' && req.method === 'GET') {
       if (auth.mode === 'service' && config.accessToken) await auth.resolve(req);
+      const graph = await graphPromise;
       res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ ready, model: config.model || null,
         authMode: auth.mode, mcpURL: config.mcpURL, audience: config.mcpAudience,
-        connectionVerified: false })); return;
+        connectionVerified: false,
+        knowledgeGraph: graph ? { ok: graph.ok, source: graph.source, snapshot: graph.catalog?.snapshot?.id || null,
+          schemaVersion: graph.catalog?.schemaVersion || null, errors: graph.ok ? [] : graph.errors } : null })); return;
     }
     if (req.url === '/api/chat/connection' && req.method === 'POST') {
       if (active >= 4) { res.writeHead(429).end(); return; }
@@ -73,7 +88,9 @@ export function createChatServer(config, agent = runAgent, options = {}) {
     const heartbeat = setInterval(() => emit({ type: 'heartbeat' }), 10000);
     diagnostics.log('chat_request', { stage: 'connect', messages: messages.length });
     try {
-      await agent({ config: runtime, messages, signal: controller.signal, emit, diagnostics, toolCache });
+      const graph = await graphPromise;
+      await agent({ config: runtime, messages, signal: controller.signal, emit, diagnostics, toolCache,
+        graph: graph?.catalog ? graph : null });
     } catch (error) {
       const issue = publicError(error);
       diagnostics.log('chat_request', { stage: 'close', outcome: 'error', errorKind: issue.kind, errorCode: issue.code, status: issue.status });

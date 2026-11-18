@@ -24,6 +24,11 @@ export function loadConfig(env = process.env) {
     pplTimeout: Number(env.CHAT_PPL_TIMEOUT_MS || 120000),
     pplMaxBytes: Number(env.CHAT_PPL_MAX_BYTES || 131072),
     pplIndices: env.CHAT_PPL_ALLOWED_INDICES ? env.CHAT_PPL_ALLOWED_INDICES.split(',').map(s => s.trim()) : [...DEFAULT_PPL_INDICES],
+    // Versioned CMSSDT knowledge graph (schema_version 1). Empty disables the
+    // graph-guided ROUTE/QUERY/ANSWER path and keeps the plain tool loop.
+    graphPath: env.CHAT_GRAPH_PATH || '',
+    graphEnabled: env.CHAT_GRAPH !== 'false',
+    promptVersion: env.CHAT_PROMPT_VERSION || 'v1',
   };
   if (!Number.isInteger(config.mcpTimeout) || config.mcpTimeout < 1000 || config.mcpTimeout > 600000) throw new Error('CHAT_MCP_TIMEOUT_MS must be between 1000 and 600000.');
   const mcp = new URL(config.mcpURL);
@@ -35,6 +40,7 @@ export function loadConfig(env = process.env) {
   if (!Number.isInteger(config.pplTimeout) || config.pplTimeout < 1000 || config.pplTimeout > 600000) throw new Error('CHAT_PPL_TIMEOUT_MS must be between 1000 and 600000.');
   if (!Number.isInteger(config.pplMaxBytes) || config.pplMaxBytes < 1024 || config.pplMaxBytes > 131072) throw new Error('CHAT_PPL_MAX_BYTES must be between 1024 and 131072.');
   if (!config.pplIndices.length || config.pplIndices.some(p => !/^cmssdt-[a-z0-9_-]+(?:\*)?$/.test(p))) throw new Error('CHAT_PPL_ALLOWED_INDICES accepts concrete cmssdt names or cmssdt family prefixes with one trailing *.');
+  if (!/^v[0-9]+$/.test(config.promptVersion)) throw new Error('CHAT_PROMPT_VERSION must look like v1, v2, …');
   if (!config.mcpHeaders || typeof config.mcpHeaders !== 'object' || Array.isArray(config.mcpHeaders)) throw new Error('OPENSEARCH_MCP_HEADERS must be a JSON object.');
   if (Object.keys(config.mcpHeaders).some(key => key.toLowerCase() === 'cookie')) throw new Error('SSO cookies are not supported for API authentication. Use a dedicated credential or OIDC token.');
   if (config.oidcClientId || config.oidcClientSecret || config.oidcRedirectURI) {
