@@ -81,7 +81,8 @@ export function extractParams(question, { source = 'question' } = {}) {
   const series = SERIES_RE.exec(text);
   if (series) {
     const flavourBit = (series[3] || '').toUpperCase();
-    set('series', `CMSSW_${series[1]}_${series[2]}${flavourBit && flavourBit !== 'X' ? `_${flavourBit}` : '_X'}`);
+    // Flavoured cycles keep their _X suffix: CMSSW_20_1_CLANG_X, not CMSSW_20_1_CLANG.
+    set('series', `CMSSW_${series[1]}_${series[2]}${flavourBit && flavourBit !== 'X' ? `_${flavourBit}_X` : '_X'}`);
     if (flavourBit && flavourBit !== 'X') set('flavour', flavourBit);
     set('series_prefix', `CMSSW_${series[1]}_${series[2]}_`);
   }
@@ -91,7 +92,7 @@ export function extractParams(question, { source = 'question' } = {}) {
       set('flavour', (parts[3] || 'DEFAULT').toUpperCase());
       // A named build implies its release cycle: deriving it keeps required
       // `series` satisfied without a needless clarification.
-      set('series', `CMSSW_${parts[1]}_${parts[2]}${parts[3] ? `_${parts[3]}` : '_X'}`);
+      set('series', `CMSSW_${parts[1]}_${parts[2]}${parts[3] ? `_${parts[3]}_X` : '_X'}`);
       set('series_prefix', `CMSSW_${parts[1]}_${parts[2]}_`);
     }
   }
@@ -114,7 +115,9 @@ export function resolveParams(question, conversation = []) {
   const fromQuestion = extractParams(question, { source: 'question' });
   const merged = { ...fromQuestion };
   const earlier = [];
-  for (const message of conversation.slice(0, -1)) {
+  // The current question arrives separately, so every conversation message may
+  // supply parameters. (Question values win because they are merged first.)
+  for (const message of conversation) {
     if (!message?.content) continue;
     earlier.push(extractParams(message.content, { source: 'conversation' }));
   }
@@ -131,7 +134,10 @@ export function resolveParams(question, conversation = []) {
 // comparison; aggregate questions ("how many failures per workflow") are
 // distinguished from detail questions ("which workflows failed").
 export function detectIntent(question) {
-  const text = String(question || '').toLowerCase();
+  const rawText = String(question || '').toLowerCase();
+  // Architecture tokens (e.g. "..._gcc12") are not flavour evidence, so they
+  // are masked before the flavour-comparison branch is considered.
+  const text = rawText.replace(new RegExp(ARCH_BODY, 'gi'), ' ');
   const has = pattern => pattern.test(text);
   const detail = /\b(which|what|list|names?|per[- ]test|each test|show .*(tests?|failures))\b/;
   const aggregate = /\b(how many|count|number of|total|per workflow|group|aggregate|distribution|most)\b/;

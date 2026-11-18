@@ -243,7 +243,7 @@ export function executePplFixture(set, query) {
       const key = stats.by ? get(doc, stats.by) : '__all__';
       groups.set(String(key), (groups.get(String(key)) || 0) + 1);
     }
-    rows = [...groups.entries()].map(([key, count]) => ({ ...(stats.by ? { [stats.by]: key === '__all__' ? null : (isNaN(Number(key)) ? key : Number(key)) } : {}), [stats.as]: count }));
+    rows = [...groups.entries()].map(([key, count]) => ({ ...(stats.by ? { [stats.by]: key === '__all__' ? null : key } : {}), [stats.as]: count }));
   } else {
     rows = docs.map(doc => doc);
   }

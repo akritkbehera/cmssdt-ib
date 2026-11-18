@@ -190,16 +190,19 @@ export function legacySearch(question, mappingFields, context = {}) {
   const series = /\bCMSSW[_ ]([0-9]{1,2})[._]([0-9]{1,2})/i.exec(question);
   const arch = /\b(?:el[0-9]|slc[0-9])[a-z0-9]*_(?:amd64|aarch64|x86_64)_[a-z0-9]+\b/i.exec(question)?.[0]?.toLowerCase();
   const filter = [];
-  const releaseField = has('release_name') ? 'release_name' : 'release';
-  if (build) filter.push({ term: { [releaseField]: build } });
-  else if (series) filter.push({ prefix: { [releaseField]: `CMSSW_${series[1]}_${series[2]}_` } });
-  else if (context.defaultSeriesPrefix) filter.push({ prefix: { [releaseField]: context.defaultSeriesPrefix } });
-  if (arch && has('arch')) filter.push({ term: { arch } });
-  if (['unit_test_failures', 'relval_failures', 'relval_failure_aggregation'].includes(intent) && has('exitcode')) {
-    filter.push({ bool: { must_not: [{ term: { exitcode: 0 } }] } });
-  }
-  if (intent === 'jenkins_jobs' && has('timestamp') && context.windowStart) {
-    filter.push({ range: { timestamp: { gte: context.windowStart } } });
+  if (intent === 'jenkins_jobs') {
+    // A plain-loop user queries the job fields the mapping actually shows.
+    if (/\bfail/i.test(question) && has('status')) filter.push({ bool: { must_not: [{ term: { status: 'SUCCESS' } }] } });
+    if (has('timestamp') && context.windowStart) filter.push({ range: { timestamp: { gte: context.windowStart } } });
+  } else {
+    const releaseField = has('release_name') ? 'release_name' : 'release';
+    if (build) filter.push({ term: { [releaseField]: build } });
+    else if (series) filter.push({ prefix: { [releaseField]: `CMSSW_${series[1]}_${series[2]}_` } });
+    else if (context.defaultSeriesPrefix) filter.push({ prefix: { [releaseField]: context.defaultSeriesPrefix } });
+    if (arch && has('arch')) filter.push({ term: { arch } });
+    if (['unit_test_failures', 'relval_failures', 'relval_failure_aggregation'].includes(intent) && has('exitcode')) {
+      filter.push({ bool: { must_not: [{ term: { exitcode: 0 } }] } });
+    }
   }
   const index = context.indexFor ? context.indexFor(intent) : null;
   return { index, query: { bool: { filter } }, size: intent === 'compare_builds' || intent === 'compare_flavours' ? 4 : 20 };

@@ -35,7 +35,7 @@ function timeBounds(rows, timeField) {
 //   - export_incomplete_coverage: rows exist but the source declares partial
 //     coverage (e.g. an export that did not include every test);
 //   - aggregate_only / partial / complete otherwise.
-export function classifyCompleteness({ route, results, needsPerTestDetail, catalog }) {
+export function classifyCompleteness({ route, results, needsPerTestDetail, catalog, primaryDatasetIds = null }) {
   const failures = results.filter(result => result.outcome !== 'success');
   const successes = results.filter(result => result.outcome === 'success');
   const datasetById = new Map((catalog?.datasets || []).map(dataset => [dataset.datasetId, dataset]));
@@ -46,7 +46,20 @@ export function classifyCompleteness({ route, results, needsPerTestDetail, catal
     }
     return { status: 'query_failed', details, failed: failures.map(failure => ({ dataset: failure.plan?.ir?.datasetId || null, outcome: failure.outcome, detail: failure.detail || null })) };
   }
+  // The "primary" results carry the records the question asks about; other
+  // results are context (e.g. build metadata for a per-test question). Zero
+  // matches is judged on the primary results so a metadata hit cannot mask an
+  // empty answer set, and context rows cannot fake a non-empty one.
+  const isPrimary = result => !primaryDatasetIds || primaryDatasetIds.has(result.plan.ir.datasetId);
+  const primary = successes.filter(isPrimary);
+  const contextRows = successes.filter(result => !isPrimary(result))
+    .reduce((sum, result) => sum + (result.rows?.length || 0) + (result.aggregate?.buckets?.length || 0), 0);
+  const primaryRows = primary.reduce((sum, result) => sum + (result.rows?.length || 0) + (result.aggregate?.buckets?.length || 0), 0);
   const totalRows = successes.reduce((sum, result) => sum + (result.rows?.length || 0) + (result.aggregate?.buckets?.length || 0), 0);
+  if (primary.length && primaryRows === 0) {
+    details.push(`the queries carrying the asked-about records matched nothing${contextRows ? ` (only ${contextRows} context record(s) matched elsewhere)` : ''}`);
+    return { status: 'zero_matches', details };
+  }
   const perTestSources = successes
     .filter(result => (result.rows?.length || 0) > 0 && datasetById.get(result.plan.ir.datasetId)?.granularity === 'test')
     .map(result => result.plan.ir.datasetId);
@@ -78,9 +91,9 @@ export function classifyCompleteness({ route, results, needsPerTestDetail, catal
   return { status: 'complete', details };
 }
 
-export function buildEvidenceBundle({ question, routing, results, combined = null, catalog, retrievedAt = null, timeField = null, needsPerTestDetail = false }) {
+export function buildEvidenceBundle({ question, routing, results, combined = null, catalog, retrievedAt = null, timeField = null, needsPerTestDetail = false, primaryDatasetIds = null }) {
   const route = routing?.bundle?.route || null;
-  const completeness = classifyCompleteness({ route, results, needsPerTestDetail, catalog });
+  const completeness = classifyCompleteness({ route, results, needsPerTestDetail, catalog, primaryDatasetIds });
   const successes = results.filter(result => result.outcome === 'success');
   const rows = combined?.rows?.length ? combined.rows : successes.flatMap(result => result.rows || []);
   const datasetTimeField = timeField || catalog?.datasets?.find(dataset => route?.datasets?.includes(dataset.datasetId))?.timeField || null;

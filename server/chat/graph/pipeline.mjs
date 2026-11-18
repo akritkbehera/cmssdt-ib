@@ -127,8 +127,12 @@ export async function runGraphPipeline({ question, conversation = [], catalog, s
   const joins = routing.bundle.joins || [];
   const combined = results.length > 1 ? combineResults(results, joins, { granularity: routing.bundle.route?.granularity }) : null;
   const needsPerTestDetail = wantsPerTestDetail(question);
+  // The route's first template carries the records the question asks about;
+  // remaining templates are context (e.g. build metadata).
+  const primaryTemplate = routing.bundle.templates?.[0] || null;
+  const primaryDatasetIds = primaryTemplate ? new Set([primaryTemplate.datasetId]) : null;
   const bundle = buildEvidenceBundle({ question, routing, results, combined, catalog,
-    retrievedAt: retrievedAt || new Date().toISOString(), needsPerTestDetail });
+    retrievedAt: retrievedAt || new Date().toISOString(), needsPerTestDetail, primaryDatasetIds });
   record.evidenceStatus = bundle.completeness.status;
   record.evidenceScope = describeScope(results.map(result => ({ ir: result.plan.ir })), routing.params);
 

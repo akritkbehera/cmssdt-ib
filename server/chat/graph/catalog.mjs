@@ -59,7 +59,9 @@ function normalizeDataset(raw, index, errors) {
     description: String(scalar(raw?.description) || ''),
     index: String(scalar(raw?.index) || scalar(raw?.index_pattern) || ''),
     granularity: String(scalar(raw?.granularity) || 'document'),
-    coverage: String(scalar(raw?.coverage?.status) || scalar(raw?.completeness) || 'unknown'),
+    coverage: String(scalar(raw?.coverage?.status)
+      || (typeof raw?.coverage === 'string' ? raw.coverage : null)
+      || scalar(raw?.completeness) || 'unknown'),
     timeField: scalar(raw?.time_field) || null,
     keyFields: asList(raw?.key_fields || raw?.build_key).map(scalar).filter(Boolean),
     joinKeys: asList(raw?.join_keys).map(scalar).filter(Boolean),
