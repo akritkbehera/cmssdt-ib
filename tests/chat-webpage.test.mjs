@@ -28,3 +28,18 @@ test('rejects disallowed URLs and checks redirect targets before requesting them
   assert.equal((await readIbWebpage({ url }, { fetchPage })).isError, true);
   assert.equal(calls, 1);
 });
+
+test('distinguishes sign-in redirects, missing reports and unsupported formats', async () => {
+  const fixtures = [
+    [new Response(null, { status: 302, headers: { location: 'https://auth.cern.ch/login?state=private' } }), 'login_required'],
+    [new Response(null, { status: 404 }), 'not_found'],
+    [new Response('binary', { headers: { 'content-type': 'application/octet-stream' } }), 'unsupported_format'],
+  ];
+  for (const [response, code] of fixtures) {
+    let calls = 0;
+    const value = parse(await readIbWebpage({ url }, { fetchPage: async () => { calls++; return response; } }));
+    assert.equal(value.code, code);
+    assert.equal(calls, 1);
+    assert.ok(!JSON.stringify(value).includes('state=private'));
+  }
+});

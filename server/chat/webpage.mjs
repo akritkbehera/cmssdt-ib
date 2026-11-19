@@ -28,11 +28,25 @@ function approvedUrl(value, base) {
 const entities = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
 const decode = text => text.replace(/&(amp|lt|gt|quot|apos|nbsp|#39);/g, (_, key) => key === '#39' ? "'" : entities[key]);
 const plain = text => decode(text.replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim();
+export const WEBPAGE_ERRORS = Object.freeze({
+  url_not_allowed: 'This link is outside the approved CMS report pages.',
+  redirect_not_allowed: 'The report redirected to an unapproved page.',
+  redirect_limit: 'The report exceeded the redirect limit.',
+  login_required: 'The report requires CERN sign-in.',
+  access_denied: 'The report denied access to the chat backend.',
+  not_found: 'The report was not found (HTTP 404).',
+  unsupported_format: 'The report format is not supported.',
+  http_error: 'The report server returned an HTTP error.',
+  timeout: 'The report request timed out.',
+  request_failed: 'The backend could not reach or read the report.',
+});
+const fail = (code, details = {}) => result({ code, error: WEBPAGE_ERRORS[code], ...details }, true);
+
 const result = (data, isError = false) => ({ isError, content: [{ type: 'text', text: JSON.stringify(data) }] });
 
 export async function readIbWebpage({ url, offset = 0, find }, { signal, fetchPage = fetch } = {}) {
   let source = approvedUrl(url);
-  if (!source) return result({ error: 'URL is outside the approved CMS IB pages and report paths.' }, true);
+  if (!source) return fail('url_not_allowed');
   const timeout = AbortSignal.timeout(15000);
   const deadline = signal ? AbortSignal.any([signal, timeout]) : timeout;
   try {
@@ -43,13 +57,21 @@ export async function readIbWebpage({ url, offset = 0, find }, { signal, fetchPa
       const location = response.headers.get('location');
       await response.body?.cancel();
       const next = location && approvedUrl(location, source);
-      if (!next || redirects === 3) return result({ source, error: 'Report redirected outside approved pages or exceeded the redirect limit.' }, true);
+      if (!next && location && /^https:\/\/(?:auth|login|sso)\.cern\.ch(?:[/?#]|$)/i.test(location)) {
+        return fail('login_required', { source, status: response.status });
+      }
+      if (!next) return fail('redirect_not_allowed', { source, status: response.status });
+      if (redirects === 3) return fail('redirect_limit', { source, status: response.status });
       source = next;
     }
     const type = response.headers.get('content-type') || '';
     if (!response.ok || !/^(?:text\/(?:html|plain|csv)|application\/(?:json|xhtml\+xml))(?:\s*;|$)/i.test(type) || !response.body) {
       await response.body?.cancel();
-      return result({ source, error: 'Page is unavailable or is not a supported text report.', status: response.status }, true);
+      const code = response.status === 401 ? 'login_required'
+        : response.status === 403 ? 'access_denied'
+        : response.status === 404 ? 'not_found'
+        : response.ok ? 'unsupported_format' : 'http_error';
+      return fail(code, { source, status: response.status });
     }
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
@@ -84,6 +106,6 @@ export async function readIbWebpage({ url, offset = 0, find }, { signal, fetchPa
       inputTruncated, ...(find ? { found: match >= 0 } : {}) });
   } catch (error) {
     if (signal?.aborted) throw error;
-    return result({ source, error: timeout.aborted ? 'Page request timed out.' : 'Page could not be read.' }, true);
+    return fail(timeout.aborted ? 'timeout' : 'request_failed', { source });
   }
 }
