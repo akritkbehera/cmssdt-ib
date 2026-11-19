@@ -6,6 +6,7 @@ import { createAuth } from './auth.mjs';
 import { publicError } from './errors.mjs';
 import { createDiagnostics } from './diagnostics.mjs';
 import { createToolCache } from './mcp.mjs';
+import { loadDatasetRegistry } from './datasets.mjs';
 
 export function createChatServer(config, agent = runAgent, options = {}) {
   let active = 0;
@@ -73,7 +74,8 @@ export function createChatServer(config, agent = runAgent, options = {}) {
     const heartbeat = setInterval(() => emit({ type: 'heartbeat' }), 10000);
     diagnostics.log('chat_request', { stage: 'connect', messages: messages.length });
     try {
-      await agent({ config: runtime, messages, signal: controller.signal, emit, diagnostics, toolCache });
+      await agent({ config: runtime, messages, signal: controller.signal, emit, diagnostics, toolCache,
+        ...(options.datasetRegistry ? { datasetRegistry: options.datasetRegistry } : {}) });
     } catch (error) {
       const issue = publicError(error);
       diagnostics.log('chat_request', { stage: 'close', outcome: 'error', errorKind: issue.kind, errorCode: issue.code, status: issue.status });
@@ -96,5 +98,12 @@ export function createChatServer(config, agent = runAgent, options = {}) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const config = loadConfig();
-  createChatServer(config).listen(config.port, config.host, () => console.log(`IB Insights backend listening on ${config.host}:${config.port}`));
+  // Fail fast on an invalid registry: it is read and validated once here and
+  // only read afterwards.
+  const datasetRegistry = await loadDatasetRegistry().catch(error => {
+    console.error(error.message);
+    process.exit(1);
+  });
+  createChatServer(config, runAgent, { datasetRegistry }).listen(config.port, config.host,
+    () => console.log(`IB Insights backend listening on ${config.host}:${config.port}`));
 }

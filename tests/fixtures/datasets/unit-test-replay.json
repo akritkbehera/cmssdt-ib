@@ -1,0 +1,42 @@
+{
+  "name": "unit test failures for a specific release and architecture",
+  "question": "Which unit tests failed on CMSSW_20_1_X_2026-11-17-2300 for el8_amd64_gcc14?",
+  "expected": {
+    "dataset_key": "unit-test-results",
+    "cluster": "cmssdt1",
+    "index_family": "cmssdt-ibs-*",
+    "release": "CMSSW_20_1_X_2026-11-17-2300",
+    "architecture": "el8_amd64_gcc14",
+    "index": "cmssdt-ibs-2968"
+  },
+  "steps": [
+    { "tool": "resolve_dataset", "arguments": { "key": "unit tests" } },
+    { "tool": "ListIndexTool", "arguments": {} },
+    { "tool": "IndexMappingTool", "arguments": { "index": "cmssdt-ibs-2968" } },
+    {
+      "tool": "SearchIndexTool",
+      "arguments": {
+        "index": "cmssdt-ibs-2968",
+        "query": {
+          "size": 50,
+          "query": {
+            "bool": {
+              "filter": [
+                { "term": { "release": "CMSSW_20_1_X_2026-11-17-2300" } },
+                { "term": { "architecture": "el8_amd64_gcc14" } },
+                { "term": { "status": 1 } }
+              ]
+            }
+          },
+          "_source": ["release", "architecture", "name", "package", "status"]
+        }
+      }
+    }
+  ],
+  "tool_results": {
+    "ListIndexTool": "{\"indices\":[{\"index\":\"cmssdt-ibs-2968\",\"health\":\"green\",\"status\":\"open\"}]}",
+    "IndexMappingTool": "{\"cmssdt-ibs-2968\":{\"mappings\":{\"properties\":{\"release\":{\"type\":\"keyword\"},\"architecture\":{\"type\":\"keyword\"},\"name\":{\"type\":\"keyword\"},\"package\":{\"type\":\"keyword\"},\"status\":{\"type\":\"keyword\"}}}}}",
+    "SearchIndexTool": "{\"hits\":{\"total\":{\"value\":0,\"relation\":\"eq\"},\"hits\":[]}}"
+  },
+  "final_answer": "No unit-test records matched release CMSSW_20_1_X_2026-11-17-2300 for architecture el8_amd64_gcc14 in index cmssdt-ibs-2968. The sample is incomplete, and status 1 is only a candidate failure code: the live mapping and status semantics remain unconfirmed. This fixture replay does not establish the live answer."
+}

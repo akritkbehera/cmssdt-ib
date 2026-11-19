@@ -188,7 +188,7 @@ test('one existing model loop can call all three MCP tools plus local PPL withou
     callTool: async call => { remote.push(call.name); return { content: [{ type: 'text', text: '{}' }] }; }, close: async () => {} };
   const model = { chat: { completions: { create: async request => (async function* () {
     if (++turn === 1) {
-      assert.deepEqual(request.tools.map(tool => tool.function.name), [...names, 'read_ib_webpage', PPL_TOOL_NAME]);
+      assert.deepEqual(request.tools.map(tool => tool.function.name), ['resolve_dataset', ...names, 'read_ib_webpage', PPL_TOOL_NAME]);
       yield { choices: [{ delta: { tool_calls: [...names, PPL_TOOL_NAME].map((name, i) => ({ index: i, id: `call${i}`, function: { name, arguments: JSON.stringify(name === PPL_TOOL_NAME ? { query } : {}) } })) }, finish_reason: 'tool_calls' }] };
     } else {
       assert.ok(request.messages.some(message => message.role === 'tool' && message.content.includes('1748')));
@@ -207,7 +207,7 @@ test('disabling PPL leaves the three existing MCP tools available', async () => 
   const names = ['ListIndexTool', 'IndexMappingTool', 'SearchIndexTool'];
   const client = { listTools: async () => ({ tools: names.map(name => ({ name, inputSchema: { type: 'object' } })) }), close: async () => {} };
   const model = { chat: { completions: { create: async request => {
-    assert.deepEqual(request.tools.map(tool => tool.function.name), [...names, 'read_ib_webpage']);
+    assert.deepEqual(request.tools.map(tool => tool.function.name), ['resolve_dataset', ...names, 'read_ib_webpage']);
     return (async function* () { yield { choices: [{ delta: { content: 'MCP remains available.' }, finish_reason: 'stop' }] }; })();
   } } } };
   await runAgent({ config: { ...config, pplEnabled: false }, messages: [{ role: 'user', content: 'What tools are available?' }], client, model, emit: () => {} });
