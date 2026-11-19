@@ -5,6 +5,22 @@ import { loadConfig } from '../server/chat/config.mjs';
 import { createChatServer } from '../server/chat/index.mjs';
 import { trimToolHistory } from '../server/chat/tool-runtime.mjs';
 
+test('unit-test questions give the model the observed dataset and require live status verification', async () => {
+  const client = { listTools: async () => ({ tools: [{ name: 'ListIndexTool', inputSchema: { type: 'object' } }] }), close: async () => {} };
+  const model = { chat: { completions: { create: async request => {
+    const prompt = request.messages[0].content;
+    assert.match(prompt, /cmssdt-ibs-\*/);
+    assert.match(prompt, /release, architecture, name, package and numeric status/);
+    assert.match(prompt, /Verify the meaning of status values/);
+    assert.match(prompt, /missing records.*query errors/);
+    return (async function* () {
+      yield { choices: [{ delta: { content: 'Fixture response' }, finish_reason: 'stop' }] };
+    })();
+  } } } };
+  await runAgent({ config: { model: 'fixture' }, client, model, emit: () => {},
+    messages: [{ role: 'user', content: 'What unit tests failed on CMSSW_20_1_X_2026-11-17-2300 el8_amd64_gcc14?' }] });
+});
+
 test('plain tool loop passes eight iterations without context injection and stops only on cancellation', async () => {
   const controller = new AbortController();
   let turns = 0, calls = 0, closed = false;
