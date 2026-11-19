@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "datasets": [
+    {
+      "key": "unit-test-results",
+      "cluster": "cmssdt1",
+      "index_family": "cmssdt-ibs-*",
+      "aliases": [
+        "unit test",
+        "unit tests",
+        "unit test failures",
+        "utest",
+        "utests"
+      ],
+      "fields": {
+        "release": "release",
+        "architecture": "architecture",
+        "test_name": "name",
+        "package": "package",
+        "status": "status"
+      },
+      "provenance": {
+        "source": "observed in the OpenSearch CSV export",
+        "notes": "The export analysis identifies numeric status 1 as a candidate failure code. Live mapping and status semantics still need confirmation."
+      },
+      "verification": {
+        "status": "unverified",
+        "mapping_confirmed": false,
+        "status_semantics_confirmed": false
+      }
+    }
+  ]
+}

@@ -42,7 +42,7 @@ test('real SDKs initialize native MCP, paginate, call a read tool and stream an 
   const modelURL = await serve(t, async (req, res) => {
     assert.equal(req.headers.authorization, 'Bearer model-test');
     const request = await body(req); modelRequests.push(request);
-    assert.deepEqual(request.tools.map(tool => tool.function.name), ['SearchIndexTool', 'read_ib_webpage', 'execute_opensearch_ppl']);
+    assert.deepEqual(request.tools.map(tool => tool.function.name), ['resolve_dataset', 'SearchIndexTool', 'execute_opensearch_ppl']);
     res.writeHead(200, { 'Content-Type': 'text/event-stream' });
     const send = choice => res.write(`data: ${JSON.stringify({ choices: [choice] })}\n\n`);
     if (modelRequests.length === 1) {
