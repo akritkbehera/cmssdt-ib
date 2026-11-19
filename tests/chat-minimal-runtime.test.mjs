@@ -11,6 +11,7 @@ test('unit-test questions give the model the observed dataset and require live s
     const prompt = request.messages[0].content;
     assert.match(prompt, /cmssdt-ibs-\*/);
     assert.match(prompt, /release, architecture, name, package and numeric status/);
+    assert.match(prompt, /status 1 as a candidate failure code/);
     assert.match(prompt, /Verify the meaning of status values/);
     assert.match(prompt, /missing records.*query errors/);
     return (async function* () {
